@@ -1,0 +1,48 @@
+<html lang='pt-BR'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Ativação de Conta</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-top: 20px;
+        background-color: #007bff;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h2>Ativação de Conta</h2>
+      <p>Olá, <strong>{{username}}</strong>,</p>
+      <p>Obrigado por se registrar! Para ativar sua conta, clique no botão
+        abaixo:</p>
+      <a href={{activeUrl}} class='button'>Ativar Conta</a>
+      <p>Se você não se cadastrou, ignore este e-mail.</p>
+      <p class='footer'>Este é um e-mail automático, por favor, não responda.</p>
+    </div>
+  </body>
+</html>

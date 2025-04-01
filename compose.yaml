@@ -1,0 +1,25 @@
+networks:
+  net-authenticator:
+    driver: bridge
+services:
+  pg-authenticator:
+    image: bitnami/postgresql:latest
+    container_name: pg-authenticator
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_DATABASE=authenticator
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/bitnami/postgresql
+    networks:
+      - net-authenticator
+  redis-authenticator:
+    image: bitnami/redis:latest
+    environment:
+      - REDIS_PASSWORD=redis
+    ports:
+      - 6379:6379
+    networks:
+      - net-authenticator
