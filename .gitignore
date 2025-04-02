@@ -4,6 +4,7 @@
 /build
 /data
 /test
+compose.yaml
 rodmap.md
 # Logs
 logs
@@ -16,7 +17,7 @@ lerna-debug.log*
 
 # OS
 .DS_Store
-
+.vscode
 # Tests
 /coverage
 /.nyc_output
