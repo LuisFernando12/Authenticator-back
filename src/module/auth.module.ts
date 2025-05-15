@@ -7,10 +7,11 @@ import { AuthService } from 'src/service/auth.service';
 import { TokenModule } from './token.module';
 import { EmailModule } from './email.module';
 import { RedisService } from 'src/service/redis.service';
+import { AppConfigEnvService } from 'src/service/app-config-env.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), TokenModule, EmailModule],
+  imports: [TypeOrmModule.forFeature([UserEntity]), EmailModule, TokenModule],
   controllers: [AuthController],
-  providers: [AuthService, UserRepository, RedisService],
+  providers: [AuthService, UserRepository, RedisService, AppConfigEnvService],
 })
 export class AuthModule {}

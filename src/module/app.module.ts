@@ -24,20 +24,10 @@ import { TokenModule } from './token.module';
         synchronize: true,
       }),
     }),
-    // RedisModule.forRoot({
-    //   options: {
-    //     host: 'localhost',
-    //     port: 6379,
-    //     password: 'redis',
-    //   },
-    //   type: 'single',
-    // }),
     AuthModule,
     UserModule,
     TokenModule,
     EmailModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

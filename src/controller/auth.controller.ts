@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { LoginDTO } from 'src/dto/login.dto';
 import { NewPasswordDTO } from 'src/dto/new-password.dto';
+import { ReasetPasswordDTO } from 'src/dto/reset-password.dto';
 import { AuthService } from 'src/service/auth.service';
 
 export interface IAuthController {
@@ -17,16 +18,15 @@ export class AuthController implements IAuthController {
   constructor(private readonly authService: AuthService) {}
   @Post('/login')
   async login(@Body() data: LoginDTO) {
-    console.log(data);
     return await this.authService.login(data.email, data.password);
   }
   @Get('/verify-email')
-  async verifyEmail(@Query('email') email: string) {
-    return await this.authService.verifyEmail(email);
+  async verifyEmail(@Query('token') token: string) {
+    return await this.authService.verifyEmail(token);
   }
   @Post('/reset-password')
   async resetPassword(
-    @Body() data: { email: string },
+    @Body() data: ReasetPasswordDTO,
   ): Promise<{ message: string }> {
     return await this.authService.resetPassword(data.email);
   }
@@ -38,9 +38,11 @@ export class AuthController implements IAuthController {
       data.email,
     );
   }
+  @Get('/oauth')
   async oauth() {
     throw new Error('Method not implemented');
   }
+  @Get('/callback')
   async callback() {
     throw new Error('Method not implemented');
   }

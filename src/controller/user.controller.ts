@@ -9,10 +9,6 @@ import { UserDTO } from 'src/dto/user.dto';
 
 export interface IUserController {
   register: (user: UserDTO) => Promise<{ message: string }>;
-  //   verifyEmail: () => void;
-  //   newPassword: () => void;
-  //   oauth: () => void;
-  //   callback: () => void;
 }
 
 @Controller('user')

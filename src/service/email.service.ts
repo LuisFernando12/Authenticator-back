@@ -18,7 +18,11 @@ export class EmailService implements IEmailService {
     private readonly mailerService: MailerService,
     private readonly configEnv: AppConfigEnvService,
   ) {}
-  async sendActivationEmail(email: string, username: string): Promise<string> {
+  async sendActivationEmail(
+    email: string,
+    username: string,
+    token: string,
+  ): Promise<string> {
     try {
       const mailerResponse = await this.mailerService.sendMail({
         to: email,
@@ -26,7 +30,7 @@ export class EmailService implements IEmailService {
         template: './activeAccount',
         context: {
           username,
-          activeUrl: `${this.configEnv.serviceURL}/?email=${email}`,
+          activeUrl: `${this.configEnv.serviceURL}/?token=${token}`,
         },
       });
       if (mailerResponse.accepted.length === 0) {

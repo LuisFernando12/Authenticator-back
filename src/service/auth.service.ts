@@ -1,3 +1,4 @@
+import { AppConfigEnvService } from 'src/service/app-config-env.service';
 import {
   BadRequestException,
   ForbiddenException,
@@ -31,6 +32,7 @@ export class AuthService implements IAuthService {
     private readonly tokenService: TokenService,
     private readonly emailService: EmailService,
     private readonly redisService: RedisService,
+    private appconfigEnvService: AppConfigEnvService,
   ) {}
   async login(email: string, password: string) {
     const userDB = await this.userRepository.findByEmail(email);
@@ -56,14 +58,23 @@ export class AuthService implements IAuthService {
     });
     return {
       token,
-      redirect_url: 'https://google.com.br',
+      redirect_uri: this.appconfigEnvService.redirectURI,
     };
   }
-  async verifyEmail(email: string) {
+  async verifyEmail(token: string) {
+    const tokenIsValid = await this.tokenService.verifyToken(token);
+    if (!tokenIsValid || tokenIsValid.type !== 'verify-email') {
+      throw new UnauthorizedException();
+    }
+    const { username } = tokenIsValid;
+    const userDB = await this.userRepository.findByEmail(username);
+    if (!userDB) {
+      throw new BadRequestException();
+    }
     const activeAccountResponse =
-      await this.userRepository.activeAccount(email);
+      await this.userRepository.activeAccount(username);
     if (!activeAccountResponse.affected) {
-      throw new BadRequestException('Failure to activate account');
+      throw new InternalServerErrorException('Failure to activate account');
     }
     return { message: 'Account activated successfully' };
   }
@@ -86,7 +97,7 @@ export class AuthService implements IAuthService {
         'Failure to reset password, try again',
       );
     }
-    return { message: 'Email de recuperação enviado' };
+    return { message: 'Recovery Email Sent ' };
   }
   async newPassword(
     password: string,
@@ -99,6 +110,7 @@ export class AuthService implements IAuthService {
     if (code !== codeRedis) {
       throw new ForbiddenException('Invalid code !');
     }
+    password = await bcrypt.hash(password, bcrypt.genSaltSync());
     const userDB = await this.userRepository.updatePassword(email, password);
     if (!userDB.affected) {
       throw new InternalServerErrorException('Failure to update password');

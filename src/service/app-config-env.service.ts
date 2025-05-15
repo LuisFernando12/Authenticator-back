@@ -24,6 +24,9 @@ export class AppConfigEnvService {
   get serviceResetPasswordUrl(): string {
     return this.config.get<string>('SERVICE_RESET_PASSWORD_URL');
   }
+  get redirectURI(): string {
+    return this.config.get<string>('REDIRECT_URI');
+  }
   get secret(): string {
     return this.config.get<string>('SECRET');
   }
