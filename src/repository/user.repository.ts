@@ -20,6 +20,9 @@ export class UserRepository implements IUserRepository {
       { isVerified: true },
     );
   }
+  async existsUser(email: string) {
+    return await this.userRepository.existsBy({ email });
+  }
 
   async create(data: UserEntityType) {
     return await this.userRepository.save(data);

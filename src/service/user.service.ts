@@ -1,8 +1,12 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import type { UserEntityType } from 'src/entity/user.entity';
 import { UserRepository } from 'src/repository/user.repository';
 import { EmailService } from './email.service';
-import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
 export interface IUserService {
   register: (user: UserEntityType) => Promise<string>;
@@ -21,8 +25,12 @@ export class UserService implements IUserService {
   }
   async register(user: UserEntityType) {
     user.password = await this.encryptPassword(user.password);
+
+    if (await this.userRepository.existsUser(user.email)) {
+      throw new ConflictException('User alredy exists');
+    }
     const userDB = await this.userRepository.create(user);
-    if (!userDB.email) {
+    if (!userDB) {
       throw new InternalServerErrorException('failed user resgiter');
     }
     try {

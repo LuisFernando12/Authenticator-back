@@ -1,17 +1,16 @@
-import { AppConfigEnvService } from 'src/service/app-config-env.service';
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserRepository } from 'src/repository/user.repository';
 import * as bcrypt from 'bcrypt';
-import { TokenService } from './token.service';
+import { UserRepository } from 'src/repository/user.repository';
+import { AppConfigEnvService } from 'src/service/app-config-env.service';
 import { EmailService } from './email.service';
 import { RedisService } from './redis.service';
+import { TokenService } from './token.service';
 export interface IAuthService {
   login: (email: string, password: string) => any;
   verifyEmail(email: string): Promise<{ message: string }>;
@@ -108,7 +107,7 @@ export class AuthService implements IAuthService {
       await this.redisService.get(`reset-password-${email}`),
     );
     if (code !== codeRedis) {
-      throw new ForbiddenException('Invalid code !');
+      throw new BadRequestException('Invalid code !');
     }
     password = await bcrypt.hash(password, bcrypt.genSaltSync());
     const userDB = await this.userRepository.updatePassword(email, password);
