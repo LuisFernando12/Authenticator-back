@@ -68,10 +68,12 @@ export class AuthController implements IAuthController {
     );
   }
   @Get('/oauth')
+  @ApiResponse({ status: 405, description: 'Method Not Allowed' })
   async oauth() {
     throw new MethodNotAllowedException('Method not implemented');
   }
   @Get('/callback')
+  @ApiResponse({ status: 405, description: 'Method Not Allowed' })
   async callback() {
     throw new MethodNotAllowedException('Method not implemented');
   }
