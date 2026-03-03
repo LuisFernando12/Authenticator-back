@@ -1,6 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppConfigEnvService {
@@ -41,5 +41,8 @@ export class AppConfigEnvService {
   }
   get serverSMTPPassword(): string {
     return this.config.get<string>('SERVER_SMTP_PASSWORD');
+  }
+  get oauthLoginURL(): string {
+    return this.config.getOrThrow<string>('OAUTH_LOGIN_URL');
   }
 }

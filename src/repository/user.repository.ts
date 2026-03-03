@@ -8,6 +8,7 @@ export interface IUserRepository {
   activeAccount(email: string);
   updatePassword(email: string, password: string);
 }
+
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(

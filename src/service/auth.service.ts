@@ -20,9 +20,6 @@ export interface IAuthService {
     code: number,
     email: string,
   ): Promise<{ message: string }>;
-
-  // oauth: () => void;
-  // callback: () => void;
 }
 @Injectable()
 export class AuthService implements IAuthService {

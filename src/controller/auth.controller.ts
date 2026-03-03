@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  MethodNotAllowedException,
   Post,
   Query,
 } from '@nestjs/common';
@@ -21,8 +20,6 @@ export interface IAuthController {
   verifyEmail(token: string, res: Response): void;
   resetPassword(data: { email: string }): Promise<{ message: string }>;
   newPassword(data: NewPasswordDTO): void;
-  oauth(): void;
-  callback(): void;
 }
 
 @Controller()
@@ -66,15 +63,5 @@ export class AuthController implements IAuthController {
       data.code,
       data.email,
     );
-  }
-  @Get('/oauth')
-  @ApiResponse({ status: 405, description: 'Method Not Allowed' })
-  async oauth() {
-    throw new MethodNotAllowedException('Method not implemented');
-  }
-  @Get('/callback')
-  @ApiResponse({ status: 405, description: 'Method Not Allowed' })
-  async callback() {
-    throw new MethodNotAllowedException('Method not implemented');
   }
 }

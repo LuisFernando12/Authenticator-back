@@ -1,13 +1,16 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { AppConfigModule } from './app-config.module';
-import { UserModule } from './user.module';
-import { UserEntity } from 'src/entity/user.entity';
-import { EmailModule } from './email.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokenEntity } from 'src/entity/token.entity';
+import { UserEntity } from 'src/entity/user.entity';
+import { ClientEntity } from '../entity/client.entity';
+import { AppConfigModule } from './app-config.module';
+import { AuthModule } from './auth.module';
+import { ClientModule } from './client.module';
+import { EmailModule } from './email.module';
+import { OauthModule } from './oauth.module';
 import { TokenModule } from './token.module';
+import { UserModule } from './user.module';
 
 @Module({
   imports: [
@@ -20,7 +23,7 @@ import { TokenModule } from './token.module';
         username: config.get('USER_DB'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity, TokenEntity],
+        entities: [UserEntity, TokenEntity, ClientEntity],
         synchronize: true,
       }),
     }),
@@ -28,6 +31,8 @@ import { TokenModule } from './token.module';
     UserModule,
     TokenModule,
     EmailModule,
+    ClientModule,
+    OauthModule,
   ],
 })
 export class AppModule {}

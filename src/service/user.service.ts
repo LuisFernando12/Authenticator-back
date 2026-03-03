@@ -4,12 +4,13 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import type { UserEntityType } from 'src/entity/user.entity';
+import type { UserEntity, UserEntityType } from 'src/entity/user.entity';
 import { UserRepository } from 'src/repository/user.repository';
 import { EmailService } from './email.service';
 import { TokenService } from './token.service';
 export interface IUserService {
   register: (user: UserEntityType) => Promise<string>;
+  findByEmail: (email: string) => Promise<UserEntityType>;
 }
 @Injectable()
 export class UserService implements IUserService {
@@ -47,7 +48,10 @@ export class UserService implements IUserService {
       );
       return emailResponse;
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException(error);
     }
+  }
+  async findByEmail(email: string): Promise<UserEntity> {
+    return await this.userRepository.findByEmail(email);
   }
 }

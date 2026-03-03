@@ -4,8 +4,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './module/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: 'http://localhost:4000',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    },
+  });
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('api/auth');
   const config = new DocumentBuilder()
     .setTitle('Authenticator API')

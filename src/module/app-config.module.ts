@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import * as j from 'joi';
 import { AppConfigEnvService } from 'src/service/app-config-env.service';
+
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,6 +19,7 @@ import { AppConfigEnvService } from 'src/service/app-config-env.service';
         SERVER_SMTP: j.string().required(),
         SERVER_SMTP_USER_NAME: j.string().required(),
         SERVER_SMTP_PASSWORD: j.string().required(),
+        OAUTH_LOGIN_URL: j.string().required(),
       }),
     }),
   ],
