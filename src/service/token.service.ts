@@ -6,7 +6,14 @@ import { AppConfigEnvService } from './app-config-env.service';
 type TypeToken = 'verify-email' | '';
 
 export interface ITokenService {
-  generateToken(payload: { sub: string; username: string }): Promise<any>;
+  generateToken(payload: {
+    sub: string;
+    username: string;
+    aud?: string;
+    iss?: string;
+    scope?: string;
+    type?: TypeToken;
+  }): Promise<any>;
   saveToken(token: string, userId: string, expiresAt: Date): Promise<any>;
   verifyToken(token: string): Promise<any>;
   decodeToken(token: string): Promise<any>;
@@ -59,6 +66,9 @@ export class TokenService implements ITokenService {
   async generateToken(payload: {
     sub: string;
     username: string;
+    aud?: string;
+    iss?: string;
+    scope?: string;
     type?: TypeToken;
   }): Promise<string> {
     try {
@@ -69,7 +79,7 @@ export class TokenService implements ITokenService {
       }
       return await this.saveToken(token, payload.sub, new Date(expiresAt));
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException(error);
     }
   }
   async verifyToken(token: string): Promise<any> {

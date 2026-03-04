@@ -9,11 +9,13 @@ export class ClientEntity {
     unique: true,
   })
   clientId: string;
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   clientSecret?: string;
+  @Column({ nullable: false, default: false })
+  isCofidential: boolean;
   @Column({ nullable: false })
   name: string;
-  @Column({ type: 'text', array: true })
+  @Column({ type: 'text', array: true, unique: true })
   redirectUris: Array<string>;
   @Column({ type: 'text', array: true })
   grantTypes: Array<string>;

@@ -33,5 +33,6 @@ export class OauthTokenDTO {
   @IsString()
   code: string;
   @IsString()
-  codeVerifier: string;
+  @IsOptional()
+  codeVerifier?: string;
 }
