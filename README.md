@@ -9,7 +9,7 @@ A NestJS-based authentication and authorization service that provides robust use
 - **OAuth2 Implementation**: Support for `authorize` and `token` flows, enabling third-party application integration.
 - **Client Management**: Manage OAuth2 clients for secure service-to-service communication.
 - **Email Notifications**: Integrated email service using Nodemailer and Handlebars for dynamic templates (e.g., account activation, password reset).
-- **Security**: JWT-based authentication, password hashing with Bcrypt, and data validation using `class-validator` and `Zod`.
+- **Security**: JWT-based authentication, password hashing with Bcrypt, and data validation using `class-validator` .
 - **API Documentation**: Interactive Swagger documentation at `/api/docs`.
 - **Database Support**: PostgreSQL (via TypeORM) for persistence and Redis for caching/session management.
 
@@ -18,7 +18,7 @@ A NestJS-based authentication and authorization service that provides robust use
 - **Framework**: [NestJS](https://nestjs.com/)
 - **Database**: PostgreSQL & Redis
 - **ORM**: TypeORM
-- **Validation**: Joi, Zod, and Class-validator
+- **Validation**: Joi, and Class-validator
 - **Mailing**: Nodemailer with Handlebars templates
 - **Documentation**: Swagger/OpenAPI
 
