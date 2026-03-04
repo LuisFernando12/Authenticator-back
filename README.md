@@ -84,9 +84,6 @@ All API endpoints are prefixed with `api/auth`.
 - `pnpm run build`: Build the application.
 - `pnpm run start`: Start the application.
 - `pnpm run format`: Format code with Prettier.
-- `pnpm run lint`: Lint code with ESLint.
-- `pnpm run test`: Run unit tests.
-- `pnpm run test:e2e`: Run end-to-end tests.
 
 ## License
 
