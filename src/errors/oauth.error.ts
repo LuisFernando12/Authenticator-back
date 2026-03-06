@@ -1,26 +1,69 @@
-import {
-  HttpException,
-  HttpExceptionOptions,
-  HttpStatus,
-} from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
+interface IOauthErrorPayload {
+  error: string;
+  erroDescription?: string;
+}
 export class OauthError extends HttpException {
   constructor(
-    objectOrError?: any,
-    descriptionOrOptions:
-      | string
-      | HttpExceptionOptions = 'Oauth Error Exception',
+    errorPayload: IOauthErrorPayload,
+    status: HttpStatus = HttpStatus.BAD_REQUEST,
   ) {
-    const { description, httpExceptionOptions } =
-      HttpException.extractDescriptionAndOptionsFrom(descriptionOrOptions);
-    super(
-      HttpException.createBody(
-        objectOrError,
-        description,
-        HttpStatus.UNAUTHORIZED,
-      ),
+    super(errorPayload, status);
+  }
+  static invalidRequest(description?: string): OauthError {
+    return new OauthError(
+      {
+        error: 'invalid_request',
+        erroDescription:
+          description ||
+          'The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.',
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+  static invalidClient(description?: string): OauthError {
+    return new OauthError(
+      {
+        error: 'invalid_client',
+        erroDescription:
+          description ||
+          'Client authentication failed (e.g., unknown client, no client authentication included, or unsupported authentication method).',
+      },
       HttpStatus.UNAUTHORIZED,
-      httpExceptionOptions,
+    );
+  }
+  static invalidGrant(description?: string): OauthError {
+    return new OauthError(
+      {
+        error: 'invalid_grant',
+        erroDescription:
+          description ||
+          'The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.',
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+  static unauthorizedClient(description?: string): OauthError {
+    return new OauthError(
+      {
+        error: 'unauthorized_client',
+        erroDescription:
+          description ||
+          'The client is not authorized to request an authorization code using this method.',
+      },
+      HttpStatus.FORBIDDEN,
+    );
+  }
+  static unsupportedGrantType(description?: string): OauthError {
+    return new OauthError(
+      {
+        error: 'unsupported_grant_type',
+        erroDescription:
+          description ||
+          'The authorization grant type is not supported by the authorization server.',
+      },
+      HttpStatus.BAD_REQUEST,
     );
   }
 }
