@@ -87,15 +87,15 @@ export class OauthService implements IOauthService {
       throw OauthError.invalidClient('ClientID not found');
     }
     if (clientDB.isCofidential && !payloadOauthToken.clientSecret) {
-      throw OauthError.invalidRequest('Client secret is required');
+      throw OauthError.invalidGrant('Client secret is required');
     }
     if (!clientDB.isCofidential && !payloadOauthToken.codeVerifier) {
-      throw OauthError.invalidRequest('Code verifier is required');
+      throw OauthError.invalidGrant('Code verifier is required');
     }
 
     if (
       payloadOauthToken.clientSecret &&
-      clientDB.clientSecret !== payloadOauthToken.clientSecret
+      bcrypt.compareSync(payloadOauthToken.clientSecret, clientDB.clientSecret)
     ) {
       throw OauthError.invalidClient('Invalid client secret');
     }
@@ -165,7 +165,7 @@ export class OauthService implements IOauthService {
   async login(
     payloadOauthLogin: LoginDTO,
     QueryOauthLogin: OauthAuthorizeDTO,
-  ): Promise<any> {
+  ): Promise<URL> {
     const { clientId, redirectUri, state, scope } = QueryOauthLogin;
     const clientDB = await this.clientService.findByClientId(clientId);
 
