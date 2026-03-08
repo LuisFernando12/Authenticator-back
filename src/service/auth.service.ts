@@ -20,6 +20,7 @@ export interface IAuthService {
     code: number,
     email: string,
   ): Promise<{ message: string }>;
+  sendNewTokenToEmailActive(email: string): Promise<string>;
 }
 @Injectable()
 export class AuthService implements IAuthService {
@@ -69,7 +70,7 @@ export class AuthService implements IAuthService {
     }
     const activeAccountResponse =
       await this.userRepository.activeAccount(username);
-    if (!activeAccountResponse.affected) {
+    if (!activeAccountResponse) {
       throw new InternalServerErrorException('Failure to activate account');
     }
     return { message: 'Account activated successfully' };
@@ -107,11 +108,38 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Invalid code !');
     }
     password = await bcrypt.hash(password, bcrypt.genSaltSync());
-    const userDB = await this.userRepository.updatePassword(email, password);
-    if (!userDB.affected) {
+    const passwordUpdate = await this.userRepository.updatePassword(
+      email,
+      password,
+    );
+    if (!passwordUpdate) {
       throw new InternalServerErrorException('Failure to update password');
     }
     await this.redisService.del(`reset-password-${email}`);
     return { message: 'Updated password' };
+  }
+  async sendNewTokenToEmailActive(email: string): Promise<string> {
+    const userDB = await this.userRepository.findByEmail(email);
+    if (!userDB) {
+      throw new NotFoundException('User not found');
+    }
+    delete userDB.password;
+    if (userDB.isVerified) {
+      throw new BadRequestException('Account already active');
+    }
+    const token = await this.tokenService.generateToken({
+      sub: userDB.id,
+      username: userDB.email,
+      type: 'verify-email',
+    });
+    const sendNewEmail = await this.emailService.sendActivationEmail(
+      email,
+      userDB.name,
+      token,
+    );
+    if (sendNewEmail !== 'OK') {
+      throw new InternalServerErrorException('Failure to send email');
+    }
+    return 'OK';
   }
 }

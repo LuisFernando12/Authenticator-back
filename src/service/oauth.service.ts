@@ -36,7 +36,7 @@ export class OauthService implements IOauthService {
         'Code challenge and code challenge method are required together',
       );
     }
-    if (codeChallengeMethod.toLowerCase() !== 'sha256') {
+    if (codeChallenge && codeChallengeMethod.toLowerCase() !== 'sha256') {
       throw OauthError.invalidRequest('Code challenge method not supported');
     }
     const clientDB = await this.clientService.findByClientId(clientId);
@@ -46,7 +46,7 @@ export class OauthService implements IOauthService {
     if (!clientDB.redirectUris.includes(redirectUri)) {
       throw OauthError.invalidRequest('Redirect URI not found');
     }
-    if (!clientDB.isCofidential && !codeChallenge) {
+    if (!clientDB.isConfidential && !codeChallenge) {
       throw OauthError.invalidGrant('Code challenge is required');
     }
 
@@ -56,16 +56,18 @@ export class OauthService implements IOauthService {
     }
 
     if (codeChallengeMethod && codeChallenge) {
-      const shortClientID = clientId.slice(0, 4);
+      const shortLastFourCharactersClientID = clientId.slice(
+        clientId.length - 4,
+      );
 
       this.redisService.set(
-        `code-challenge-${shortClientID}`,
+        `code-challenge-${shortLastFourCharactersClientID}`,
         codeChallenge,
         'EX',
         600,
       );
       this.redisService.set(
-        `code-challenge-method-${shortClientID}`,
+        `code-challenge-method-${shortLastFourCharactersClientID}`,
         codeChallengeMethod,
         'EX',
         600,
@@ -75,67 +77,72 @@ export class OauthService implements IOauthService {
     return urlRedirect;
   }
   async token(payloadOauthToken: OauthTokenDTO): Promise<string> {
-    if (!payloadOauthToken.clientSecret && !payloadOauthToken.codeVerifier) {
+    const {
+      clientId,
+      codeVerifier,
+      code,
+      clientSecret,
+      redirectUri,
+      grantType,
+    } = payloadOauthToken;
+    if (!clientSecret && !codeVerifier) {
       throw OauthError.invalidRequest(
         'Client secret or code verifier is required',
       );
     }
-    const clientDB = await this.clientService.findByClientId(
-      payloadOauthToken.clientId,
-    );
+    const clientDB = await this.clientService.findByClientId(clientId);
     if (!clientDB) {
       throw OauthError.invalidClient('ClientID not found');
     }
-    if (clientDB.isCofidential && !payloadOauthToken.clientSecret) {
+    if (clientDB.isConfidential && !clientSecret) {
       throw OauthError.invalidGrant('Client secret is required');
     }
-    if (!clientDB.isCofidential && !payloadOauthToken.codeVerifier) {
+    if (!clientDB.isConfidential && !codeVerifier) {
       throw OauthError.invalidGrant('Code verifier is required');
     }
-
-    if (
-      payloadOauthToken.clientSecret &&
-      bcrypt.compareSync(payloadOauthToken.clientSecret, clientDB.clientSecret)
-    ) {
+    if (clientSecret && clientSecret !== clientDB.clientSecret) {
       throw OauthError.invalidClient('Invalid client secret');
     }
 
-    if (!clientDB.redirectUris.includes(payloadOauthToken.redirectUri)) {
+    if (!clientDB.redirectUris.includes(redirectUri)) {
       throw OauthError.invalidRequest('Invalid redirect URI');
     }
 
-    if (payloadOauthToken.grantType === 'authorization_code') {
-      if (payloadOauthToken.codeVerifier) {
+    if (grantType === 'authorization_code') {
+      if (codeVerifier) {
+        const shortLastFourCharactersClientID = clientId.slice(
+          clientId.length - 4,
+        );
         const codeChallengeRedis = await this.redisService.get(
-          `code-challenge-${payloadOauthToken.clientId.slice(0, 4)}`,
+          `code-challenge-${shortLastFourCharactersClientID}`,
         );
         if (!codeChallengeRedis) {
           throw OauthError.invalidGrant('Invalid code challenge');
         }
         const codeChallegeVerify = crypto
           .createHash('sha256')
-          .update(payloadOauthToken.codeVerifier)
+          .update(codeVerifier)
           .digest('base64url');
         if (codeChallengeRedis !== codeChallegeVerify) {
           throw OauthError.invalidGrant('Invalid code verifier');
         }
-        const shortClientID = payloadOauthToken.clientId.slice(0, 4);
-        await this.redisService.del(`code-challenge-${shortClientID}`);
-        await this.redisService.del(`code-challenge-method-${shortClientID}`);
+        const shortCodeChallenge = codeChallengeRedis.slice(0, 4);
+        await this.redisService.del(`code-challenge-${shortCodeChallenge}`);
+        await this.redisService.del(
+          `code-challenge-method-${shortCodeChallenge}`,
+        );
       }
 
       const codeRedis = JSON.parse(
-        await this.redisService.get(
-          `oauth-code-${payloadOauthToken.code.slice(0, 4)}`,
-        ),
+        await this.redisService.get(`oauth-code-${code.slice(0, 4)}`),
       );
-      if (codeRedis.clientId !== payloadOauthToken.clientId) {
-        throw OauthError.invalidClient('Invalid client ID');
-      }
-      if (!codeRedis || codeRedis.code !== payloadOauthToken.code) {
+      if (!codeRedis || codeRedis.code !== code) {
         throw OauthError.invalidGrant(
           'Authorization code is invalid or expired',
         );
+      }
+      if (codeRedis.clientId !== clientId) {
+        throw OauthError.invalidClient('Invalid client ID');
       }
 
       const userDB = await this.userService.findByEmail(codeRedis.userEmail);
@@ -143,10 +150,7 @@ export class OauthService implements IOauthService {
         throw OauthError.unauthorizedClient('Invalid user');
       }
 
-      await this.redisService.del(
-        `oauth-code-${payloadOauthToken.code.slice(0, 4)}`,
-      );
-      console.log(process.env.HOST);
+      await this.redisService.del(`oauth-code-${code.slice(0, 4)}`);
       const accessToken = await this.tokenService.generateToken({
         sub: userDB.id,
         username: userDB.email,
@@ -168,12 +172,11 @@ export class OauthService implements IOauthService {
   ): Promise<URL> {
     const { clientId, redirectUri, state, scope } = QueryOauthLogin;
     const clientDB = await this.clientService.findByClientId(clientId);
-
     if (!clientDB) {
       throw OauthError.invalidClient('ClientID not found');
     }
 
-    if (clientDB.redirectUris.indexOf(redirectUri) === -1) {
+    if (!clientDB.redirectUris.includes(redirectUri)) {
       throw OauthError.invalidRequest('Redirect URI not found');
     }
 
@@ -183,7 +186,9 @@ export class OauthService implements IOauthService {
     if (!userDB) {
       throw OauthError.unauthorizedClient('Invalid credentials');
     }
-
+    if (!userDB.clients.find((client) => client.clientId === clientId)) {
+      throw OauthError.invalidClient('Invalid client ID');
+    }
     const isMatchedPassword = await bcrypt.compare(password, userDB.password);
 
     if (!isMatchedPassword) {

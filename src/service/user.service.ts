@@ -4,13 +4,15 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import type { UserEntity, UserEntityType } from 'src/entity/user.entity';
 import { UserRepository } from 'src/repository/user.repository';
+import { UserDTO, UserResponseDTO } from '../dto/user.dto';
 import { EmailService } from './email.service';
 import { TokenService } from './token.service';
 export interface IUserService {
-  register: (user: UserEntityType) => Promise<string>;
-  findByEmail: (email: string) => Promise<UserEntityType>;
+  register: (user: UserDTO) => Promise<string>;
+  findByEmail: (
+    email: string,
+  ) => Promise<UserResponseDTO & { password: string }>;
 }
 @Injectable()
 export class UserService implements IUserService {
@@ -24,7 +26,7 @@ export class UserService implements IUserService {
     const salt = await bcrypt.genSalt();
     return await bcrypt.hash(password, salt);
   }
-  async register(user: UserEntityType) {
+  async register(user: UserDTO) {
     user.password = await this.encryptPassword(user.password);
 
     if (await this.userRepository.existsUser(user.email)) {
@@ -51,7 +53,9 @@ export class UserService implements IUserService {
       throw new InternalServerErrorException(error);
     }
   }
-  async findByEmail(email: string): Promise<UserEntity> {
+  async findByEmail(
+    email: string,
+  ): Promise<UserResponseDTO & { password: string }> {
     return await this.userRepository.findByEmail(email);
   }
 }
