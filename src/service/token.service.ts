@@ -83,9 +83,13 @@ export class TokenService implements ITokenService {
     }
   }
   async verifyToken(token: string): Promise<any> {
-    return await this.jwtService.verifyAsync(token, {
-      secret: this.appConfigEnvSevice.secret,
-    });
+    try {
+      return await this.jwtService.verifyAsync(token, {
+        secret: this.appConfigEnvSevice.secret,
+      });
+    } catch (error) {
+      return false;
+    }
   }
   async decodeToken(token: string): Promise<any> {
     return await this.jwtService.decode(token);

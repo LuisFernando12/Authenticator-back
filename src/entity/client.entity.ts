@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { UserEntity } from './user.entity';
 
 @Entity('client')
 export class ClientEntity {
@@ -12,7 +13,7 @@ export class ClientEntity {
   @Column({ nullable: true, unique: true })
   clientSecret?: string;
   @Column({ nullable: false, default: false })
-  isCofidential: boolean;
+  isConfidential: boolean;
   @Column({ nullable: false })
   name: string;
   @Column({ type: 'text', array: true, unique: true })
@@ -23,6 +24,8 @@ export class ClientEntity {
   scopes: Array<string>;
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
+  @ManyToMany(() => UserEntity, (user) => user.clients)
+  users: UserEntity[];
   @Column('timestamp with time zone', {
     default: () => 'CURRENT_TIMESTAMP',
   })

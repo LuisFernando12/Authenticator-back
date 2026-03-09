@@ -9,17 +9,20 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Response } from 'express';
-
 import { LoginDTO } from 'src/dto/login.dto';
 import { NewPasswordDTO } from 'src/dto/new-password.dto';
 import { ReasetPasswordDTO } from 'src/dto/reset-password.dto';
 import { AuthService } from 'src/service/auth.service';
+import { NewTokenToActiveEmailDTO } from './../dto/auth/new-token.dto';
 
 export interface IAuthController {
   login(data: LoginDTO): Promise<any>;
   verifyEmail(token: string, res: Response): void;
   resetPassword(data: { email: string }): Promise<{ message: string }>;
   newPassword(data: NewPasswordDTO): void;
+  sendNewTokenToEmailActive({
+    email,
+  }: NewTokenToActiveEmailDTO): Promise<{ message: string }>;
 }
 
 @Controller()
@@ -63,5 +66,18 @@ export class AuthController implements IAuthController {
       data.code,
       data.email,
     );
+  }
+  @Post('/new-token/email-active')
+  @ApiBody({ type: String })
+  @ApiResponse({ status: 200, description: 'Email sent successfully.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid email or account already active',
+  })
+  async sendNewTokenToEmailActive(
+    @Body() { email }: NewTokenToActiveEmailDTO,
+  ): Promise<{ message: string }> {
+    await this.authService.sendNewTokenToEmailActive(email);
+    return { message: 'Email sent successfully.' };
   }
 }
