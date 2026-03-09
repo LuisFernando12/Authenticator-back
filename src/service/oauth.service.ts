@@ -55,25 +55,6 @@ export class OauthService implements IOauthService {
       urlRedirect.searchParams.append(param, payloadOauth[param]);
     }
 
-    if (codeChallengeMethod && codeChallenge) {
-      const shortLastFourCharactersClientID = clientId.slice(
-        clientId.length - 4,
-      );
-
-      this.redisService.set(
-        `code-challenge-${shortLastFourCharactersClientID}`,
-        codeChallenge,
-        'EX',
-        600,
-      );
-      this.redisService.set(
-        `code-challenge-method-${shortLastFourCharactersClientID}`,
-        codeChallengeMethod,
-        'EX',
-        600,
-      );
-    }
-
     return urlRedirect;
   }
   async token(payloadOauthToken: OauthTokenDTO): Promise<string> {
@@ -110,11 +91,9 @@ export class OauthService implements IOauthService {
 
     if (grantType === 'authorization_code') {
       if (codeVerifier) {
-        const shortLastFourCharactersClientID = clientId.slice(
-          clientId.length - 4,
-        );
+        const shortCodeHash = code.slice(code.length - 9);
         const codeChallengeRedis = await this.redisService.get(
-          `code-challenge-${shortLastFourCharactersClientID}`,
+          `code-challenge-${shortCodeHash}`,
         );
         if (!codeChallengeRedis) {
           throw OauthError.invalidGrant('Invalid code challenge');
@@ -126,11 +105,8 @@ export class OauthService implements IOauthService {
         if (codeChallengeRedis !== codeChallegeVerify) {
           throw OauthError.invalidGrant('Invalid code verifier');
         }
-        const shortCodeChallenge = codeChallengeRedis.slice(0, 4);
-        await this.redisService.del(`code-challenge-${shortCodeChallenge}`);
-        await this.redisService.del(
-          `code-challenge-method-${shortCodeChallenge}`,
-        );
+        await this.redisService.del(`code-challenge-${shortCodeHash}`);
+        await this.redisService.del(`code-challenge-method-${shortCodeHash}`);
       }
 
       const codeRedis = JSON.parse(
@@ -144,7 +120,9 @@ export class OauthService implements IOauthService {
       if (codeRedis.clientId !== clientId) {
         throw OauthError.invalidClient('Invalid client ID');
       }
-
+      if (codeRedis.redirectUri !== redirectUri) {
+        throw OauthError.invalidRequest('Invalid redirect URI');
+      }
       const userDB = await this.userService.findByEmail(codeRedis.userEmail);
       if (!userDB) {
         throw OauthError.unauthorizedClient('Invalid user');
@@ -170,7 +148,14 @@ export class OauthService implements IOauthService {
     payloadOauthLogin: LoginDTO,
     QueryOauthLogin: OauthAuthorizeDTO,
   ): Promise<URL> {
-    const { clientId, redirectUri, state, scope } = QueryOauthLogin;
+    const {
+      clientId,
+      redirectUri,
+      state,
+      scope,
+      codeChallenge,
+      codeChallengeMethod,
+    } = QueryOauthLogin;
     const clientDB = await this.clientService.findByClientId(clientId);
     if (!clientDB) {
       throw OauthError.invalidClient('ClientID not found');
@@ -201,15 +186,44 @@ export class OauthService implements IOauthService {
       );
     }
 
-    const code = randomBytes(64).toString('hex');
+    const code = crypto
+      .createHash('sha256')
+      .update(randomBytes(32))
+      .digest('base64url');
+
     const saveCodeRadis = await this.redisService.set(
       `oauth-code-${code.slice(0, 4)}`,
-      JSON.stringify({ code, userEmail: userDB.email, scope, clientId }),
+      JSON.stringify({
+        code,
+        userEmail: userDB.email,
+        scope,
+        clientId,
+        redirectUri,
+      }),
       'EX',
-      900,
+      300,
     );
     if (!saveCodeRadis) {
       throw new InternalServerErrorException('Failure to save code on redis');
+    }
+    if (codeChallengeMethod && codeChallenge) {
+      if (codeChallengeMethod.toLowerCase() !== 'sha256') {
+        throw OauthError.invalidRequest('Code challenge method not supported');
+      }
+      const shortCodeHash = code.slice(code.length - 9);
+
+      this.redisService.set(
+        `code-challenge-${shortCodeHash}`,
+        codeChallenge,
+        'EX',
+        300,
+      );
+      this.redisService.set(
+        `code-challenge-method-${shortCodeHash}`,
+        codeChallengeMethod,
+        'EX',
+        300,
+      );
     }
     const urlRedirect = new URL(redirectUri);
     urlRedirect.searchParams.append('code', code);
