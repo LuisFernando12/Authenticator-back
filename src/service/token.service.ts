@@ -70,7 +70,7 @@ export class TokenService implements ITokenService {
     iss?: string;
     scope?: string;
     type?: TypeToken;
-  }): Promise<string> {
+  }): Promise<{ access_token: string; expiresAt: string } | string> {
     try {
       const expiresAt = this.generateExpireAt();
       const token = await this.jwtService.signAsync(payload);

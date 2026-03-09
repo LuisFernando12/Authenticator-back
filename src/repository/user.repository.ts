@@ -4,7 +4,9 @@ import { UserEntity, UserEntityType } from 'src/entity/user.entity';
 import type { Repository } from 'typeorm';
 import { UserDTO, UserResponseDTO } from '../dto/user.dto';
 export interface IUserRepository {
-  create(data: UserEntityType): Promise<UserResponseDTO>;
+  create(
+    data: UserEntityType,
+  ): Promise<Omit<UserResponseDTO, 'userClientConsent' | 'password'>>;
   findByEmail(email: string): Promise<UserResponseDTO & { password: string }>;
   existsUser(email: string): Promise<boolean>;
   activeAccount(email: string): Promise<boolean>;
@@ -31,31 +33,15 @@ export class UserRepository implements IUserRepository {
     return await this.userRepository.existsBy({ email });
   }
 
-  async create(data: UserDTO): Promise<UserResponseDTO> {
-    const user = this.userRepository.create({
-      ...data,
-      clients: [
-        {
-          id: data.clientId,
-        },
-      ],
-    });
+  async create(
+    data: UserDTO,
+  ): Promise<Omit<UserResponseDTO, 'userClientConsent' | 'password'>> {
+    const user = this.userRepository.create(data);
     return await this.userRepository.save(user);
   }
-  async findByEmail(
-    email: string,
-  ): Promise<UserResponseDTO & { password: string }> {
+  async findByEmail(email: string): Promise<any> {
     const user = await this.userRepository.findOne({
-      relations: {
-        clients: true,
-      },
       where: { email },
-      select: {
-        clients: {
-          id: true,
-          clientId: true,
-        },
-      },
     });
     return user;
   }

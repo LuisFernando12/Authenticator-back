@@ -2,13 +2,12 @@ import {
   Column,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ClientEntity } from './client.entity';
 import { TokenEntity } from './token.entity';
+import { UserClientConsentEntity } from './user-client-consent.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -25,13 +24,11 @@ export class UserEntity {
   @OneToOne(() => TokenEntity, (token) => token.user, { cascade: true })
   @JoinColumn()
   token: TokenEntity;
-  @ManyToMany(() => ClientEntity, (client) => client.id, { cascade: true })
-  @JoinTable({
-    name: 'user_client',
-    joinColumn: { name: 'user_id' },
-    inverseJoinColumn: { name: 'client_id' },
-  })
-  clients: ClientEntity[];
+  @ManyToMany(
+    () => UserClientConsentEntity,
+    (userClientConsent) => userClientConsent.users,
+  )
+  userClientConsent: UserClientConsentEntity[];
   @Column('time with time zone', {
     default: () => 'CURRENT_TIMESTAMP',
   })

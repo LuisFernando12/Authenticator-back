@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserEntity } from './user.entity';
+import { UserClientConsentEntity } from './user-client-consent.entity';
 
 @Entity('client')
 export class ClientEntity {
@@ -24,8 +24,11 @@ export class ClientEntity {
   scopes: Array<string>;
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
-  @ManyToMany(() => UserEntity, (user) => user.clients)
-  users: UserEntity[];
+  @ManyToMany(
+    () => UserClientConsentEntity,
+    (userClientConsent) => userClientConsent.clients,
+  )
+  userClientConsent: UserClientConsentEntity[];
   @Column('timestamp with time zone', {
     default: () => 'CURRENT_TIMESTAMP',
   })

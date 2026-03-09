@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokenEntity } from 'src/entity/token.entity';
 import { UserEntity } from 'src/entity/user.entity';
 import { ClientEntity } from '../entity/client.entity';
+import { UserClientConsentEntity } from '../entity/user-client-consent.entity';
 import { AppConfigModule } from './app-config.module';
 import { AuthModule } from './auth.module';
 import { ClientModule } from './client.module';
@@ -23,7 +24,13 @@ import { UserModule } from './user.module';
         username: config.get('USER_DB'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity, TokenEntity, ClientEntity],
+        entities: [
+          UserEntity,
+          TokenEntity,
+          ClientEntity,
+          UserClientConsentEntity,
+        ],
+        autoLoadEntities: true,
         synchronize: true,
       }),
     }),

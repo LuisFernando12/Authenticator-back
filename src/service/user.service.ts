@@ -43,10 +43,13 @@ export class UserService implements IUserService {
         username: userDB.email,
         type: 'verify-email',
       });
+      if (!verification_token || typeof verification_token !== 'string') {
+        throw new InternalServerErrorException('Failure to generate token');
+      }
       const emailResponse = await this.emailService.sendActivationEmail(
         userDB.email,
         userDB.name,
-        verification_token,
+        verification_token as string,
       );
       return emailResponse;
     } catch (error) {
@@ -56,6 +59,10 @@ export class UserService implements IUserService {
   async findByEmail(
     email: string,
   ): Promise<UserResponseDTO & { password: string }> {
-    return await this.userRepository.findByEmail(email);
+    try {
+      return await this.userRepository.findByEmail(email);
+    } catch (error) {
+      throw new InternalServerErrorException('Failure to find user');
+    }
   }
 }

@@ -20,10 +20,6 @@ export class UserDTO {
   @IsNotEmpty()
   @ApiProperty()
   password: string;
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  clientId: string;
 }
 
 export class UserResponseDTO {
@@ -43,10 +39,13 @@ export class UserResponseDTO {
   @IsNotEmpty()
   @ApiProperty()
   isVerified: boolean;
-  @IsString()
+  @IsString({ each: true })
   @IsNotEmpty()
   @ApiProperty()
-  clients: Array<{ clientId: string }>;
+  userClientConsent: Array<{
+    scope: Array<string>;
+    clients: Array<{ clientId: string }>;
+  }>;
   @IsString()
   @IsNotEmpty()
   @ApiProperty()

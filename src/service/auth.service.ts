@@ -132,6 +132,9 @@ export class AuthService implements IAuthService {
       username: userDB.email,
       type: 'verify-email',
     });
+    if (!token || typeof token !== 'string') {
+      throw new InternalServerErrorException('Failure to generate token');
+    }
     const sendNewEmail = await this.emailService.sendActivationEmail(
       email,
       userDB.name,

@@ -9,11 +9,17 @@ import { AppConfigEnvService } from './app-config-env.service';
 import { ClientService } from './client.service';
 import { RedisService } from './redis.service';
 import { TokenService } from './token.service';
+import { UserClientConsentService } from './user-client-consent.service';
 import { UserService } from './user.service';
 
 export interface IOauthService {
   authorize(payloadOauth: OauthAuthorizeDTO): Promise<URL>;
-  token(payloadOauthToken: OauthTokenDTO): Promise<string>;
+  token(payloadOauthToken: OauthTokenDTO): Promise<{
+    token_type: string;
+    access_token: string;
+    scope: string;
+    expiresAt: string;
+  }>;
   login(payloadOauthLogin: any, QueryOauthLogin: any): Promise<any>;
 }
 @Injectable()
@@ -22,6 +28,7 @@ export class OauthService implements IOauthService {
     private readonly clientService: ClientService,
     private readonly redisService: RedisService,
     private readonly configEnvService: AppConfigEnvService,
+    private readonly userClientConsentService: UserClientConsentService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
   ) {}
@@ -57,7 +64,12 @@ export class OauthService implements IOauthService {
 
     return urlRedirect;
   }
-  async token(payloadOauthToken: OauthTokenDTO): Promise<string> {
+  async token(payloadOauthToken: OauthTokenDTO): Promise<{
+    token_type: string;
+    access_token: string;
+    scope: string;
+    expiresAt: string;
+  }> {
     const {
       clientId,
       codeVerifier,
@@ -92,9 +104,15 @@ export class OauthService implements IOauthService {
     if (grantType === 'authorization_code') {
       if (codeVerifier) {
         const shortCodeHash = code.slice(code.length - 9);
-        const codeChallengeRedis = await this.redisService.get(
+        const codeChallengeRedis = await this.redisService.getdel(
           `code-challenge-${shortCodeHash}`,
         );
+        const codeChallengeMethodRedis = await this.redisService.getdel(
+          `code-challenge-method-${shortCodeHash}`,
+        );
+        if (codeChallengeMethodRedis && codeChallengeMethodRedis !== 'sha256') {
+          throw OauthError.invalidGrant('Invalid code challenge method');
+        }
         if (!codeChallengeRedis) {
           throw OauthError.invalidGrant('Invalid code challenge');
         }
@@ -105,12 +123,10 @@ export class OauthService implements IOauthService {
         if (codeChallengeRedis !== codeChallegeVerify) {
           throw OauthError.invalidGrant('Invalid code verifier');
         }
-        await this.redisService.del(`code-challenge-${shortCodeHash}`);
-        await this.redisService.del(`code-challenge-method-${shortCodeHash}`);
       }
 
       const codeRedis = JSON.parse(
-        await this.redisService.get(`oauth-code-${code.slice(0, 4)}`),
+        await this.redisService.getdel(`oauth-code-${code.slice(0, 4)}`),
       );
       if (!codeRedis || codeRedis.code !== code) {
         throw OauthError.invalidGrant(
@@ -128,7 +144,6 @@ export class OauthService implements IOauthService {
         throw OauthError.unauthorizedClient('Invalid user');
       }
 
-      await this.redisService.del(`oauth-code-${code.slice(0, 4)}`);
       const accessToken = await this.tokenService.generateToken({
         sub: userDB.id,
         username: userDB.email,
@@ -136,8 +151,16 @@ export class OauthService implements IOauthService {
         aud: clientDB.clientId,
         iss: 'http://localhost:3000',
       });
+      if (!accessToken || typeof accessToken !== 'object') {
+        throw new InternalServerErrorException('Failure to generate token');
+      }
 
-      return accessToken;
+      return {
+        token_type: 'Bearer',
+        access_token: accessToken.access_token,
+        scope: codeRedis.scope,
+        expiresAt: accessToken.expiresAt,
+      };
     } else {
       throw OauthError.unsupportedGrantType(
         `Unsupported grant type ${payloadOauthToken.grantType || ''}`,
@@ -171,9 +194,7 @@ export class OauthService implements IOauthService {
     if (!userDB) {
       throw OauthError.unauthorizedClient('Invalid credentials');
     }
-    if (!userDB.clients.find((client) => client.clientId === clientId)) {
-      throw OauthError.invalidClient('Invalid client ID');
-    }
+
     const isMatchedPassword = await bcrypt.compare(password, userDB.password);
 
     if (!isMatchedPassword) {
@@ -224,6 +245,14 @@ export class OauthService implements IOauthService {
         'EX',
         300,
       );
+    }
+    const userClientConsent = await this.userClientConsentService.create({
+      userId: userDB.id,
+      clientId,
+      scopes: scope.split(' '),
+    });
+    if (!userClientConsent) {
+      throw OauthError.unauthorizedClient('Failure to user consent to client');
     }
     const urlRedirect = new URL(redirectUri);
     urlRedirect.searchParams.append('code', code);
