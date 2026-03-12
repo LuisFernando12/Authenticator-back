@@ -38,7 +38,9 @@ export class EmailService implements IEmailService {
       }
       return 'OK';
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException('Failure to send email', {
+        cause: error,
+      });
     }
   }
   async resetPassword(
@@ -62,7 +64,9 @@ export class EmailService implements IEmailService {
       }
       return 'OK';
     } catch (error) {
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException('Failure to send email', {
+        cause: error,
+      });
     }
   }
 }

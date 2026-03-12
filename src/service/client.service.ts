@@ -26,9 +26,9 @@ export class ClientService implements IClientService {
     }
   }
   async findByClientId(clientId: string): Promise<ClientEntity> {
-    // if (!clientId) {
-    //   throw new InternalServerErrorException('Client ID not found');
-    // }
+    if (!clientId) {
+      throw OauthError.invalidGrant('Client ID not found');
+    }
     const clientDB = await this.clientRepository.findByClientId(clientId);
     if (!clientDB) {
       throw OauthError.invalidClient('Client not found');
