@@ -1,11 +1,17 @@
+import { SaveClientDTO } from '@/dto/save-client.dto';
+import { ClientEntity } from '@/entity/client.entity';
+import { OauthError } from '@/errors/oauth.error';
+import { ClientRepository } from '@/repository/client.repository';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { SaveClientDTO } from '../dto/save-client.dto';
-import { ClientEntity } from '../entity/client.entity';
-import { OauthError } from '../errors/oauth.error';
-import { ClientRepository } from '../repository/client.repository';
+
+export interface IClientService {
+  create(client: SaveClientDTO): Promise<ClientEntity>;
+  findByClientId(clientId: string): Promise<ClientEntity>;
+}
+
 @Injectable()
-export class ClientService {
+export class ClientService implements IClientService {
   constructor(private readonly clientRepository: ClientRepository) {}
   async create(client: SaveClientDTO) {
     client['clientId'] = client.name.split(' ')[0] + '-' + randomUUID();
@@ -14,15 +20,15 @@ export class ClientService {
       .update(clientSecret)
       .digest('hex');
     try {
-      return await this.clientRepository.save(client);
+      return await this.clientRepository.create(client);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
   async findByClientId(clientId: string): Promise<ClientEntity> {
-    if (!clientId) {
-      throw new InternalServerErrorException('Client ID not found');
-    }
+    // if (!clientId) {
+    //   throw new InternalServerErrorException('Client ID not found');
+    // }
     const clientDB = await this.clientRepository.findByClientId(clientId);
     if (!clientDB) {
       throw OauthError.invalidClient('Client not found');

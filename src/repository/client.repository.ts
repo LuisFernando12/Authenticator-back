@@ -1,15 +1,22 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SaveClientDTO } from '../dto/save-client.dto';
 import { ClientEntity } from '../entity/client.entity';
 
-export class ClientRepository {
+export interface IClientRepository {
+  create(client: SaveClientDTO): Promise<ClientEntity>;
+  findByClientId(clientId: string): Promise<ClientEntity>;
+  findByClientSecret(clientSecret: string): Promise<ClientEntity>;
+}
+
+@Injectable()
+export class ClientRepository implements IClientRepository {
   constructor(
     @InjectRepository(ClientEntity)
     private readonly clientRepository: Repository<ClientEntity>,
   ) {}
-  async save(client: SaveClientDTO) {
+  async create(client: SaveClientDTO) {
     try {
       return await this.clientRepository.save(client);
     } catch (error) {

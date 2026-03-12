@@ -1,6 +1,6 @@
+import { TokenEntity, TokenEntityType } from '@/entity/token.entity';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TokenEntity, TokenEntityType } from 'src/entity/token.entity';
 import type { Repository } from 'typeorm';
 export interface ITokenRepository {
   create(data: TokenEntityType): any;

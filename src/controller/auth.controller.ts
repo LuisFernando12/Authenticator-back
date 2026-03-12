@@ -1,3 +1,7 @@
+import { LoginDTO } from '@/dto/login.dto';
+import { NewPasswordDTO } from '@/dto/new-password.dto';
+import { ReasetPasswordDTO } from '@/dto/reset-password.dto';
+import { AuthService } from '@/service/auth.service';
 import {
   Body,
   Controller,
@@ -9,10 +13,6 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Response } from 'express';
-import { LoginDTO } from 'src/dto/login.dto';
-import { NewPasswordDTO } from 'src/dto/new-password.dto';
-import { ReasetPasswordDTO } from 'src/dto/reset-password.dto';
-import { AuthService } from 'src/service/auth.service';
 import { NewTokenToActiveEmailDTO } from './../dto/auth/new-token.dto';
 
 export interface IAuthController {

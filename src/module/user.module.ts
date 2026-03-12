@@ -1,11 +1,11 @@
+import { UserController } from '@/controller/user.controller';
+import { UserEntity } from '@/entity/user.entity';
+import { UserRepository } from '@/repository/user.repository';
+import { AppConfigEnvService } from '@/service/app-config-env.service';
+import { EmailService } from '@/service/email.service';
+import { UserService } from '@/service/user.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserController } from 'src/controller/user.controller';
-import { UserEntity } from 'src/entity/user.entity';
-import { UserRepository } from 'src/repository/user.repository';
-import { AppConfigEnvService } from 'src/service/app-config-env.service';
-import { EmailService } from 'src/service/email.service';
-import { UserService } from 'src/service/user.service';
 import { TokenModule } from './token.module';
 
 @Module({

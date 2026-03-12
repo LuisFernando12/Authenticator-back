@@ -1,6 +1,6 @@
+import { UserEntity, UserEntityType } from '@/entity/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity, UserEntityType } from 'src/entity/user.entity';
 import type { Repository } from 'typeorm';
 import { UserDTO, UserResponseDTO } from '../dto/user.dto';
 export interface IUserRepository {

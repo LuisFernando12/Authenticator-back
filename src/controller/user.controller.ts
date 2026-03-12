@@ -1,7 +1,7 @@
+import { UserDTO } from '@/dto/user.dto';
+import { UserService } from '@/service/user.service';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
-import { UserDTO } from 'src/dto/user.dto';
-import { UserService } from 'src/service/user.service';
 
 export interface IUserController {
   register: (user: UserDTO) => Promise<{ message: string }>;

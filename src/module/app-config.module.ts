@@ -1,7 +1,7 @@
+import { AppConfigEnvService } from '@/service/app-config-env.service';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import * as j from 'joi';
-import { AppConfigEnvService } from 'src/service/app-config-env.service';
 
 @Global()
 @Module({

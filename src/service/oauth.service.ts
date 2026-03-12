@@ -104,17 +104,16 @@ export class OauthService implements IOauthService {
     if (grantType === 'authorization_code') {
       if (codeVerifier) {
         const shortCodeHash = code.slice(code.length - 9);
-        const codeChallengeRedis = await this.redisService.getdel(
-          `code-challenge-${shortCodeHash}`,
-        );
-        const codeChallengeMethodRedis = await this.redisService.getdel(
-          `code-challenge-method-${shortCodeHash}`,
-        );
-        if (codeChallengeMethodRedis && codeChallengeMethodRedis !== 'sha256') {
-          throw OauthError.invalidGrant('Invalid code challenge method');
-        }
+        const [codeChallengeRedis, codeChallengeMethodRedis] =
+          await Promise.all([
+            this.redisService.getdel(`code-challenge-${shortCodeHash}`),
+            this.redisService.getdel(`code-challenge-method-${shortCodeHash}`),
+          ]);
         if (!codeChallengeRedis) {
           throw OauthError.invalidGrant('Invalid code challenge');
+        }
+        if (codeChallengeMethodRedis && codeChallengeMethodRedis !== 'sha256') {
+          throw OauthError.invalidGrant('Invalid code challenge method');
         }
         const codeChallegeVerify = crypto
           .createHash('sha256')
@@ -124,7 +123,6 @@ export class OauthService implements IOauthService {
           throw OauthError.invalidGrant('Invalid code verifier');
         }
       }
-
       const codeRedis = JSON.parse(
         await this.redisService.getdel(`oauth-code-${code.slice(0, 4)}`),
       );
@@ -141,7 +139,7 @@ export class OauthService implements IOauthService {
       }
       const userDB = await this.userService.findByEmail(codeRedis.userEmail);
       if (!userDB) {
-        throw OauthError.unauthorizedClient('Invalid user');
+        throw OauthError.unauthorizedClient('Invalid credentials');
       }
 
       const accessToken = await this.tokenService.generateToken({

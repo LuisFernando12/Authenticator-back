@@ -7,7 +7,7 @@ import {
 import { UserClientConsentResponseDTO } from '../dto/user-client-consent-response.dto';
 import { UserClientConsentDTO } from '../dto/user-client-consent.dto';
 import { UserClientConsentRepository } from '../repository/user-client-consent.repository';
-interface IUserClientConsentService {
+export interface IUserClientConsentService {
   create(userClientConsentPayload: UserClientConsentDTO): Promise<boolean>;
   findByUserIdAndClientId(
     userId: string,

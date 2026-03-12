@@ -1,8 +1,8 @@
+import { TokenEntity } from '@/entity/token.entity';
+import { UserEntity } from '@/entity/user.entity';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TokenEntity } from 'src/entity/token.entity';
-import { UserEntity } from 'src/entity/user.entity';
 import { ClientEntity } from '../entity/client.entity';
 import { UserClientConsentEntity } from '../entity/user-client-consent.entity';
 import { AppConfigModule } from './app-config.module';

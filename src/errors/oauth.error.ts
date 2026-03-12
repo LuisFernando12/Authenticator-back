@@ -2,7 +2,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 interface IOauthErrorPayload {
   error: string;
-  erroDescription?: string;
+  message?: string;
 }
 export class OauthError extends HttpException {
   constructor(
@@ -15,7 +15,7 @@ export class OauthError extends HttpException {
     return new OauthError(
       {
         error: 'invalid_request',
-        erroDescription:
+        message:
           description ||
           'The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.',
       },
@@ -26,7 +26,7 @@ export class OauthError extends HttpException {
     return new OauthError(
       {
         error: 'invalid_client',
-        erroDescription:
+        message:
           description ||
           'Client authentication failed (e.g., unknown client, no client authentication included, or unsupported authentication method).',
       },
@@ -37,7 +37,7 @@ export class OauthError extends HttpException {
     return new OauthError(
       {
         error: 'invalid_grant',
-        erroDescription:
+        message:
           description ||
           'The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.',
       },
@@ -48,7 +48,7 @@ export class OauthError extends HttpException {
     return new OauthError(
       {
         error: 'unauthorized_client',
-        erroDescription:
+        message:
           description ||
           'The client is not authorized to request an authorization code using this method.',
       },
@@ -59,7 +59,7 @@ export class OauthError extends HttpException {
     return new OauthError(
       {
         error: 'unsupported_grant_type',
-        erroDescription:
+        message:
           description ||
           'The authorization grant type is not supported by the authorization server.',
       },

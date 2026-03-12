@@ -1,7 +1,6 @@
 import { IsArray, IsString } from 'class-validator';
 
 export class SaveClientDTO {
-  clientSecret?: string;
   @IsString()
   name: string;
   @IsArray()

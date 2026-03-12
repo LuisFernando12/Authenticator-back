@@ -1,3 +1,5 @@
+import { UserRepository } from '@/repository/user.repository';
+import { AppConfigEnvService } from '@/service/app-config-env.service';
 import {
   BadRequestException,
   Injectable,
@@ -6,8 +8,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserRepository } from 'src/repository/user.repository';
-import { AppConfigEnvService } from 'src/service/app-config-env.service';
 import { EmailService } from './email.service';
 import { RedisService } from './redis.service';
 import { TokenService } from './token.service';

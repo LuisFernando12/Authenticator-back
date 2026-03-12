@@ -1,10 +1,10 @@
+import { UserRepository } from '@/repository/user.repository';
 import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserRepository } from 'src/repository/user.repository';
 import { UserDTO, UserResponseDTO } from '../dto/user.dto';
 import { EmailService } from './email.service';
 import { TokenService } from './token.service';
@@ -27,12 +27,13 @@ export class UserService implements IUserService {
     return await bcrypt.hash(password, salt);
   }
   async register(user: UserDTO) {
-    user.password = await this.encryptPassword(user.password);
-
     if (await this.userRepository.existsUser(user.email)) {
       throw new ConflictException('User alredy exists');
     }
+
+    user.password = await this.encryptPassword(user.password);
     const userDB = await this.userRepository.create(user);
+
     if (!userDB) {
       throw new InternalServerErrorException('failed user resgiter');
     }

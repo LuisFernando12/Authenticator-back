@@ -1,6 +1,6 @@
+import { TokenRepository } from '@/repository/token.repository';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { TokenRepository } from 'src/repository/token.repository';
 import { AppConfigEnvService } from './app-config-env.service';
 
 type TypeToken = 'verify-email' | '';
