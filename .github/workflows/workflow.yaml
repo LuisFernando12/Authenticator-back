@@ -1,4 +1,4 @@
-name: Continuos Intergration
+name: Continuous Integration
 
 on:
   push:
@@ -9,19 +9,19 @@ on:
       - main
 
 jobs:
-  continuos-integration-test:
+  continuous-integration-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.14.0
       - name: run install, build and test
         run: |
           npm ci
-          npm run build
+          npm run build --if-present
           npm run test
       - name: run test with coverage
         run: npm run test:coverage
