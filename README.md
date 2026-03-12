@@ -26,7 +26,7 @@ A NestJS-based authentication and authorization service that provides robust use
 
 ### Prerequisites
 
-- Node.js (v18 or higher recommended)
+- Node.js (v22 or higher recommended)
 - Docker and Docker Compose
 - pnpm (or npm/yarn)
 
