@@ -17,7 +17,6 @@ lerna-debug.log*
 
 # OS
 .DS_Store
-.vscode
 # Tests
 /coverage
 /.nyc_output
@@ -30,14 +29,7 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
-./.vscode
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+.vscode/
 
 # dotenv environment variable files
 .env
@@ -58,6 +50,3 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-.vscode/settings.json
-.vscode/
-/.vscode/

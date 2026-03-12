@@ -1,0 +1,21 @@
+name: Continuos Intergration
+
+on: pull_request
+
+jobs:
+  continuos-integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.14.0
+      - name: run install, build and test
+        run: |
+          npm ci
+          npm run build
+          npm run test
+      - name: run test with coverage
+        run: npm run test:coverage
