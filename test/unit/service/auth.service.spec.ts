@@ -80,44 +80,32 @@ describe('AuthService', () => {
     });
     it('should throw an error to login a user', async () => {
       mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await authService.login(mockUser.email, password);
-      } catch (error) {
-        if (error instanceof UnauthorizedException) {
-          expect(error.message).toBe(
-            'Email or Password incorrect, please verify and try again',
-          );
-        }
-      }
+      const promise = authService.login(mockUser.email, password);
+      await expect(promise).rejects.toThrow(UnauthorizedException);
+      await expect(promise).rejects.toThrow(
+        'Email or Password incorrect, please verify and try again',
+      );
     });
     it('should throw an error to login a user with wrong password', async () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      try {
-        await authService.login(mockUser.email, 'wrongpassword');
-      } catch (error) {
-        if (error instanceof UnauthorizedException) {
-          expect(error.message).toBe(
-            'Email or Password incorrect, please verify and try again',
-          );
-        }
-      }
+      const promise = authService.login(mockUser.email, 'wrongpassword');
+      await expect(promise).rejects.toThrow(UnauthorizedException);
+      await expect(promise).rejects.toThrow(
+        'Email or Password incorrect, please verify and try again',
+      );
     });
     it('should throw an error to login a user with unverified account', async () => {
       mockUser.isVerified = false;
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      try {
-        await authService.login(mockUser.email, password);
-      } catch (error) {
-        if (error instanceof UnauthorizedException) {
-          expect(error.message).toBe(
-            'Please verify your email and active your account',
-          );
-        }
-      }
+      const promise = authService.login(mockUser.email, password);
+      await expect(promise).rejects.toThrow(
+        'Please verify your email and active your account',
+      );
+      await expect(promise).rejects.toThrow(UnauthorizedException);
     });
   });
   describe('verifyEmail', () => {
@@ -138,24 +126,16 @@ describe('AuthService', () => {
     });
     it('should throw an error to verify an email with invalid token', async () => {
       mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce(false);
-      try {
-        await authService.verifyEmail('token');
-      } catch (error) {
-        if (error instanceof UnauthorizedException) {
-          expect(error.message).toBe('Unauthorized');
-        }
-      }
+      const promise = authService.verifyEmail('token');
+      await expect(promise).rejects.toThrow('Unauthorized');
+      await expect(promise).rejects.toThrow(UnauthorizedException);
     });
     it('should throw a error to verify email with a invalid user', async () => {
       mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce(token);
       mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await authService.verifyEmail('token');
-      } catch (error) {
-        if (error instanceof BadRequestException) {
-          expect(error.message).toBe('Bad Request');
-        }
-      }
+      const promise = authService.verifyEmail('token');
+      await expect(promise).rejects.toThrow('Bad Request');
+      await expect(promise).rejects.toThrow(BadRequestException);
     });
     it('should throw a error to active account', async () => {
       mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce(token);
@@ -163,13 +143,9 @@ describe('AuthService', () => {
         .fn()
         .mockResolvedValueOnce(mockUser);
       mockUserRepository.activeAccount = jest.fn().mockResolvedValueOnce(false);
-      try {
-        await authService.verifyEmail('token');
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to activate account');
-        }
-      }
+      const promise = authService.verifyEmail('token');
+      await expect(promise).rejects.toThrow('Failure to activate account');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
   });
   describe('resetPassword', () => {
@@ -185,13 +161,9 @@ describe('AuthService', () => {
     });
     it('should throw an error to reset password with invalid user', async () => {
       mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await authService.resetPassword(email);
-      } catch (error) {
-        if (error instanceof NotFoundException) {
-          expect(error.message).toBe('User not found');
-        }
-      }
+      const promise = authService.resetPassword(email);
+      await expect(promise).rejects.toThrow('User not found');
+      await expect(promise).rejects.toThrow(NotFoundException);
     });
     it('should throw an error to reset password with failure to send email', async () => {
       mockUserRepository.findByEmail = jest
@@ -201,13 +173,11 @@ describe('AuthService', () => {
       mockEmailService.resetPassword = jest
         .fn()
         .mockResolvedValueOnce('Failure to send email');
-      try {
-        await authService.resetPassword(email);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to reset password, try again');
-        }
-      }
+      const promise = authService.resetPassword(email);
+      await expect(promise).rejects.toThrow(
+        'Failure to reset password, try again',
+      );
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
   });
   describe('newPassword', () => {
@@ -223,26 +193,18 @@ describe('AuthService', () => {
     });
     it('should throw an error to update password with invalid code', async () => {
       mockRedisService.get = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await authService.newPassword(password, code, email);
-      } catch (error) {
-        if (error instanceof BadRequestException) {
-          expect(error.message).toBe('Invalid code !');
-        }
-      }
+      const promise = authService.newPassword(password, code, email);
+      await expect(promise).rejects.toThrow('Invalid code !');
+      await expect(promise).rejects.toThrow(BadRequestException);
     });
     it('should throw an error to update password with failure to update password', async () => {
       mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
       mockUserRepository.updatePassword = jest
         .fn()
         .mockResolvedValueOnce(false);
-      try {
-        await authService.newPassword(password, code, email);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to update password');
-        }
-      }
+      const promise = authService.newPassword(password, code, email);
+      await expect(promise).rejects.toThrow('Failure to update password');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
   });
   describe('sendNewTokenToEmailActive', () => {
@@ -262,26 +224,18 @@ describe('AuthService', () => {
     });
     it('should throw an error to send new token to email active with invalid user', async () => {
       mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      try {
-        const user = await authService.sendNewTokenToEmailActive(email);
-      } catch (error) {
-        if (error instanceof NotFoundException) {
-          expect(error.message).toBe('User not found');
-        }
-      }
+      const promise = authService.sendNewTokenToEmailActive(email);
+      await expect(promise).rejects.toThrow('User not found');
+      await expect(promise).rejects.toThrow(NotFoundException);
     });
     it('should throw an error to send new token to email active with account already active', async () => {
       mockUser.isVerified = true;
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      try {
-        await authService.sendNewTokenToEmailActive(email);
-      } catch (error) {
-        if (error instanceof BadRequestException) {
-          expect(error.message).toBe('Account already active');
-        }
-      }
+      const promise = authService.sendNewTokenToEmailActive(email);
+      await expect(promise).rejects.toThrow('Account already active');
+      await expect(promise).rejects.toThrow(BadRequestException);
     });
     it('should throw an error to generate token', async () => {
       mockUser.isVerified = false;
@@ -289,13 +243,9 @@ describe('AuthService', () => {
         .fn()
         .mockResolvedValueOnce(mockUser);
       mockTokenService.generateToken = jest.fn().mockResolvedValueOnce(false);
-      try {
-        await authService.sendNewTokenToEmailActive(email);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to generate token');
-        }
-      }
+      const promise = authService.sendNewTokenToEmailActive(email);
+      await expect(promise).rejects.toThrow('Failure to generate token');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
     it('should throw an error to send new token to email to active account', async () => {
       jest.clearAllMocks();
@@ -306,13 +256,9 @@ describe('AuthService', () => {
       mockEmailService.sendActivationEmail = jest
         .fn()
         .mockResolvedValueOnce('Failure to send email');
-      try {
-        await authService.sendNewTokenToEmailActive(email);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to send email');
-        }
-      }
+      const promise = authService.sendNewTokenToEmailActive(email);
+      await expect(promise).rejects.toThrow('Failure to send email');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
   });
 });

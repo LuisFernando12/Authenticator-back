@@ -21,6 +21,9 @@ export class AppConfigEnvService {
   get serviceURL(): string {
     return this.config.get<string>('SERVICE_URL');
   }
+  get serviceVerifyEmailURL(): string {
+    return this.config.get<string>('SERVICE_VERIFY_EMAIL_URL');
+  }
   get serviceResetPasswordUrl(): string {
     return this.config.get<string>('SERVICE_RESET_PASSWORD_URL');
   }
@@ -44,5 +47,8 @@ export class AppConfigEnvService {
   }
   get oauthLoginURL(): string {
     return this.config.getOrThrow<string>('OAUTH_LOGIN_URL');
+  }
+  get redisURI(): string {
+    return this.config.getOrThrow<string>('REDIS_URI');
   }
 }

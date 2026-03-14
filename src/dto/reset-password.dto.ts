@@ -5,7 +5,7 @@ import { IsEmail, IsNotEmpty } from 'class-validator';
   name: 'ResetPassword',
   description: 'Data Transfer Object for resetting password',
 })
-export class ReasetPasswordDTO {
+export class ResetPasswordDTO {
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty()

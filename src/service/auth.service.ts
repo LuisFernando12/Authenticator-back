@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'node:crypto';
 import { EmailService } from './email.service';
 import { RedisService } from './redis.service';
 import { TokenService } from './token.service';
@@ -80,8 +81,7 @@ export class AuthService implements IAuthService {
     if (!userDB) {
       throw new NotFoundException('User not found');
     }
-
-    const code = Math.floor(Math.random() * 999999);
+    const code = crypto.randomInt(100000, 999999);
     this.redisService.set(`reset-password-${email}`, code, 'EX', 600);
     const emailSend = await this.emailService.resetPassword(
       email,
@@ -123,13 +123,13 @@ export class AuthService implements IAuthService {
     if (!userDB) {
       throw new NotFoundException('User not found');
     }
-    delete userDB.password;
-    if (userDB.isVerified) {
+    const { password: _, ...safeUser } = userDB;
+    if (safeUser.isVerified) {
       throw new BadRequestException('Account already active');
     }
     const token = await this.tokenService.generateToken({
-      sub: userDB.id,
-      username: userDB.email,
+      sub: safeUser.id,
+      username: safeUser.email,
       type: 'verify-email',
     });
     if (!token || typeof token !== 'string') {
@@ -137,7 +137,7 @@ export class AuthService implements IAuthService {
     }
     const sendNewEmail = await this.emailService.sendActivationEmail(
       email,
-      userDB.name,
+      safeUser.name,
       token,
     );
     if (sendNewEmail !== 'OK') {

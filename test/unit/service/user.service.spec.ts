@@ -3,9 +3,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Repository } from 'typeorm';
 import { UserDTO } from '../../../src/dto/user.dto';
-import { UserEntity } from '../../../src/entity/user.entity';
 import { UserRepository } from '../../../src/repository/user.repository';
 import { EmailService } from '../../../src/service/email.service';
 import { TokenService } from '../../../src/service/token.service';
@@ -16,30 +14,6 @@ import { mockUserRepository } from './mock/user.mock';
 
 describe('UserService', () => {
   let userService: UserService;
-  let userRepository: Repository<UserEntity>;
-  // const mockEmailService: IEmailService = {
-  //   sendActivationEmail: jest.fn(),
-  //   resetPassword: jest.fn().mockResolvedValue('OK'),
-  // };
-  // const mockUserRepository: IUserRepository = {
-  //   create: jest.fn(),
-  //   findByEmail: jest.fn(),
-  //   existsUser: jest.fn(),
-  //   activeAccount: jest.fn(),
-  //   updatePassword: jest.fn(),
-  // };
-  // const mockTokenService: ITokenService = {
-  //   generateToken: jest.fn().mockResolvedValue('token'),
-  //   saveToken: jest.fn().mockResolvedValue({
-  //     access_token: 'token',
-  //     expiresAt: '2023-01-01T00:00:00.000Z',
-  //   }),
-  //   verifyToken: jest.fn().mockResolvedValue(true),
-  //   decodeToken: jest.fn().mockResolvedValue({
-  //     sub: '1',
-  //     username: 'john.doe@example.com',
-  //   }),
-  // };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -84,38 +58,25 @@ describe('UserService', () => {
     it('should throw an error if user already exists', async () => {
       mockUserRepository.existsUser = jest.fn().mockResolvedValueOnce(true);
       mockUserRepository.create = jest.fn().mockResolvedValueOnce(user);
-
-      try {
-        await userService.register(user);
-      } catch (error) {
-        if (error instanceof ConflictException) {
-          expect(error.message).toBe('User alredy exists');
-        }
-      }
+      const promise = userService.register(user);
+      await expect(promise).rejects.toThrow('User already exists');
+      await expect(promise).rejects.toThrow(ConflictException);
     });
     it('should throw an error to create a user in DB', async () => {
       mockUserRepository.create = jest.fn().mockResolvedValueOnce(null);
       await mockUserRepository.create(user);
       expect(mockUserRepository.create).toHaveBeenCalledWith(user);
       expect(mockUserRepository.existsUser).toHaveBeenCalledWith(user.email);
-      try {
-        await userService.register(user);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('failed user resgiter');
-        }
-      }
+      const promise = userService.register(user);
+      await expect(promise).rejects.toThrow('failed user register');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
     it('should throw an error on verification token ', async () => {
       mockUserRepository.create = jest.fn().mockResolvedValueOnce(user);
       mockTokenService.generateToken = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await userService.register(user);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to generate token');
-        }
-      }
+      const promise = userService.register(user);
+      await expect(promise).rejects.toThrow('Failure to generate token');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
     it('should show  a message "Failure to send email" ', async () => {
       mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
@@ -159,13 +120,9 @@ describe('UserService', () => {
     });
     it('should throw an error to find a user by email', async () => {
       mockUserRepository.findByEmail = jest.fn().mockRejectedValueOnce(null);
-      try {
-        await userService.findByEmail(email);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to find user');
-        }
-      }
+      const promise = userService.findByEmail(email);
+      await expect(promise).rejects.toThrow('Failure to find user');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
   });
 });

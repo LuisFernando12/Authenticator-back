@@ -53,13 +53,11 @@ describe('UserClientConsentService', () => {
       mockUserClientConsentRespository.create = jest
         .fn()
         .mockResolvedValueOnce(null);
-      try {
-        await userClientConsentService.create(mockUserClientConsent);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to create user client consent');
-        }
-      }
+      const promise = userClientConsentService.create(mockUserClientConsent);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow(
+        'Failure to create user client consent',
+      );
     });
   });
   describe('findByUserIdAndClientId', () => {
@@ -74,28 +72,24 @@ describe('UserClientConsentService', () => {
       expect(result).toEqual([mockUserClientConsent]);
     });
     it('should throw an error to invalid params', async () => {
-      try {
-        await userClientConsentService.findByUserIdAndClientId(null, null);
-      } catch (error) {
-        if (error instanceof BadRequestException) {
-          expect(error.message).toBe('Invalid params');
-        }
-      }
+      const promise = userClientConsentService.findByUserIdAndClientId(
+        null,
+        null,
+      );
+      await expect(promise).rejects.toThrow(BadRequestException);
+      await expect(promise).rejects.toThrow('Invalid params');
     });
     it('should throw an error to find a  consent by userId and clientId', async () => {
       mockUserClientConsentRespository.findByUserIdAndClientId = jest
         .fn()
         .mockResolvedValueOnce(null);
-      try {
-        await userClientConsentService.findByUserIdAndClientId(
-          mockUserClientConsent.userId,
-          mockUserClientConsent.clientId,
-        );
-      } catch (error) {
-        if (error instanceof NotFoundException) {
-          expect(error.message).toBe('Consents not found');
-        }
-      }
+      const promise = userClientConsentService.findByUserIdAndClientId(
+        mockUserClientConsent.userId,
+        mockUserClientConsent.clientId,
+      );
+
+      await expect(promise).rejects.toThrow(NotFoundException);
+      await expect(promise).rejects.toThrow('Consents not found');
     });
   });
   describe('findByUserId', () => {
@@ -109,27 +103,19 @@ describe('UserClientConsentService', () => {
       expect(result).toEqual([mockUserClientConsent]);
     });
     it('should throw an error to invalid param', async () => {
-      try {
-        await userClientConsentService.findByUserId(null);
-      } catch (error) {
-        if (error instanceof BadRequestException) {
-          expect(error.message).toBe('Invalid param');
-        }
-      }
+      const promise = userClientConsentService.findByUserId(null);
+      await expect(promise).rejects.toThrow(BadRequestException);
+      await expect(promise).rejects.toThrow('Invalid param');
     });
     it('should throw error to find a consent by userId', async () => {
       mockUserClientConsentRespository.findByUserId = jest
         .fn()
         .mockResolvedValueOnce([]);
-      try {
-        await userClientConsentService.findByUserId(
-          mockUserClientConsent.userId,
-        );
-      } catch (error) {
-        if (error instanceof NotFoundException) {
-          expect(error.message).toBe('Consents not found');
-        }
-      }
+      const promise = userClientConsentService.findByUserId(
+        mockUserClientConsent.userId,
+      );
+      await expect(promise).rejects.toThrow(NotFoundException);
+      await expect(promise).rejects.toThrow('Consents not found');
     });
   });
 });

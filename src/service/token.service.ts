@@ -26,11 +26,9 @@ export class TokenService implements ITokenService {
     private readonly jwtService: JwtService,
     private appConfigEnvSevice: AppConfigEnvService,
   ) {}
-  private generateExpireAt(): number {
-    const date = new Date();
-    date.setHours(date.getHours() - 3);
-    const expireAt = date.setSeconds(date.getSeconds() + 60);
-    return expireAt;
+  private generateExpireAt(seconds: number = 900): number {
+    const expiresAt = new Date(Date.now() + seconds * 1000);
+    return Math.floor(expiresAt.valueOf() / 1000);
   }
   async saveToken(
     token: string,
@@ -73,11 +71,18 @@ export class TokenService implements ITokenService {
   }): Promise<{ access_token: string; expiresAt: string } | string> {
     try {
       const expiresAt = this.generateExpireAt();
-      const token = await this.jwtService.signAsync(payload);
+      const token = await this.jwtService.signAsync(payload, {
+        expiresIn: `15min`,
+        secret: this.appConfigEnvSevice.secret,
+      });
       if (payload.type === 'verify-email') {
         return token;
       }
-      return await this.saveToken(token, payload.sub, new Date(expiresAt));
+      return await this.saveToken(
+        token,
+        payload.sub,
+        new Date(expiresAt * 1000),
+      );
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

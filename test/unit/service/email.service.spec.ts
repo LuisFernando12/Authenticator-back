@@ -70,13 +70,9 @@ describe('EmailService', () => {
     });
     it('should throw an error to send an activation email', async () => {
       mockMailerService.sendMail = jest.fn().mockRejectedValueOnce(null);
-      try {
-        await emailService.sendActivationEmail(email, username, token);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to send email');
-        }
-      }
+      const promise = emailService.sendActivationEmail(email, username, token);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Failure to send email');
     });
   });
   describe('resetPassword', () => {
@@ -118,13 +114,9 @@ describe('EmailService', () => {
     });
     it('should throw an error to send a reset password email', async () => {
       mockMailerService.sendMail = jest.fn().mockRejectedValueOnce(null);
-      try {
-        await emailService.resetPassword(email, username, code);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to send email');
-        }
-      }
+      const promise = emailService.resetPassword(email, username, code);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Failure to send email');
     });
   });
 });

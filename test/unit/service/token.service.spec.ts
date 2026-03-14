@@ -63,7 +63,10 @@ describe('TokenService', () => {
         expiresAt: '2023-01-01T00:00:00.000Z',
       });
       const result = await tokenService.generateToken(payload);
-      expect(mockJwtService.signAsync).toHaveBeenCalledWith(payload);
+      expect(mockJwtService.signAsync).toHaveBeenCalledWith(payload, {
+        expiresIn: '15min',
+        secret: mockAppconfigEnvService.secret,
+      });
       expect(result).toEqual({
         access_token: 'token',
         expiresAt: '2023-01-01T00:00:00.000Z',
@@ -77,11 +80,9 @@ describe('TokenService', () => {
     });
     it('should throw an error to generate a token', async () => {
       mockJwtService.signAsync = jest.fn().mockRejectedValueOnce(null);
-      try {
-        await tokenService.generateToken(payload);
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-      }
+      const promise = tokenService.generateToken(payload);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Internal Server Error');
     });
   });
   describe('saveToken', () => {
@@ -132,13 +133,13 @@ describe('TokenService', () => {
       mockTokenRepository.update = jest.fn().mockResolvedValueOnce({
         affected: 0,
       });
-      try {
-        await tokenService.saveToken('kvmdfkbm', data.userId, data.expiresAt);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to update token');
-        }
-      }
+      const promise = tokenService.saveToken(
+        data.token,
+        data.userId,
+        data.expiresAt,
+      );
+      await expect(promise).rejects.toThrow('Failure to update token');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
   });
   describe('verifyToken', () => {
@@ -158,11 +159,8 @@ describe('TokenService', () => {
     });
     it('should throw an error to verify a token', async () => {
       mockJwtService.verifyAsync = jest.fn().mockRejectedValueOnce(null);
-      try {
-        await tokenService.verifyToken(token);
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-      }
+      const promise = tokenService.verifyToken(token);
+      await expect(promise).resolves.toBe(false);
     });
   });
   describe('decodeToken', () => {

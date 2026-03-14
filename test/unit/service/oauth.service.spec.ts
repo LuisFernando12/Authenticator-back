@@ -86,49 +86,35 @@ describe('OauthService', () => {
     });
     it('should throw an error to authorize missing code challenge method or code challenge', async () => {
       payloadOauth.codeChallengeMethod = undefined;
-      try {
-        await oauthService.authorize(payloadOauth);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe(
-            'Code challenge and code challenge method are required together',
-          );
-        }
-      }
+      const promise = oauthService.authorize(payloadOauth);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Code challenge and code challenge method are required together',
+      );
     });
     it('should throw an error to authorize code challenge method not supported', async () => {
       payloadOauth.codeChallengeMethod = 'md5';
-      try {
-        await oauthService.authorize(payloadOauth);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Code challenge method not supported');
-        }
-      }
+      const promise = oauthService.authorize(payloadOauth);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Code challenge method not supported',
+      );
     });
     it('should throw an error to authorize client id not found', async () => {
       payloadOauth.codeChallengeMethod = 'sha256';
       mockClientService.findByClientId = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await oauthService.authorize(payloadOauth);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('ClientID authentication failed');
-        }
-      }
+      const promise = oauthService.authorize(payloadOauth);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('ClientID authentication failed');
     });
     it('should throw an error to authorize redirect uri not found', async () => {
       payloadOauth.redirectUri = 'http://localhost:3000/callback2';
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.authorize(payloadOauth);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Redirect URI not found');
-        }
-      }
+      const promise = oauthService.authorize(payloadOauth);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Redirect URI not found');
     });
     it('should throw an error to authorize code challenge is required', async () => {
       payloadOauth.redirectUri = 'http://localhost:3000/callback';
@@ -137,13 +123,9 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.authorize(payloadOauth);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Code challenge is required');
-        }
-      }
+      const promise = oauthService.authorize(payloadOauth);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Code challenge is required');
     });
   });
   describe('token', () => {
@@ -233,26 +215,18 @@ describe('OauthService', () => {
     it('should throw an error to client secret or code verifier is required', async () => {
       payloadOauthToken.clientSecret = undefined;
       payloadOauthToken.codeVerifier = undefined;
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe(
-            'Client secret or code verifier is required',
-          );
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Client secret or code verifier is required',
+      );
     });
     it('should throw an error to client id not found', async () => {
       payloadOauthToken.codeVerifier = 'code-verifier';
       mockClientService.findByClientId = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('ClientID not found');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('ClientID not found');
     });
     it('should throw an error to Client secret is required', async () => {
       mockClient.isConfidential = true;
@@ -260,13 +234,9 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Client secret is required');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Client secret is required');
     });
     it('should throw an  error to code verifier is required', async () => {
       mockClient.isConfidential = false;
@@ -275,13 +245,9 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Code verifier is required');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Code verifier is required');
     });
     it('should throw an error to invalid client secret', async () => {
       mockClient.isConfidential = true;
@@ -289,13 +255,9 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid client secret');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid client secret');
     });
     it('should throw an error to invalid redirect uri', async () => {
       payloadOauthToken.clientSecret = 'client-secret';
@@ -303,31 +265,22 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid redirect URI');
-        }
-      } finally {
-        payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid redirect URI');
     });
     it('should throw an error to code challenge method not supported', async () => {}); //TODO: Implement this unit test
     it('should throw an error to code challenge is invalid or expired', async () => {
+      payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
       payloadOauthToken.codeVerifier = 'code-verifier';
       payloadOauthToken.grantType = 'authorization_code';
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockRedisService.getdel = jest.fn().mockResolvedValueOnce(false);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid code challenge');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid code challenge');
     });
     it('should throw an error to Invalid code verifier', async () => {
       mockClientService.findByClientId = jest
@@ -336,13 +289,9 @@ describe('OauthService', () => {
       mockRedisService.getdel = jest
         .fn()
         .mockResolvedValueOnce('code-challenge');
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid code verifier');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid code verifier');
     });
     it('should throw an error to authorization code is invalid or expired', async () => {
       payloadOauthToken.codeVerifier = null;
@@ -351,15 +300,11 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe(
-            'Authorization code is invalid or expired',
-          );
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Authorization code is invalid or expired',
+      );
     });
     it('should throw an error to invalid client id', async () => {
       payloadOauthToken.code = 'code';
@@ -368,13 +313,9 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid client ID');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid client ID');
     });
     it('should thrown an error to invalid redirect uri', async () => {
       payloadOauthToken.clientId = 'client-id';
@@ -383,13 +324,9 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid redirect URI');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid redirect URI');
     });
     it('should  throw an error to invalid user ', async () => {
       payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
@@ -397,13 +334,9 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid credentials');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid credentials');
     });
     it('should throw an error to generate token', async () => {
       mockClientService.findByClientId = jest
@@ -412,28 +345,20 @@ describe('OauthService', () => {
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
       mockTokenService.generateToken = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to generate token');
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Failure to generate token');
     });
     it('should throw an error to unsupported grant type', async () => {
       payloadOauthToken.grantType = 'invalid-grant-type';
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.token(payloadOauthToken);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe(
-            'Unsupported grant type invalid-grant-type',
-          );
-        }
-      }
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Unsupported grant type invalid-grant-type',
+      );
     });
   });
   describe('login', () => {
@@ -480,26 +405,20 @@ describe('OauthService', () => {
     });
     it('should throw an error to client id not found', async () => {
       mockClientService.findByClientId = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('ClientID not found');
-        }
-      }
+
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('ClientID not found');
     });
     it('should throw an error to redirect uri not found', async () => {
       queryOauthLogin.redirectUri = 'http://localhost:3000/callback2';
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Redirect URI not found');
-        }
-      }
+
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Redirect URI not found');
     });
     it('should throw an error to invalid credentials', async () => {
       queryOauthLogin.redirectUri = 'http://localhost:3000/callback';
@@ -507,13 +426,10 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid credentials');
-        }
-      }
+
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid credentials');
     });
     it('should throw an error to invalid credentials on password mismatached', async () => {
       mockClientService.findByClientId = jest
@@ -521,13 +437,10 @@ describe('OauthService', () => {
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       payloadOauthLogin.password = 'invalid-password';
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Invalid credentials');
-        }
-      }
+
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid credentials');
     });
     it('should throw an error to user not verified', async () => {
       mockUser.isVerified = false;
@@ -536,15 +449,12 @@ describe('OauthService', () => {
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       payloadOauthLogin.password = 'password123';
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe(
-            'Please verify your email and active your account',
-          );
-        }
-      }
+
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Please verify your email and active your account',
+      );
     });
     it('should throw an error to save code on redis', async () => {
       mockUser.isVerified = true;
@@ -553,13 +463,9 @@ describe('OauthService', () => {
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       mockRedisService.set = jest.fn().mockResolvedValueOnce(false);
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof InternalServerErrorException) {
-          expect(error.message).toBe('Failure to save code on redis');
-        }
-      }
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Failure to save code on redis');
     });
     it('should throw an error to code challenge method not supported', async () => {
       mockClientService.findByClientId = jest
@@ -568,13 +474,11 @@ describe('OauthService', () => {
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       mockRedisService.set = jest.fn().mockResolvedValueOnce(true);
       queryOauthLogin.codeChallengeMethod = 'md5';
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Code challenge method not supported');
-        }
-      }
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Code challenge method not supported',
+      );
     });
     it('should throw an error to user consent to client', async () => {
       mockUserClientConsentService.create = jest
@@ -586,13 +490,11 @@ describe('OauthService', () => {
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       mockRedisService.set = jest.fn().mockResolvedValueOnce(true);
       queryOauthLogin.codeChallengeMethod = 'sha256';
-      try {
-        await oauthService.login(payloadOauthLogin, queryOauthLogin);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Failure to user consent to client');
-        }
-      }
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Failure to user consent to client',
+      );
     });
   });
 });

@@ -28,17 +28,16 @@ export class UserService implements IUserService {
   }
   async register(user: UserDTO) {
     if (await this.userRepository.existsUser(user.email)) {
-      throw new ConflictException('User alredy exists');
+      throw new ConflictException('User already exists');
     }
 
     user.password = await this.encryptPassword(user.password);
     const userDB = await this.userRepository.create(user);
 
     if (!userDB) {
-      throw new InternalServerErrorException('failed user resgiter');
+      throw new InternalServerErrorException('failed user register');
     }
     try {
-      // TODO: Verificar qual a melhor forma de construir esse token para substituir o email
       const verification_token = await this.tokenService.generateToken({
         sub: userDB.id,
         username: userDB.email,

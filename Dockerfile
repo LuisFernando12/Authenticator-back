@@ -2,11 +2,11 @@ FROM node:lts-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package*.json ./
 
 RUN npm install --quiet --no-optional --no-fund --loglevel=error
 
-COPY .  .
+COPY . .
 
 RUN npm run build
 
@@ -20,6 +20,4 @@ COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
 
-RUN npm run start
-
-# CMD [ "node", "dist/main" ]
+CMD [ "node", "dist/main" ]

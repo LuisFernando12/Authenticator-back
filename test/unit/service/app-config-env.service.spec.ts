@@ -49,6 +49,13 @@ describe('AppConfigEnvService', () => {
       const result = appConfigEnvService.serviceURL;
       expect(result).toBe('SERVICE_URL');
     });
+    it('should get SERVICE_VERIFY_EMAIL_URL', () => {
+      mockConfigService.get = jest
+        .fn()
+        .mockReturnValue('SERVICE_VERIFY_EMAIL_URL');
+      const result = appConfigEnvService.serviceURL;
+      expect(result).toBe('SERVICE_VERIFY_EMAIL_URL');
+    });
     it('should get SERVICE_RESET_PASSWORD_URL', () => {
       mockConfigService.get = jest
         .fn()
@@ -94,6 +101,11 @@ describe('AppConfigEnvService', () => {
         .mockReturnValue('OAUTH_LOGIN_URL');
       const result = appConfigEnvService.oauthLoginURL;
       expect(result).toBe('OAUTH_LOGIN_URL');
+    });
+    it('should get REDIS_URI', () => {
+      mockConfigService.getOrThrow = jest.fn().mockReturnValue('REDIS_URI');
+      const result = appConfigEnvService.redisURI;
+      expect(result).toBe('REDIS_URI');
     });
   });
 });

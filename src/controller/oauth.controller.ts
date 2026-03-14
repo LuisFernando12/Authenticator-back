@@ -53,7 +53,7 @@ export class OauthController implements IOauthController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden' })
-  async token(@Query() payloadOauthCallback: OauthTokenDTO): Promise<any> {
+  async token(@Body() payloadOauthCallback: OauthTokenDTO): Promise<any> {
     return await this.oauthService.token(payloadOauthCallback);
   }
   @Post('/login')

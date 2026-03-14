@@ -1,6 +1,6 @@
 import { LoginDTO } from '@/dto/login.dto';
 import { NewPasswordDTO } from '@/dto/new-password.dto';
-import { ReasetPasswordDTO } from '@/dto/reset-password.dto';
+import { ResetPasswordDTO } from '@/dto/reset-password.dto';
 import { AuthService } from '@/service/auth.service';
 import {
   Body,
@@ -46,12 +46,12 @@ export class AuthController implements IAuthController {
     return await this.authService.verifyEmail(token);
   }
   @Post('/reset-password')
-  @ApiBody({ type: ReasetPasswordDTO })
+  @ApiBody({ type: ResetPasswordDTO })
   @ApiResponse({ status: 200, description: 'Password reset email sent.' })
   @ApiResponse({ status: 400, description: 'Email not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async resetPassword(
-    @Body() data: ReasetPasswordDTO,
+    @Body() data: ResetPasswordDTO,
   ): Promise<{ message: string }> {
     return await this.authService.resetPassword(data.email);
   }

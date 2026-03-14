@@ -147,7 +147,7 @@ export class OauthService implements IOauthService {
         username: userDB.email,
         scope: codeRedis.scope,
         aud: clientDB.clientId,
-        iss: 'http://localhost:3000',
+        iss: this.configEnvService.serviceURL,
       });
       if (!accessToken || typeof accessToken !== 'object') {
         throw new InternalServerErrorException('Failure to generate token');
@@ -210,7 +210,7 @@ export class OauthService implements IOauthService {
       .update(randomBytes(32))
       .digest('base64url');
 
-    const saveCodeRadis = await this.redisService.set(
+    const saveCodeRedis = await this.redisService.set(
       `oauth-code-${code.slice(0, 4)}`,
       JSON.stringify({
         code,
@@ -222,7 +222,7 @@ export class OauthService implements IOauthService {
       'EX',
       300,
     );
-    if (!saveCodeRadis) {
+    if (!saveCodeRedis) {
       throw new InternalServerErrorException('Failure to save code on redis');
     }
     if (codeChallengeMethod && codeChallenge) {

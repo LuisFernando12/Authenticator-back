@@ -46,11 +46,9 @@ describe('ClientService', () => {
     });
     it('should throw an error to create a client', async () => {
       mockClientRepository.create = jest.fn().mockRejectedValueOnce(null);
-      try {
-        await clientService.create(client);
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-      }
+      const promise = clientService.create(client);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Internal Server Error');
     });
   });
   describe('findByClientId', () => {
@@ -66,23 +64,17 @@ describe('ClientService', () => {
       expect(result).toEqual(client);
     });
     it('should throw an error to find a client by clientId if clientId is null', async () => {
-      try {
-        await clientService.findByClientId(null);
-      } catch (error) {
-        expect(error).toBeInstanceOf(OauthError);
-      }
+      const promise = clientService.findByClientId(null);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Client ID not found');
     });
     it('should throw an error to find a client by clientId', async () => {
       mockClientRepository.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(null);
-      try {
-        await clientService.findByClientId(clientId);
-      } catch (error) {
-        if (error instanceof OauthError) {
-          expect(error.message).toBe('Client not found');
-        }
-      }
+      const promise = clientService.findByClientId(clientId);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Client not found');
     });
   });
 });
