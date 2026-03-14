@@ -1,6 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
+import { createHash } from 'crypto';
 import { LoginDTO } from '../../../src/dto/login.dto';
 import {
   OauthAuthorizeDTO,
@@ -180,38 +181,29 @@ describe('OauthService', () => {
       const result = await oauthService.token(payloadOauthToken);
       expect(result).toEqual(mockTokenResponse);
     });
-    // it('should return a token to PKCE flow', async () => {
-    //   payloadOauthToken.codeVerifier = 'code-verifier';
-    //   mockClient.isConfidential = false;
-    //   const hashCodeVerifier = createHash('sha256')
-    //     .update('code-verifier')
-    //     .digest('base64url');
-    //   mockClientService.findByClientId = jest
-    //     .fn()
-    //     .mockResolvedValueOnce(mockClient);
+    it('should return a token to PKCE flow', async () => {
+      payloadOauthToken.codeVerifier = 'code-verifier';
+      mockClient.isConfidential = false;
+      const hashCodeVerifier = createHash('sha256')
+        .update('code-verifier')
+        .digest('base64url');
+      mockClientService.findByClientId = jest
+        .fn()
+        .mockResolvedValueOnce(mockClient);
 
-    //   setTimeout(() => {
-    //     mockRedisService.getdel = jest
-    //       .fn()
-    //       .mockResolvedValueOnce(hashCodeVerifier);
-    //   }, 100);
+      jest
+        .spyOn(mockRedisService, 'getdel')
+        .mockResolvedValueOnce(hashCodeVerifier)
+        .mockResolvedValueOnce('sha256')
+        .mockResolvedValueOnce(mockCode);
 
-    //   setTimeout(() => {
-    //     mockRedisService.getdel = jest.fn().mockResolvedValueOnce('sha256');
-    //   }, 200);
-
-    //   setTimeout(() => {
-    //     mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
-    //   }, 300);
-
-    //   mockTokenService.generateToken = jest
-    //     .fn()
-    //     .mockResolvedValueOnce(mockToken);
-    //   mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
-
-    //   await oauthService.token(payloadOauthToken);
-    //   expect(mockRedisService.getdel).toHaveBeenCalledTimes(4);
-    // });
+      mockTokenService.generateToken = jest
+        .fn()
+        .mockResolvedValueOnce(mockToken);
+      mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+      const result = await oauthService.token(payloadOauthToken);
+      expect(result).toEqual(mockTokenResponse);
+    });
     it('should throw an error to client secret or code verifier is required', async () => {
       payloadOauthToken.clientSecret = undefined;
       payloadOauthToken.codeVerifier = undefined;
@@ -269,7 +261,26 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Invalid redirect URI');
     });
-    it('should throw an error to code challenge method not supported', async () => {}); //TODO: Implement this unit test
+    it('should throw an error to code challenge method not supported', async () => {
+      payloadOauthToken.codeVerifier = 'code-verifier';
+      payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
+      const hashCodeVerifier = createHash('sha256')
+        .update('code-verifier')
+        .digest('base64url');
+      mockClientService.findByClientId = jest
+        .fn()
+        .mockResolvedValueOnce(mockClient);
+
+      jest
+        .spyOn(mockRedisService, 'getdel')
+        .mockResolvedValueOnce(hashCodeVerifier)
+        .mockResolvedValueOnce('md5');
+
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid code challenge method');
+      // expect(result).toEqual(mockTokenResponse);
+    });
     it('should throw an error to code challenge is invalid or expired', async () => {
       payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
       payloadOauthToken.codeVerifier = 'code-verifier';
@@ -318,18 +329,25 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid client ID');
     });
     it('should thrown an error to invalid redirect uri', async () => {
+      //
       payloadOauthToken.clientId = 'client-id';
-      payloadOauthToken.redirectUri = 'http://localhost:3000/callback2';
+      payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
+      const { redirectURI: _, ...selfCode } = JSON.parse(mockCode);
+      selfCode['redirectUri'] = 'http://localhost:3000/callback2';
+
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(selfCode));
       const promise = oauthService.token(payloadOauthToken);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Invalid redirect URI');
     });
     it('should  throw an error to invalid user ', async () => {
       payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
@@ -393,7 +411,11 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
-      mockRedisService.set = jest.fn().mockResolvedValueOnce(true);
+      jest
+        .spyOn(mockRedisService, 'set')
+        .mockResolvedValueOnce('code')
+        .mockResolvedValueOnce('code-challenge')
+        .mockResolvedValueOnce('code-challenge-method');
       mockUserClientConsentService.create = jest
         .fn()
         .mockResolvedValueOnce(true);
@@ -488,7 +510,11 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
-      mockRedisService.set = jest.fn().mockResolvedValueOnce(true);
+      jest
+        .spyOn(mockRedisService, 'set')
+        .mockResolvedValueOnce('code')
+        .mockResolvedValueOnce('code-challenge')
+        .mockResolvedValueOnce('code-challenge-method');
       queryOauthLogin.codeChallengeMethod = 'sha256';
       const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
       await expect(promise).rejects.toThrow(OauthError);
