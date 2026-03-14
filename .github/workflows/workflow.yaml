@@ -9,6 +9,12 @@ on:
       - main
 
 jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup pnpm
+        uses: actions/action-setup@v4
+
   continuous-integration-test:
     runs-on: ubuntu-latest
     steps:
