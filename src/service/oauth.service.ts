@@ -22,6 +22,14 @@ export interface IOauthService {
   }>;
   login(payloadOauthLogin: any, QueryOauthLogin: any): Promise<any>;
 }
+export interface IPayloadAuthRequest {
+  clientId: string;
+  redirectUri: string;
+  codeChallenge?: string;
+  codeChallengeMethod?: string;
+  state: string;
+  scope: string;
+}
 @Injectable()
 export class OauthService implements IOauthService {
   constructor(
@@ -33,8 +41,14 @@ export class OauthService implements IOauthService {
     private readonly tokenService: TokenService,
   ) {}
   async authorize(payloadOauth: OauthAuthorizeDTO): Promise<URL> {
-    const { clientId, redirectUri, codeChallenge, codeChallengeMethod } =
-      payloadOauth;
+    const {
+      clientId,
+      redirectUri,
+      codeChallenge,
+      codeChallengeMethod,
+      state,
+      scope,
+    } = payloadOauth;
     if (
       (codeChallenge && !codeChallengeMethod) ||
       (!codeChallenge && codeChallengeMethod)
@@ -56,8 +70,32 @@ export class OauthService implements IOauthService {
     if (!clientDB.isConfidential && !codeChallenge) {
       throw OauthError.invalidGrant('Code challenge is required');
     }
+    const payloadAuthResquest: IPayloadAuthRequest = {
+      clientId,
+      redirectUri,
+      codeChallenge,
+      codeChallengeMethod,
+      state,
+      scope,
+    };
 
+    const oauthRequestID = crypto
+      .createHash('sha256')
+      .update(randomBytes(16).toString('hex'))
+      .digest('base64url');
+    const saveAuthRequestOnRedis = await this.redisService.set(
+      `oauth:authorize:request:${oauthRequestID}`,
+      JSON.stringify(payloadAuthResquest),
+      'EX',
+      300,
+    );
+    if (!saveAuthRequestOnRedis) {
+      throw new InternalServerErrorException(
+        'Failure to save authRequest on redis',
+      );
+    }
     const urlRedirect = new URL(this.configEnvService.oauthLoginURL);
+    urlRedirect.searchParams.append('oauthRequestId', oauthRequestID);
     for (const param in payloadOauth) {
       urlRedirect.searchParams.append(param, payloadOauth[param]);
     }
@@ -103,7 +141,7 @@ export class OauthService implements IOauthService {
 
     if (grantType === 'authorization_code') {
       const codeRedis = JSON.parse(
-        await this.redisService.getdel(`oauth-code-${code.slice(0, 4)}`),
+        await this.redisService.getdel(`oauth-code-${code}`),
       );
       if (codeVerifier) {
         if (!codeRedis.codeChallenge) {
@@ -173,7 +211,54 @@ export class OauthService implements IOauthService {
       scope,
       codeChallenge,
       codeChallengeMethod,
+      oauthRequestId,
     } = QueryOauthLogin;
+
+    if (
+      (codeChallenge && !codeChallengeMethod) ||
+      (!codeChallenge && codeChallengeMethod)
+    ) {
+      throw OauthError.invalidRequest(
+        'Code challenge and code challenge method are required together',
+      );
+    }
+
+    const payloadAuthRequest: IPayloadAuthRequest = JSON.parse(
+      await this.redisService.getdel(
+        `oauth:authorize:request:${oauthRequestId}`,
+      ),
+    );
+    if (!payloadAuthRequest) {
+      throw OauthError.invalidRequest('Oauth Request ID not found');
+    }
+    if (payloadAuthRequest.clientId !== clientId) {
+      throw OauthError.invalidClient('Invalid client ID');
+    }
+    if (payloadAuthRequest.redirectUri !== redirectUri) {
+      throw OauthError.invalidRequest('Invalid redirect URI');
+    }
+    if (payloadAuthRequest.state !== state) {
+      throw OauthError.invalidRequest('Invalid state');
+    }
+    if (payloadAuthRequest.scope !== scope) {
+      throw OauthError.invalidRequest('Invalid scope');
+    }
+    if (payloadAuthRequest.codeChallenge && !codeChallenge) {
+      throw OauthError.invalidRequest('Code challenge is required');
+    }
+    if (
+      payloadAuthRequest.codeChallenge &&
+      payloadAuthRequest.codeChallenge !== codeChallenge
+    ) {
+      throw OauthError.invalidRequest('Invalid code challenge');
+    }
+    if (
+      payloadAuthRequest.codeChallengeMethod &&
+      payloadAuthRequest.codeChallengeMethod !== codeChallengeMethod
+    ) {
+      throw OauthError.invalidRequest('Invalid code challenge method');
+    }
+
     const clientDB = await this.clientService.findByClientId(clientId);
     if (!clientDB) {
       throw OauthError.invalidClient('ClientID not found');
@@ -201,7 +286,6 @@ export class OauthService implements IOauthService {
         'Please verify your email and active your account',
       );
     }
-
     const code = crypto
       .createHash('sha256')
       .update(randomBytes(32))
@@ -217,11 +301,12 @@ export class OauthService implements IOauthService {
       if (codeChallengeMethod.toLowerCase() !== 'sha256') {
         throw OauthError.invalidRequest('Code challenge method not supported');
       }
+
       payloadAuthCodeRedis['codeChallenge'] = codeChallenge;
       payloadAuthCodeRedis['codeChallengeMethod'] = codeChallengeMethod;
     }
     const saveCodeRedis = await this.redisService.set(
-      `oauth-code-${code.slice(0, 4)}`,
+      `oauth-code-${code}`,
       JSON.stringify(payloadAuthCodeRedis),
       'EX',
       300,

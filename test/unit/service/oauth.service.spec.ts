@@ -18,6 +18,7 @@ import { RedisService } from '../../../src/service/redis.service';
 import { TokenService } from '../../../src/service/token.service';
 import { UserClientConsentService } from '../../../src/service/user-client-consent.service';
 import { UserService } from '../../../src/service/user.service';
+import { IPayloadAuthRequest } from './../../../src/service/oauth.service';
 import { mockAppconfigEnvService } from './mock/appConfigEnv.mock';
 import { mockClientService } from './mock/client.mock';
 import { mockRedisService } from './mock/redis.mock';
@@ -71,6 +72,7 @@ describe('OauthService', () => {
       redirectUri: 'http://localhost:3000/callback',
       state: 'state',
       scope: 'scope 1 scope 2',
+      oauthRequestId: 'oauth-request-id',
     };
     const mockClient = {
       clientId: 'client-id',
@@ -82,6 +84,7 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
+      mockRedisService.set = jest.fn().mockResolvedValueOnce(true);
       const result = await oauthService.authorize(payloadOauth);
       expect(result).toBeInstanceOf(URL);
     });
@@ -127,6 +130,19 @@ describe('OauthService', () => {
       const promise = oauthService.authorize(payloadOauth);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Code challenge is required');
+    });
+    it('should throw an error to save authRequest on redis', async () => {
+      payloadOauth.codeChallenge = 'code-challenge';
+      payloadOauth.codeChallengeMethod = 'sha256';
+      mockClientService.findByClientId = jest
+        .fn()
+        .mockResolvedValueOnce(mockClient);
+      mockRedisService.set = jest.fn().mockResolvedValueOnce(false);
+      const promise = oauthService.authorize(payloadOauth);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow(
+        'Failure to save authRequest on redis',
+      );
     });
   });
   describe('token', () => {
@@ -405,6 +421,7 @@ describe('OauthService', () => {
       redirectUri: 'http://localhost:3000/callback',
       state: 'state',
       scope: 'scope 1 scope 2',
+      oauthRequestId: 'oauth-request-id',
     };
     const mockClient = {
       clientId: 'client-id',
@@ -419,11 +436,54 @@ describe('OauthService', () => {
       password: bcrypt.hashSync('password123', bcrypt.genSaltSync()),
       isVerified: true,
     };
-    it('should login user', async () => {
+    const mockPayloadOuthRequest: IPayloadAuthRequest = {
+      clientId: 'client-id',
+      redirectUri: 'http://localhost:3000/callback',
+      codeChallenge: 'code-challenge',
+      codeChallengeMethod: 'sha256',
+      state: 'state',
+      scope: 'scope 1 scope 2',
+    };
+    it('should login user Authorization code flow', async () => {
+      const {
+        codeChallenge: _codeChallengeOauthRequest,
+        codeChallengeMethod: _codeChallengeMethodOauthRequest,
+        ...selfPayloadOauthRequest
+      } = mockPayloadOuthRequest;
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(selfPayloadOauthRequest));
+
+      mockClient.isConfidential = true;
+      const {
+        codeChallenge: _codeChallengeQueryOauthLogin,
+        codeChallengeMethod: _codeChallengeMethodQueryOauthLogin,
+        ...selfQueryOauthLogin
+      } = queryOauthLogin;
+      mockClientService.findByClientId = jest
+        .fn()
+        .mockResolvedValueOnce(mockClient);
+
+      mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+
+      jest.spyOn(mockRedisService, 'set').mockResolvedValueOnce('code');
+      mockUserClientConsentService.create = jest
+        .fn()
+        .mockResolvedValueOnce(true);
+      const result = await oauthService.login(
+        payloadOauthLogin,
+        selfQueryOauthLogin,
+      );
+      expect(result).toBeInstanceOf(URL);
+    });
+    it('should login user PKCE flow', async () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
       jest
         .spyOn(mockRedisService, 'set')
         .mockResolvedValueOnce('code')
@@ -438,15 +498,124 @@ describe('OauthService', () => {
       );
       expect(result).toBeInstanceOf(URL);
     });
-    it('should throw an error to client id not found', async () => {
-      mockClientService.findByClientId = jest.fn().mockResolvedValueOnce(null);
+    it('should throw an error to code challenge and code challenge method required together', async () => {
+      queryOauthLogin.codeChallengeMethod = 'sha256';
+      queryOauthLogin.codeChallenge = undefined;
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Code challenge and code challenge method are required together',
+      );
+    });
+    it('should throw an error to undefined payload oauth request on redis', async () => {
+      queryOauthLogin.codeChallenge = 'code-chalenge';
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(null);
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Oauth Request ID not found');
+    });
+    it('should throw an error to clientID of queryLogin mismatch with clientID of oauth request on redis', async () => {
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(
+        JSON.stringify({
+          ...mockPayloadOuthRequest,
+          clientId: 'invalid-client-id',
+        }),
+      );
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid client ID');
+    });
+    it('should throw an error to redirect uri of queryLogin mismatch with redirect uri of oauth request on redis', async () => {
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(
+        JSON.stringify({
+          ...mockPayloadOuthRequest,
+          redirectUri: 'invalid-redirect-uri',
+        }),
+      );
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid redirect URI');
+    });
+    it('should throw an error to state of queryLogin mismatch with state of oauth request on redis', async () => {
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(
+        JSON.stringify({
+          ...mockPayloadOuthRequest,
+          state: 'invalid-state',
+        }),
+      );
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid state');
+    });
+    it('should throw an error to scope of queryLogin mismatch with scope of oauth request on redis', async () => {
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(
+        JSON.stringify({
+          ...mockPayloadOuthRequest,
+          scope: 'invalid-scope',
+        }),
+      );
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid scope');
+    });
+    it('should throw an error to code challenge is required', async () => {
+      mockPayloadOuthRequest.codeChallenge = 'code-challenge';
+      mockPayloadOuthRequest.codeChallengeMethod = 'sha256';
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
 
+      queryOauthLogin.codeChallenge = undefined;
+      queryOauthLogin.codeChallengeMethod = undefined;
+
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Code challenge is required');
+    });
+    it('should throw an error to code challenge method of queryLogin mismatch with code challenge method of oauth request on redis', async () => {
+      queryOauthLogin.codeChallengeMethod = 'md5';
+      queryOauthLogin.codeChallenge = 'code-challenge';
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(
+        JSON.stringify({
+          ...mockPayloadOuthRequest,
+          codeChallengeMethod: 'sha256',
+        }),
+      );
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid code challenge method');
+    });
+    it('should throw an error to code challenge of queryLogin mismatch with code challenge of oauth request on redis', async () => {
+      queryOauthLogin.codeChallengeMethod = 'sha256';
+      queryOauthLogin.codeChallenge = 'code-challenge';
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(
+        JSON.stringify({
+          ...mockPayloadOuthRequest,
+          codeChallenge: 'invalid-code-challenge',
+        }),
+      );
+      const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid code challenge');
+    });
+    it('should throw an error to client id not found', async () => {
+      queryOauthLogin.codeChallenge = 'code-challenge';
+      queryOauthLogin.clientId = 'invalid-client-id';
+      mockClientService.findByClientId = jest.fn().mockResolvedValueOnce(null);
+      mockPayloadOuthRequest.clientId = 'invalid-client-id';
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
       const promise = oauthService.login(payloadOauthLogin, queryOauthLogin);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('ClientID not found');
     });
     it('should throw an error to redirect uri not found', async () => {
-      queryOauthLogin.redirectUri = 'http://localhost:3000/callback2';
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
+      mockClient.redirectUris = ['http://localhost:3000/callback2'];
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
@@ -456,7 +625,10 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Redirect URI not found');
     });
     it('should throw an error to invalid credentials', async () => {
-      queryOauthLogin.redirectUri = 'http://localhost:3000/callback';
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
+      mockClient.redirectUris = ['http://localhost:3000/callback'];
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
@@ -467,6 +639,9 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid credentials');
     });
     it('should throw an error to invalid credentials on password mismatached', async () => {
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
@@ -479,6 +654,9 @@ describe('OauthService', () => {
     });
     it('should throw an error to user not verified', async () => {
       mockUser.isVerified = false;
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
@@ -493,6 +671,9 @@ describe('OauthService', () => {
     });
     it('should throw an error to save code on redis', async () => {
       mockUser.isVerified = true;
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
@@ -503,6 +684,10 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Failure to save code on redis');
     });
     it('should throw an error to code challenge method not supported', async () => {
+      mockPayloadOuthRequest.codeChallengeMethod = 'md5';
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
@@ -516,6 +701,10 @@ describe('OauthService', () => {
       );
     });
     it('should throw an error to user consent to client', async () => {
+      mockPayloadOuthRequest.codeChallengeMethod = 'sha256';
+      mockRedisService.getdel = jest
+        .fn()
+        .mockResolvedValueOnce(JSON.stringify(mockPayloadOuthRequest));
       mockUserClientConsentService.create = jest
         .fn()
         .mockResolvedValueOnce(null);

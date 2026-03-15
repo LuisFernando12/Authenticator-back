@@ -4,6 +4,9 @@ import { IsOptional, IsString } from 'class-validator';
 export class OauthAuthorizeDTO {
   @IsString()
   @ApiProperty()
+  oauthRequestId: string;
+  @IsString()
+  @ApiProperty()
   responseType: string;
   @IsString()
   @ApiProperty()
@@ -16,9 +19,8 @@ export class OauthAuthorizeDTO {
   @ApiProperty()
   state: string;
   @IsString()
-  @IsOptional()
   @ApiProperty()
-  scope?: string;
+  scope: string;
   @IsString()
   @IsOptional()
   @ApiProperty()

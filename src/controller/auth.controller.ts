@@ -14,7 +14,7 @@ import {
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
-import { NewTokenToActiveEmailDTO } from './../dto/auth/new-token.dto';
+import { NewTokenToActiveEmailDTO } from '../dto/new-token.dto';
 
 export interface IAuthController {
   login(data: LoginDTO): Promise<any>;
