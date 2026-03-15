@@ -1,10 +1,15 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './module/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
+    logger: new ConsoleLogger({
+      prefix: 'Authenticator',
+      timestamp: true,
+      logLevels: ['log', 'error', 'warn', 'debug', 'verbose'],
+    }),
     cors: {
       origin: process.env.CORS_ORIGIN,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

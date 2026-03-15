@@ -102,30 +102,27 @@ export class OauthService implements IOauthService {
     }
 
     if (grantType === 'authorization_code') {
+      const codeRedis = JSON.parse(
+        await this.redisService.getdel(`oauth-code-${code.slice(0, 4)}`),
+      );
       if (codeVerifier) {
-        const shortCodeHash = code.slice(code.length - 9);
-        const [codeChallengeRedis, codeChallengeMethodRedis] =
-          await Promise.all([
-            this.redisService.getdel(`code-challenge-${shortCodeHash}`),
-            this.redisService.getdel(`code-challenge-method-${shortCodeHash}`),
-          ]);
-        if (!codeChallengeRedis) {
+        if (!codeRedis.codeChallenge) {
           throw OauthError.invalidGrant('Invalid code challenge');
         }
-        if (codeChallengeMethodRedis && codeChallengeMethodRedis !== 'sha256') {
+        if (
+          codeRedis.codeChallengeMethod &&
+          codeRedis.codeChallengeMethod !== 'sha256'
+        ) {
           throw OauthError.invalidGrant('Invalid code challenge method');
         }
         const codeChallegeVerify = crypto
           .createHash('sha256')
           .update(codeVerifier)
           .digest('base64url');
-        if (codeChallengeRedis !== codeChallegeVerify) {
+        if (codeRedis.codeChallenge !== codeChallegeVerify) {
           throw OauthError.invalidGrant('Invalid code verifier');
         }
       }
-      const codeRedis = JSON.parse(
-        await this.redisService.getdel(`oauth-code-${code.slice(0, 4)}`),
-      );
       if (!codeRedis || codeRedis.code !== code) {
         throw OauthError.invalidGrant(
           'Authorization code is invalid or expired',
@@ -209,40 +206,28 @@ export class OauthService implements IOauthService {
       .createHash('sha256')
       .update(randomBytes(32))
       .digest('base64url');
-
+    const payloadAuthCodeRedis = {
+      code,
+      userEmail: userDB.email,
+      scope,
+      clientId,
+      redirectUri,
+    };
+    if (codeChallengeMethod && codeChallenge) {
+      if (codeChallengeMethod.toLowerCase() !== 'sha256') {
+        throw OauthError.invalidRequest('Code challenge method not supported');
+      }
+      payloadAuthCodeRedis['codeChallenge'] = codeChallenge;
+      payloadAuthCodeRedis['codeChallengeMethod'] = codeChallengeMethod;
+    }
     const saveCodeRedis = await this.redisService.set(
       `oauth-code-${code.slice(0, 4)}`,
-      JSON.stringify({
-        code,
-        userEmail: userDB.email,
-        scope,
-        clientId,
-        redirectUri,
-      }),
+      JSON.stringify(payloadAuthCodeRedis),
       'EX',
       300,
     );
     if (!saveCodeRedis) {
       throw new InternalServerErrorException('Failure to save code on redis');
-    }
-    if (codeChallengeMethod && codeChallenge) {
-      if (codeChallengeMethod.toLowerCase() !== 'sha256') {
-        throw OauthError.invalidRequest('Code challenge method not supported');
-      }
-      const shortCodeHash = code.slice(code.length - 9);
-
-      this.redisService.set(
-        `code-challenge-${shortCodeHash}`,
-        codeChallenge,
-        'EX',
-        300,
-      );
-      this.redisService.set(
-        `code-challenge-method-${shortCodeHash}`,
-        codeChallengeMethod,
-        'EX',
-        300,
-      );
     }
     const userClientConsent = await this.userClientConsentService.create({
       userId: userDB.id,

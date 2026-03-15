@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { NewTokenToActiveEmailDTO } from './../dto/auth/new-token.dto';
 
@@ -26,8 +27,10 @@ export interface IAuthController {
 }
 
 @Controller()
+@Throttle({ default: { limit: 4, ttl: 60000 } })
 export class AuthController implements IAuthController {
   constructor(private readonly authService: AuthService) {}
+
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: LoginDTO })
@@ -45,6 +48,7 @@ export class AuthController implements IAuthController {
   async verifyEmail(@Query('token') token: string) {
     return await this.authService.verifyEmail(token);
   }
+
   @Post('/reset-password')
   @ApiBody({ type: ResetPasswordDTO })
   @ApiResponse({ status: 200, description: 'Password reset email sent.' })

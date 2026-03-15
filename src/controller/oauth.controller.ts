@@ -9,6 +9,7 @@ import {
   Redirect,
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { LoginDTO } from '../dto/login.dto';
 import { OauthAuthorizeDTO, OauthTokenDTO } from '../dto/oauth-authorize.dto';
 import { OauthService } from '../service/oauth.service';
@@ -44,6 +45,7 @@ export class OauthController implements IOauthController {
     );
     return { url: urlRedirect.toString(), statusCode: 302 };
   }
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/token')
   @ApiBody({ type: OauthTokenDTO })
   @ApiResponse({
@@ -56,6 +58,7 @@ export class OauthController implements IOauthController {
   async token(@Body() payloadOauthCallback: OauthTokenDTO): Promise<any> {
     return await this.oauthService.token(payloadOauthCallback);
   }
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/login')
   @Redirect()
   @HttpCode(HttpStatus.FOUND)

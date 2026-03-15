@@ -2,6 +2,8 @@ import { TokenEntity } from '@/entity/token.entity';
 import { UserEntity } from '@/entity/user.entity';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientEntity } from '../entity/client.entity';
 import { UserClientConsentEntity } from '../entity/user-client-consent.entity';
@@ -35,12 +37,29 @@ import { UserModule } from './user.module';
         migrationsRun: true,
       }),
     }),
+    ThrottlerModule.forRootAsync({
+      useFactory: () => ({
+        throttlers: [
+          {
+            ttl: 60000,
+            limit: 5,
+          },
+        ],
+        errorMessage: 'Too many requests, please try again later.',
+      }),
+    }),
     AuthModule,
     UserModule,
     TokenModule,
     EmailModule,
     ClientModule,
     OauthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

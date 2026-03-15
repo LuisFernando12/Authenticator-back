@@ -190,12 +190,12 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-
+      const { ...codeJSON } = JSON.parse(mockCode);
+      codeJSON['codeChallenge'] = hashCodeVerifier;
+      codeJSON['codeChallengeMethod'] = 'sha256';
       jest
         .spyOn(mockRedisService, 'getdel')
-        .mockResolvedValueOnce(hashCodeVerifier)
-        .mockResolvedValueOnce('sha256')
-        .mockResolvedValueOnce(mockCode);
+        .mockResolvedValueOnce(JSON.stringify(codeJSON));
 
       mockTokenService.generateToken = jest
         .fn()
@@ -270,16 +270,16 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
-
+      const { ...codeJSON } = JSON.parse(mockCode);
+      codeJSON['codeChallenge'] = hashCodeVerifier;
+      codeJSON['codeChallengeMethod'] = 'md5';
       jest
         .spyOn(mockRedisService, 'getdel')
-        .mockResolvedValueOnce(hashCodeVerifier)
-        .mockResolvedValueOnce('md5');
+        .mockResolvedValueOnce(JSON.stringify(codeJSON));
 
       const promise = oauthService.token(payloadOauthToken);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Invalid code challenge method');
-      // expect(result).toEqual(mockTokenResponse);
     });
     it('should throw an error to code challenge is invalid or expired', async () => {
       payloadOauthToken.redirectUri = 'http://localhost:3000/callback';
@@ -297,9 +297,13 @@ describe('OauthService', () => {
       mockClientService.findByClientId = jest
         .fn()
         .mockResolvedValueOnce(mockClient);
+      payloadOauthToken.codeVerifier = 'invalid-code-verifier';
+      const { ...codeJSON } = JSON.parse(mockCode);
+      codeJSON['codeChallenge'] = 'code-challenge';
+      codeJSON['codeChallengeMethod'] = 'sha256';
       mockRedisService.getdel = jest
         .fn()
-        .mockResolvedValueOnce('code-challenge');
+        .mockResolvedValueOnce(JSON.stringify(codeJSON));
       const promise = oauthService.token(payloadOauthToken);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Invalid code verifier');
@@ -366,6 +370,15 @@ describe('OauthService', () => {
       const promise = oauthService.token(payloadOauthToken);
       await expect(promise).rejects.toThrow(InternalServerErrorException);
       await expect(promise).rejects.toThrow('Failure to generate token');
+    });
+    it('should throw an error to unsupported grant type undefined', async () => {
+      payloadOauthToken.grantType = undefined;
+      mockClientService.findByClientId = jest
+        .fn()
+        .mockResolvedValueOnce(mockClient);
+      const promise = oauthService.token(payloadOauthToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Unsupported grant type');
     });
     it('should throw an error to unsupported grant type', async () => {
       payloadOauthToken.grantType = 'invalid-grant-type';
