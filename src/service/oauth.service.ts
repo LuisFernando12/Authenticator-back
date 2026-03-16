@@ -2,9 +2,10 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'node:crypto';
 import { randomBytes } from 'node:crypto';
+import { OauthError } from '../config/errors/oauth.error';
+import { AuthLogger } from '../config/logger/auth-logger.config';
 import { LoginDTO } from '../dto/login.dto';
 import { OauthAuthorizeDTO, OauthTokenDTO } from '../dto/oauth-authorize.dto';
-import { OauthError } from '../errors/oauth.error';
 import { AppConfigEnvService } from './app-config-env.service';
 import { ClientService } from './client.service';
 import { RedisService } from './redis.service';
@@ -39,8 +40,11 @@ export class OauthService implements IOauthService {
     private readonly userClientConsentService: UserClientConsentService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
+    private readonly authLogger: AuthLogger,
   ) {}
-  async authorize(payloadOauth: OauthAuthorizeDTO): Promise<URL> {
+  async authorize(
+    payloadOauth: Omit<OauthAuthorizeDTO, 'oauthRequestId'>,
+  ): Promise<URL> {
     const {
       clientId,
       redirectUri,
@@ -49,25 +53,52 @@ export class OauthService implements IOauthService {
       state,
       scope,
     } = payloadOauth;
+    this.authLogger.log('Starting method authorize', {
+      context: 'OauthService method authorize',
+    });
     if (
       (codeChallenge && !codeChallengeMethod) ||
       (!codeChallenge && codeChallengeMethod)
     ) {
+      this.authLogger.error(
+        `Code challenge and code challenge method are required together: missing ${codeChallenge ? 'codeChallengeMethod' : 'codeChallenge'}`,
+        {
+          context: 'OauthService method authorize',
+        },
+      );
       throw OauthError.invalidRequest(
         'Code challenge and code challenge method are required together',
       );
     }
     if (codeChallenge && codeChallengeMethod.toLowerCase() !== 'sha256') {
+      this.authLogger.error(
+        `Code challenge method not supported: ${codeChallengeMethod}`,
+        {
+          context: 'OauthService method authorize',
+        },
+      );
       throw OauthError.invalidRequest('Code challenge method not supported');
     }
     const clientDB = await this.clientService.findByClientId(clientId);
     if (!clientDB) {
+      this.authLogger.error(
+        `ClientID authentication failed client not found: ${clientId}`,
+        {
+          context: 'OauthService method authorize',
+        },
+      );
       throw OauthError.invalidClient('ClientID authentication failed');
     }
     if (!clientDB.redirectUris.includes(redirectUri)) {
+      this.authLogger.error(`Redirect URI not found: ${redirectUri}`, {
+        context: 'OauthService method authorize',
+      });
       throw OauthError.invalidRequest('Redirect URI not found');
     }
     if (!clientDB.isConfidential && !codeChallenge) {
+      this.authLogger.error(`Code challenge is required: ${codeChallenge}`, {
+        context: 'OauthService method authorize',
+      });
       throw OauthError.invalidGrant('Code challenge is required');
     }
     const payloadAuthResquest: IPayloadAuthRequest = {
@@ -83,13 +114,21 @@ export class OauthService implements IOauthService {
       .createHash('sha256')
       .update(randomBytes(16).toString('hex'))
       .digest('base64url');
+
     const saveAuthRequestOnRedis = await this.redisService.set(
       `oauth:authorize:request:${oauthRequestID}`,
       JSON.stringify(payloadAuthResquest),
       'EX',
       300,
     );
+
     if (!saveAuthRequestOnRedis) {
+      this.authLogger.error(
+        `Failure to save authRequest on redis: ${saveAuthRequestOnRedis}`,
+        {
+          context: 'OauthService method authorize',
+        },
+      );
       throw new InternalServerErrorException(
         'Failure to save authRequest on redis',
       );
@@ -99,7 +138,9 @@ export class OauthService implements IOauthService {
     for (const param in payloadOauth) {
       urlRedirect.searchParams.append(param, payloadOauth[param]);
     }
-
+    this.authLogger.log('Successful authorization request', {
+      context: 'OauthService method authorize',
+    });
     return urlRedirect;
   }
   async token(payloadOauthToken: OauthTokenDTO): Promise<{
@@ -108,6 +149,9 @@ export class OauthService implements IOauthService {
     scope: string;
     expiresAt: string;
   }> {
+    this.authLogger.log('Starting method token', {
+      context: 'OauthService method token',
+    });
     const {
       clientId,
       codeVerifier,
@@ -117,25 +161,52 @@ export class OauthService implements IOauthService {
       grantType,
     } = payloadOauthToken;
     if (!clientSecret && !codeVerifier) {
+      this.authLogger.error(
+        'Client secret or code verifier is required and none of them is provided',
+        {
+          context: 'OauthService method token',
+        },
+      );
       throw OauthError.invalidRequest(
         'Client secret or code verifier is required',
       );
     }
     const clientDB = await this.clientService.findByClientId(clientId);
     if (!clientDB) {
+      this.authLogger.error(`ClientID not found: ${clientId}`, {
+        context: 'OauthService method token',
+      });
       throw OauthError.invalidClient('ClientID not found');
     }
     if (clientDB.isConfidential && !clientSecret) {
+      this.authLogger.error(
+        `Client secret is required and this is not provided: ${clientSecret}`,
+        {
+          context: 'OauthService method token',
+        },
+      );
       throw OauthError.invalidGrant('Client secret is required');
     }
     if (!clientDB.isConfidential && !codeVerifier) {
+      this.authLogger.error(
+        `Code verifier is required and this is not  provided: ${codeVerifier}`,
+        {
+          context: 'OauthService method token',
+        },
+      );
       throw OauthError.invalidGrant('Code verifier is required');
     }
     if (clientSecret && clientSecret !== clientDB.clientSecret) {
+      this.authLogger.error(`Client secret is invalid: ${clientSecret}`, {
+        context: 'OauthService method token',
+      });
       throw OauthError.invalidClient('Invalid client secret');
     }
 
     if (!clientDB.redirectUris.includes(redirectUri)) {
+      this.authLogger.error(`Invalid redirect URI: ${redirectUri}`, {
+        context: 'OauthService method token',
+      });
       throw OauthError.invalidRequest('Invalid redirect URI');
     }
 
@@ -145,12 +216,24 @@ export class OauthService implements IOauthService {
       );
       if (codeVerifier) {
         if (!codeRedis.codeChallenge) {
+          this.authLogger.error(
+            `Invalid code challenge: ${codeRedis.codeChallenge}`,
+            {
+              context: 'OauthService method token',
+            },
+          );
           throw OauthError.invalidGrant('Invalid code challenge');
         }
         if (
           codeRedis.codeChallengeMethod &&
           codeRedis.codeChallengeMethod !== 'sha256'
         ) {
+          this.authLogger.error(
+            `Invalid code challenge method: ${codeRedis.codeChallengeMethod}`,
+            {
+              context: 'OauthService method token',
+            },
+          );
           throw OauthError.invalidGrant('Invalid code challenge method');
         }
         const codeChallegeVerify = crypto
@@ -158,22 +241,43 @@ export class OauthService implements IOauthService {
           .update(codeVerifier)
           .digest('base64url');
         if (codeRedis.codeChallenge !== codeChallegeVerify) {
+          this.authLogger.error(
+            `Invalid code verifier: ${codeChallegeVerify}`,
+            {
+              context: 'OauthService method token',
+            },
+          );
           throw OauthError.invalidGrant('Invalid code verifier');
         }
       }
       if (!codeRedis || codeRedis.code !== code) {
+        this.authLogger.error(`Invalid authorization code: ${code}`, {
+          context: 'OauthService method token',
+        });
         throw OauthError.invalidGrant(
           'Authorization code is invalid or expired',
         );
       }
       if (codeRedis.clientId !== clientId) {
+        this.authLogger.error(`Invalid client ID: ${clientId}`, {
+          context: 'OauthService method token',
+        });
         throw OauthError.invalidClient('Invalid client ID');
       }
       if (codeRedis.redirectUri !== redirectUri) {
+        this.authLogger.error(`Invalid redirect URI: ${redirectUri}`, {
+          context: 'OauthService method token',
+        });
         throw OauthError.invalidRequest('Invalid redirect URI');
       }
       const userDB = await this.userService.findByEmail(codeRedis.userEmail);
       if (!userDB) {
+        this.authLogger.error(
+          `Invalid credentials user not found with email: ${codeRedis.userEmail}`,
+          {
+            context: 'OauthService method token',
+          },
+        );
         throw OauthError.unauthorizedClient('Invalid credentials');
       }
 
@@ -185,6 +289,9 @@ export class OauthService implements IOauthService {
         iss: this.configEnvService.serviceURL,
       });
       if (!accessToken || typeof accessToken !== 'object') {
+        this.authLogger.error(`Failure to generate token: ${accessToken}`, {
+          context: 'OauthService method token',
+        });
         throw new InternalServerErrorException('Failure to generate token');
       }
 
@@ -195,6 +302,12 @@ export class OauthService implements IOauthService {
         expiresAt: accessToken.expiresAt,
       };
     } else {
+      this.authLogger.error(
+        `Unsupported grant type: ${payloadOauthToken.grantType || ''}`,
+        {
+          context: 'OauthService method token',
+        },
+      );
       throw OauthError.unsupportedGrantType(
         `Unsupported grant type ${payloadOauthToken.grantType || ''}`,
       );
@@ -204,6 +317,9 @@ export class OauthService implements IOauthService {
     payloadOauthLogin: LoginDTO,
     QueryOauthLogin: OauthAuthorizeDTO,
   ): Promise<URL> {
+    this.authLogger.log('Starting method login', {
+      context: 'OauthService method login',
+    });
     const {
       clientId,
       redirectUri,
@@ -218,6 +334,12 @@ export class OauthService implements IOauthService {
       (codeChallenge && !codeChallengeMethod) ||
       (!codeChallenge && codeChallengeMethod)
     ) {
+      this.authLogger.error(
+        'Code challenge and code challenge method are required together and none of them is provided',
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidRequest(
         'Code challenge and code challenge method are required together',
       );
@@ -229,42 +351,93 @@ export class OauthService implements IOauthService {
       ),
     );
     if (!payloadAuthRequest) {
+      this.authLogger.error(`Oauth Request ID not found: ${oauthRequestId}`, {
+        context: 'OauthService method login',
+      });
       throw OauthError.invalidRequest('Oauth Request ID not found');
     }
     if (payloadAuthRequest.clientId !== clientId) {
+      this.authLogger.error(
+        `Invalid client ID ${clientId} mismetch with authRequest client ID ${payloadAuthRequest.clientId}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidClient('Invalid client ID');
     }
     if (payloadAuthRequest.redirectUri !== redirectUri) {
+      this.authLogger.error(
+        `Invalid redirect URI ${redirectUri} mismetch with authRequest redirect URI ${payloadAuthRequest.redirectUri}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidRequest('Invalid redirect URI');
     }
     if (payloadAuthRequest.state !== state) {
+      this.authLogger.error(
+        `Invalid state ${state} mismetch with authRequest state ${payloadAuthRequest.state}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidRequest('Invalid state');
     }
     if (payloadAuthRequest.scope !== scope) {
+      this.authLogger.error(
+        `Invalid scope ${scope} mismetch with authRequest scope ${payloadAuthRequest.scope}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidRequest('Invalid scope');
     }
     if (payloadAuthRequest.codeChallenge && !codeChallenge) {
+      this.authLogger.error(
+        `Code challenge is required and this is not provided: ${codeChallenge}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidRequest('Code challenge is required');
     }
     if (
       payloadAuthRequest.codeChallenge &&
       payloadAuthRequest.codeChallenge !== codeChallenge
     ) {
+      this.authLogger.error(
+        `Invalid code challenge ${codeChallenge} mismetch with authRequest code challenge ${payloadAuthRequest.codeChallenge}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidRequest('Invalid code challenge');
     }
     if (
       payloadAuthRequest.codeChallengeMethod &&
       payloadAuthRequest.codeChallengeMethod !== codeChallengeMethod
     ) {
+      this.authLogger.error(
+        `Invalid code challenge method ${codeChallengeMethod} mismetch with authRequest code challenge method ${payloadAuthRequest.codeChallengeMethod}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.invalidRequest('Invalid code challenge method');
     }
 
     const clientDB = await this.clientService.findByClientId(clientId);
     if (!clientDB) {
+      this.authLogger.error(`ClientID not found with ID: ${clientId}`, {
+        context: 'OauthService method login',
+      });
       throw OauthError.invalidClient('ClientID not found');
     }
 
     if (!clientDB.redirectUris.includes(redirectUri)) {
+      this.authLogger.error(`Redirect URI not found with URI: ${redirectUri}`, {
+        context: 'OauthService method login',
+      });
       throw OauthError.invalidRequest('Redirect URI not found');
     }
 
@@ -272,16 +445,28 @@ export class OauthService implements IOauthService {
     const userDB = await this.userService.findByEmail(email);
 
     if (!userDB) {
+      this.authLogger.error(
+        `Invalid credentials user not found with email: ${email}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.unauthorizedClient('Invalid credentials');
     }
 
     const isMatchedPassword = await bcrypt.compare(password, userDB.password);
 
     if (!isMatchedPassword) {
+      this.authLogger.error(`Invalid credentials password mismatch`, {
+        context: 'OauthService method login',
+      });
       throw OauthError.unauthorizedClient('Invalid credentials');
     }
 
     if (!userDB.isVerified) {
+      this.authLogger.error(`User ${email} not verified`, {
+        context: 'OauthService method login',
+      });
       throw OauthError.invalidRequest(
         'Please verify your email and active your account',
       );
@@ -299,6 +484,12 @@ export class OauthService implements IOauthService {
     };
     if (codeChallengeMethod && codeChallenge) {
       if (codeChallengeMethod.toLowerCase() !== 'sha256') {
+        this.authLogger.error(
+          `Code challenge method not supported ! method: ${codeChallengeMethod}`,
+          {
+            context: 'OauthService method login',
+          },
+        );
         throw OauthError.invalidRequest('Code challenge method not supported');
       }
 
@@ -312,6 +503,9 @@ export class OauthService implements IOauthService {
       300,
     );
     if (!saveCodeRedis) {
+      this.authLogger.error(`Failure to save code on redis: ${saveCodeRedis}`, {
+        context: 'OauthService method login',
+      });
       throw new InternalServerErrorException('Failure to save code on redis');
     }
     const userClientConsent = await this.userClientConsentService.create({
@@ -320,8 +514,17 @@ export class OauthService implements IOauthService {
       scopes: scope.split(' '),
     });
     if (!userClientConsent) {
+      this.authLogger.error(
+        `Failure to create user client consent: ${userClientConsent}`,
+        {
+          context: 'OauthService method login',
+        },
+      );
       throw OauthError.unauthorizedClient('Failure to user consent to client');
     }
+    this.authLogger.log('Successful login request', {
+      context: 'OauthService method login',
+    });
     const urlRedirect = new URL(redirectUri);
     urlRedirect.searchParams.append('code', code);
     urlRedirect.searchParams.append('state', state);

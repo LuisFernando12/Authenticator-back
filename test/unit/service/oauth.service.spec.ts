@@ -2,12 +2,14 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { createHash } from 'crypto';
+import { OauthError } from '../../../src/config/errors/oauth.error';
+import { AuthLogger } from '../../../src/config/logger/auth-logger.config';
+import { BaseLogger } from '../../../src/config/logger/base-logger';
 import { LoginDTO } from '../../../src/dto/login.dto';
 import {
   OauthAuthorizeDTO,
   OauthTokenDTO,
 } from '../../../src/dto/oauth-authorize.dto';
-import { OauthError } from '../../../src/errors/oauth.error';
 import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
 import { ClientService } from '../../../src/service/client.service';
 import {
@@ -21,6 +23,7 @@ import { UserService } from '../../../src/service/user.service';
 import { IPayloadAuthRequest } from './../../../src/service/oauth.service';
 import { mockAppconfigEnvService } from './mock/appConfigEnv.mock';
 import { mockClientService } from './mock/client.mock';
+import { mockAuthLogger, mockBaseLogger } from './mock/logger.mock';
 import { mockRedisService } from './mock/redis.mock';
 import { mockTokenService } from './mock/token.mock';
 import { mockUserService } from './mock/user.mock';
@@ -31,11 +34,16 @@ describe('OauthService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        OauthService,
+        {
+          provide: AuthLogger,
+          useValue: mockAuthLogger,
+        },
+        { provide: BaseLogger, useValue: mockBaseLogger },
         {
           provide: ClientService,
           useValue: mockClientService,
         },
-        OauthService,
         {
           provide: RedisService,
           useValue: mockRedisService,
@@ -88,8 +96,17 @@ describe('OauthService', () => {
       const result = await oauthService.authorize(payloadOauth);
       expect(result).toBeInstanceOf(URL);
     });
-    it('should throw an error to authorize missing code challenge method or code challenge', async () => {
+    it('should throw an error to authorize missing code challenge method ', async () => {
       payloadOauth.codeChallengeMethod = undefined;
+      const promise = oauthService.authorize(payloadOauth);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow(
+        'Code challenge and code challenge method are required together',
+      );
+    });
+    it('should throw an error to authorize missing code challenge', async () => {
+      payloadOauth.codeChallengeMethod = 'sha256';
+      payloadOauth.codeChallenge = undefined;
       const promise = oauthService.authorize(payloadOauth);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow(
@@ -98,6 +115,7 @@ describe('OauthService', () => {
     });
     it('should throw an error to authorize code challenge method not supported', async () => {
       payloadOauth.codeChallengeMethod = 'md5';
+      payloadOauth.codeChallenge = 'code-challenge';
       const promise = oauthService.authorize(payloadOauth);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow(

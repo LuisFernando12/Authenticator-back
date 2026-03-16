@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
+import { AuthLogger } from '../../../src/config/logger/auth-logger.config';
+import { BaseLogger } from '../../../src/config/logger/base-logger';
 import { UserRepository } from '../../../src/repository/user.repository';
 import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
 import { AuthService, IAuthService } from '../../../src/service/auth.service';
@@ -14,6 +16,7 @@ import { RedisService } from '../../../src/service/redis.service';
 import { TokenService } from '../../../src/service/token.service';
 import { mockAppconfigEnvService } from './mock/appConfigEnv.mock';
 import { mockEmailService } from './mock/email.mock';
+import { mockAuthLogger, mockBaseLogger } from './mock/logger.mock';
 import { mockRedisService } from './mock/redis.mock';
 import { mockTokenService } from './mock/token.mock';
 import { mockUserRepository } from './mock/user.mock';
@@ -37,6 +40,14 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
+        {
+          provide: AuthLogger,
+          useValue: mockAuthLogger,
+        },
+        {
+          provide: BaseLogger,
+          useValue: mockBaseLogger,
+        },
         {
           provide: UserRepository,
           useValue: mockUserRepository,
@@ -71,10 +82,14 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
+      mockTokenService.generateToken = jest
+        .fn()
+        .mockResolvedValueOnce({ token: 'token' });
       const result = await authService.login(mockUser.email, password);
       expect(result).toEqual({
-        token: 'token',
+        token: {
+          token: 'token',
+        },
         redirect_uri: mockAppconfigEnvService.redirectURI,
       });
     });
@@ -185,9 +200,8 @@ describe('AuthService', () => {
     const code = 123456;
     const email = 'john.doe@example.com';
     it('should update password', async () => {
-      mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(code);
       mockUserRepository.updatePassword = jest.fn().mockResolvedValueOnce(true);
-      mockRedisService.del = jest.fn().mockResolvedValueOnce(true);
       const result = await authService.newPassword(password, code, email);
       expect(result).toEqual({ message: 'Updated password' });
     });
@@ -198,7 +212,7 @@ describe('AuthService', () => {
       await expect(promise).rejects.toThrow(BadRequestException);
     });
     it('should throw an error to update password with failure to update password', async () => {
-      mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
+      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(code);
       mockUserRepository.updatePassword = jest
         .fn()
         .mockResolvedValueOnce(false);

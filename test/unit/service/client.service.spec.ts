@@ -1,7 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { OauthError } from '../../../src/config/errors/oauth.error';
 import { SaveClientDTO } from '../../../src/dto/save-client.dto';
-import { OauthError } from '../../../src/errors/oauth.error';
 import { ClientService } from '../../../src/service/client.service';
 import {
   ClientRepository,

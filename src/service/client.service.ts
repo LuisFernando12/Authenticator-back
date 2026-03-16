@@ -1,6 +1,6 @@
+import { OauthError } from '@/config/errors/oauth.error';
 import { SaveClientDTO } from '@/dto/save-client.dto';
 import { ClientEntity } from '@/entity/client.entity';
-import { OauthError } from '@/errors/oauth.error';
 import { ClientRepository } from '@/repository/client.repository';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';

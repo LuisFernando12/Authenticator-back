@@ -8,7 +8,7 @@ import {
   Query,
   Redirect,
 } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiResponse, OmitType } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { LoginDTO } from '../dto/login.dto';
 import { OauthAuthorizeDTO, OauthTokenDTO } from '../dto/oauth-authorize.dto';
@@ -33,12 +33,12 @@ export class OauthController implements IOauthController {
   @Get('/authorize')
   @Redirect()
   @HttpCode(HttpStatus.FOUND)
-  @ApiQuery({ type: OauthAuthorizeDTO })
+  @ApiQuery({ type: OmitType(OauthAuthorizeDTO, ['oauthRequestId'] as const) })
   @ApiResponse({ status: HttpStatus.FOUND, description: 'Found' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async authorize(
-    @Query() payloadOauthAuthorize: OauthAuthorizeDTO,
+    @Query() payloadOauthAuthorize: Omit<OauthAuthorizeDTO, 'oauthRequestId'>,
   ): Promise<any> {
     const urlRedirect = await this.oauthService.authorize(
       payloadOauthAuthorize,

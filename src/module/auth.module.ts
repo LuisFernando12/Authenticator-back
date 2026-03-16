@@ -6,11 +6,17 @@ import { AuthService } from '@/service/auth.service';
 import { RedisService } from '@/service/redis.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthLoggerModule } from './auth-logger.module';
 import { EmailModule } from './email.module';
 import { TokenModule } from './token.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), EmailModule, TokenModule],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
+    EmailModule,
+    TokenModule,
+    AuthLoggerModule,
+  ],
   controllers: [AuthController],
   providers: [AuthService, UserRepository, RedisService, AppConfigEnvService],
 })
