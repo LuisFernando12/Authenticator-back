@@ -51,4 +51,7 @@ export class AppConfigEnvService {
   get redisURI(): string {
     return this.config.getOrThrow<string>('REDIS_URI');
   }
+  get clientSecretPepper(): string {
+    return this.config.getOrThrow<string>('CLIENT_SECRET_PEPPER');
+  }
 }

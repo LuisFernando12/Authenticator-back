@@ -122,6 +122,28 @@ describe('AuthService', () => {
       );
       await expect(promise).rejects.toThrow(UnauthorizedException);
     });
+    it('should throw an error to generate token with string token', async () => {
+      mockUser.isVerified = true;
+      mockUserRepository.findByEmail = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser);
+      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
+      const promise = authService.login(mockUser.email, password);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Failure to generate token');
+    });
+    it('should throw an error to generate token with null or undefined token', async () => {
+      mockUser.isVerified = true;
+      mockUserRepository.findByEmail = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser);
+      mockTokenService.generateToken = jest
+        .fn()
+        .mockResolvedValueOnce(undefined);
+      const promise = authService.login(mockUser.email, password);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Failure to generate token');
+    });
   });
   describe('verifyEmail', () => {
     const token = {

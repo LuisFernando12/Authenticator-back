@@ -2,11 +2,13 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { OauthError } from '../../../src/config/errors/oauth.error';
 import { SaveClientDTO } from '../../../src/dto/save-client.dto';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
 import { ClientService } from '../../../src/service/client.service';
 import {
   ClientRepository,
   IClientRepository,
 } from './../../../src/repository/client.repository';
+import { mockAppconfigEnvService } from './mock/appConfigEnv.mock';
 
 describe('ClientService', () => {
   const client: SaveClientDTO = {
@@ -29,6 +31,10 @@ describe('ClientService', () => {
         {
           provide: ClientRepository,
           useValue: mockClientRepository,
+        },
+        {
+          provide: AppConfigEnvService,
+          useValue: mockAppconfigEnvService,
         },
       ],
     }).compile();
