@@ -11,6 +11,7 @@ import { AppConfigModule } from './app-config.module';
 import { AuthModule } from './auth.module';
 import { ClientModule } from './client.module';
 import { EmailModule } from './email.module';
+import { HealthModule } from './health.module';
 import { OauthModule } from './oauth.module';
 import { TokenModule } from './token.module';
 import { UserModule } from './user.module';
@@ -54,6 +55,7 @@ import { UserModule } from './user.module';
     EmailModule,
     ClientModule,
     OauthModule,
+    HealthModule,
   ],
   providers: [
     {

@@ -45,7 +45,9 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.16",
+    "@nestjs/microservices": "^11.1.17",
     "@nestjs/schematics": "^11.0.9",
+    "@nestjs/terminus": "^11.1.1",
     "@nestjs/testing": "^11.1.16",
     "@nestjs/throttler": "^6.5.0",
     "@types/bcrypt": "^6.0.0",
