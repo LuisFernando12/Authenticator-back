@@ -22,7 +22,6 @@ export class HealthController {
     const passwordRedis = this.appConfigEnvService.redisURI
       .split(':')[2]
       .split('@')[0];
-    console.log(passwordRedis);
     return this.health.check([
       () => this.db.pingCheck('database'),
       () =>
