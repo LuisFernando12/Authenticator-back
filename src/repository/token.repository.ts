@@ -5,7 +5,13 @@ import type { Repository } from 'typeorm';
 export interface ITokenRepository {
   create(data: TokenEntityType): any;
   findByUserId(userId: string): Promise<TokenEntity>;
-  update(token: string, expiresAt: Date, id: string): any;
+  update({ id, token, expiresAt, refreshToken }: ITokenUpdate): any;
+}
+interface ITokenUpdate {
+  token: string;
+  expiresAt: Date;
+  id: string;
+  refreshToken?: string;
 }
 @Injectable()
 export class TokenRepository implements ITokenRepository {
@@ -33,9 +39,12 @@ export class TokenRepository implements ITokenRepository {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async update(token: string, expiresAt: Date, id: string) {
+  async update({ id, token, expiresAt, refreshToken }: ITokenUpdate) {
     try {
-      return await this.tokenRepository.update({ id }, { token, expiresAt });
+      return await this.tokenRepository.update(
+        { id },
+        { token, expiresAt, refreshToken },
+      );
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

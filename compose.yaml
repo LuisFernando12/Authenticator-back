@@ -11,9 +11,9 @@ services:
     image: bitnami/postgresql:latest
     container_name: pg-authenticator
     environment:
-      - POSTGRESQL_USERNAME=postgres
-      - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_DATABASE=authenticator
+      - POSTGRESQL_USERNAME=${USER_DB}
+      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
+      - POSTGRESQL_DATABASE=${DB_NAME}
     ports:
       - 5432:5432
     volumes:

@@ -14,7 +14,12 @@ export interface ITokenService {
     scope?: string;
     type?: TypeToken;
   }): Promise<any>;
-  saveToken(token: string, userId: string, expiresAt: Date): Promise<any>;
+  saveToken(
+    token: string,
+    refreshToken: string,
+    userId: string,
+    expiresAt: Date,
+  ): Promise<any>;
   verifyToken(token: string): Promise<any>;
   decodeToken(token: string): Promise<any>;
 }
@@ -32,6 +37,7 @@ export class TokenService implements ITokenService {
   }
   async saveToken(
     token: string,
+    refreshToken: string,
     userId: string,
     expiresAt: Date,
   ): Promise<any> {
@@ -39,24 +45,31 @@ export class TokenService implements ITokenService {
     if (!tokenDB) {
       const tokenSave = await this.tokenRepository.create({
         token,
+        refreshToken,
         user: { id: userId },
         expiresAt: new Date(expiresAt),
       });
       return {
         access_token: tokenSave.token,
+        refresh_token: tokenSave.refreshToken,
         expiresAt: expiresAt.toISOString(),
       };
     } else {
-      const tokenUpdate = await this.tokenRepository.update(
+      const payloadTokenUpdate = {
+        id: tokenDB.id,
         token,
-        expiresAt,
-        tokenDB.id,
-      );
+        expiresAt: new Date(expiresAt),
+      };
+
+      payloadTokenUpdate['refreshToken'] = refreshToken;
+
+      const tokenUpdate = await this.tokenRepository.update(payloadTokenUpdate);
       if (!tokenUpdate.affected) {
         throw new InternalServerErrorException('Failure to update token');
       }
       return {
         access_token: token,
+        refresh_token: refreshToken,
         expiresAt: expiresAt.toISOString(),
       };
     }
@@ -68,24 +81,35 @@ export class TokenService implements ITokenService {
     iss?: string;
     scope?: string;
     type?: TypeToken;
-  }): Promise<{ access_token: string; expiresAt: string } | string> {
-    try {
-      const expiresAt = this.generateExpireAt();
-      const token = await this.jwtService.signAsync(payload, {
-        expiresIn: `15min`,
-        secret: this.appConfigEnvSevice.secret,
-      });
-      if (payload.type === 'verify-email') {
-        return token;
-      }
-      return await this.saveToken(
-        token,
-        payload.sub,
-        new Date(expiresAt * 1000),
-      );
-    } catch (error) {
-      throw new InternalServerErrorException(error);
+  }): Promise<
+    { access_token: string; refresh_token: string; expiresAt: string } | string
+  > {
+    const expiresAt = this.generateExpireAt();
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: `15min`,
+      secret: this.appConfigEnvSevice.secret,
+    });
+    if (!token) {
+      throw new InternalServerErrorException('Failure to generate token');
     }
+    if (payload.type === 'verify-email') {
+      return token;
+    }
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: `15d`,
+      secret: this.appConfigEnvSevice.secret,
+    });
+    if (!refreshToken) {
+      throw new InternalServerErrorException(
+        'Failure to generate refresh token',
+      );
+    }
+    return await this.saveToken(
+      token,
+      refreshToken,
+      payload.sub,
+      new Date(expiresAt * 1000),
+    );
   }
   async verifyToken(token: string): Promise<any> {
     try {

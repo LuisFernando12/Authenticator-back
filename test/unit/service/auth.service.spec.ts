@@ -82,14 +82,16 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      mockTokenService.generateToken = jest
-        .fn()
-        .mockResolvedValueOnce({ token: 'token' });
+      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce({
+        token: 'token',
+        refresh_token: 'refresh_token',
+        expireAt: 'expireAt',
+      });
       const result = await authService.login(mockUser.email, password);
       expect(result).toEqual({
-        token: {
-          token: 'token',
-        },
+        token: 'token',
+        expireAt: expect.any(String),
+        refresh_token: expect.any(String),
         redirect_uri: mockAppconfigEnvService.redirectURI,
       });
     });

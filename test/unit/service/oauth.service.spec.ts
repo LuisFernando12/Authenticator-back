@@ -8,6 +8,7 @@ import { BaseLogger } from '../../../src/config/logger/base-logger';
 import { LoginDTO } from '../../../src/dto/login.dto';
 import {
   OauthAuthorizeDTO,
+  OauthRefreshTokenDTO,
   OauthTokenDTO,
 } from '../../../src/dto/oauth-authorize.dto';
 import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
@@ -741,6 +742,108 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow(
         'Failure to user consent to client',
       );
+    });
+  });
+  describe('refreshToken', () => {
+    const mockUser = {
+      id: 'id-1',
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+    };
+    const payloadOauthRefreshToken: OauthRefreshTokenDTO = {
+      refreshToken: 'refresh-token',
+      grantType: 'refresh_token',
+    };
+    it('should refresh token', async () => {
+      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+        username: 'john.doe@example.com',
+        aud: 'client-id',
+        scope: 'scope 1 scope 2',
+      });
+      mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+      mockUserClientConsentService.findByUserIdAndClientId = jest
+        .fn()
+        .mockResolvedValueOnce(true);
+      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce({
+        token_type: 'Bearer',
+        access_token: 'access_token',
+        refresh_token: 'refresh_token',
+        expiresAt: 'expiresAt',
+      });
+      const result = await oauthService.refreshToken(payloadOauthRefreshToken);
+      expect(result).toEqual({
+        access_token: 'access_token',
+        refresh_token: 'refresh_token',
+        expiresAt: 'expiresAt',
+        token_type: 'Bearer',
+      });
+    });
+    it('should throw an error to invalid grant type', async () => {
+      payloadOauthRefreshToken.grantType = 'invalid-grant-type';
+      const promise = oauthService.refreshToken(payloadOauthRefreshToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid grant type');
+      payloadOauthRefreshToken.grantType = undefined;
+      const anotherPromise = oauthService.refreshToken(
+        payloadOauthRefreshToken,
+      );
+      await expect(anotherPromise).rejects.toThrow(OauthError);
+      await expect(anotherPromise).rejects.toThrow('Invalid grant type');
+    });
+    it('should throw an error to invalid refresh token', async () => {
+      payloadOauthRefreshToken.grantType = 'refresh_token';
+      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce(null);
+      const promise = oauthService.refreshToken(payloadOauthRefreshToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid refresh token');
+    });
+    it('should throw an error to refresh token expired', async () => {
+      mockTokenService.decodeToken = jest
+        .fn()
+        .mockResolvedValueOnce({ exp: 1773797907 });
+      const promise = oauthService.refreshToken(payloadOauthRefreshToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Refresh token expired');
+    });
+    it('should throw an error to invalid credentials', async () => {
+      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+        username: 'john.doe@example.com',
+        aud: 'client-id',
+        scope: 'scope 1 scope 2',
+      });
+      mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(null);
+      const promise = oauthService.refreshToken(payloadOauthRefreshToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid credentials');
+    });
+    it('should throw an error to user consent to client', async () => {
+      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+        username: 'john.doe@example.com',
+        aud: 'client-id',
+        scope: 'scope 1 scope 2',
+      });
+      mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+      mockUserClientConsentService.findByUserIdAndClientId = jest
+        .fn()
+        .mockResolvedValueOnce(null);
+      const promise = oauthService.refreshToken(payloadOauthRefreshToken);
+      await expect(promise).rejects.toThrow(OauthError);
+      await expect(promise).rejects.toThrow('Invalid client ID');
+    });
+    it('should throw an error to generate token', async () => {
+      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+        username: 'john.doe@example.com',
+        aud: 'client-id',
+        scope: 'scope 1 scope 2',
+      });
+      mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+      mockUserClientConsentService.findByUserIdAndClientId = jest
+        .fn()
+        .mockResolvedValueOnce(true);
+      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce(null);
+      const promise = oauthService.refreshToken(payloadOauthRefreshToken);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow('Failure to generate token');
     });
   });
 });

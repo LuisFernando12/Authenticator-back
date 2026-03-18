@@ -11,7 +11,11 @@ import {
 import { ApiBody, ApiQuery, ApiResponse, OmitType } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { LoginDTO } from '../dto/login.dto';
-import { OauthAuthorizeDTO, OauthTokenDTO } from '../dto/oauth-authorize.dto';
+import {
+  OauthAuthorizeDTO,
+  OauthRefreshTokenDTO,
+  OauthTokenDTO,
+} from '../dto/oauth-authorize.dto';
 import { OauthService } from '../service/oauth.service';
 export interface IOauthController {
   authorize(payloadOauthAuthorize: OauthAuthorizeDTO): Promise<{
@@ -26,6 +30,7 @@ export interface IOauthController {
     url: string;
     statusCode: number;
   }>;
+  refreshToken({ refreshToken, grantType }: OauthRefreshTokenDTO): Promise<any>;
 }
 @Controller('oauth')
 export class OauthController implements IOauthController {
@@ -77,5 +82,23 @@ export class OauthController implements IOauthController {
       QueryOauthLogin,
     );
     return { url: urlRedirect.toString(), statusCode: 302 };
+  }
+  @Post('/refresh-token')
+  @ApiBody({ type: OauthRefreshTokenDTO })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Created and returned token',
+  })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request' })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal Server Error',
+  })
+  async refreshToken(
+    @Body() { refreshToken, grantType }: OauthRefreshTokenDTO,
+  ): Promise<any> {
+    return await this.oauthService.refreshToken({ refreshToken, grantType });
   }
 }

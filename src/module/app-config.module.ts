@@ -24,6 +24,7 @@ import * as j from 'joi';
         SERVICE_RESET_PASSWORD_URL: j.string().required(),
         SERVICE_VERIFY_EMAIL_URL: j.string().required(),
         REDIRECT_URI: j.string().required(),
+        CLIENT_SECRET_PEPPER: j.string().required(),
       }),
     }),
   ],

@@ -17,12 +17,15 @@ export class TokenEntity {
   user: UserEntity;
   @Column()
   token: string;
+  @Column({ name: 'refresh_token' })
+  refreshToken: string;
   @Column('timestamp')
   expiresAt: Date;
 }
 
 export interface TokenEntityType {
   user: { id: string };
+  refreshToken: string;
   token: string;
   expiresAt: Date;
 }

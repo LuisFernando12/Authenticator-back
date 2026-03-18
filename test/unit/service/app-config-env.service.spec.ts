@@ -53,7 +53,7 @@ describe('AppConfigEnvService', () => {
       mockConfigService.get = jest
         .fn()
         .mockReturnValue('SERVICE_VERIFY_EMAIL_URL');
-      const result = appConfigEnvService.serviceURL;
+      const result = appConfigEnvService.serviceVerifyEmailURL;
       expect(result).toBe('SERVICE_VERIFY_EMAIL_URL');
     });
     it('should get SERVICE_RESET_PASSWORD_URL', () => {
@@ -106,6 +106,13 @@ describe('AppConfigEnvService', () => {
       mockConfigService.getOrThrow = jest.fn().mockReturnValue('REDIS_URI');
       const result = appConfigEnvService.redisURI;
       expect(result).toBe('REDIS_URI');
+    });
+    it('should get CLIENT_SECRET_PEPPER', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('CLIENT_SECRET_PEPPER');
+      const result = appConfigEnvService.clientSecretPepper;
+      expect(result).toBe('CLIENT_SECRET_PEPPER');
     });
   });
 });

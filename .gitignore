@@ -3,9 +3,7 @@
 /node_modules
 /build
 /data
-compose.yaml
-roadmap.md
-roadmap.jsx
+/docs
 # Logs
 logs
 *.log

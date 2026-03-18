@@ -5,7 +5,11 @@ import { randomBytes } from 'node:crypto';
 import { OauthError } from '../config/errors/oauth.error';
 import { AuthLogger } from '../config/logger/auth-logger.config';
 import { LoginDTO } from '../dto/login.dto';
-import { OauthAuthorizeDTO, OauthTokenDTO } from '../dto/oauth-authorize.dto';
+import {
+  OauthAuthorizeDTO,
+  OauthRefreshTokenDTO,
+  OauthTokenDTO,
+} from '../dto/oauth-authorize.dto';
 import { AppConfigEnvService } from './app-config-env.service';
 import { ClientService } from './client.service';
 import { RedisService } from './redis.service';
@@ -22,6 +26,7 @@ export interface IOauthService {
     expiresAt: string;
   }>;
   login(payloadOauthLogin: any, QueryOauthLogin: any): Promise<any>;
+  refreshToken(payloadOauthRefreshToken: OauthRefreshTokenDTO): Promise<any>;
 }
 export interface IPayloadAuthRequest {
   clientId: string;
@@ -146,6 +151,7 @@ export class OauthService implements IOauthService {
   async token(payloadOauthToken: OauthTokenDTO): Promise<{
     token_type: string;
     access_token: string;
+    refresh_token: string;
     scope: string;
     expiresAt: string;
   }> {
@@ -298,6 +304,7 @@ export class OauthService implements IOauthService {
       return {
         token_type: 'Bearer',
         access_token: accessToken.access_token,
+        refresh_token: accessToken.refresh_token,
         scope: codeRedis.scope,
         expiresAt: accessToken.expiresAt,
       };
@@ -529,5 +536,75 @@ export class OauthService implements IOauthService {
     urlRedirect.searchParams.append('code', code);
     urlRedirect.searchParams.append('state', state);
     return urlRedirect;
+  }
+  async refreshToken(
+    payloadOauthRefreshToken: OauthRefreshTokenDTO,
+  ): Promise<any> {
+    this.authLogger.log('Starting method refreshToken', {
+      context: 'OauthService method refreshToken',
+    });
+    const { refreshToken, grantType } = payloadOauthRefreshToken;
+    if (grantType !== 'refresh_token') {
+      this.authLogger.error(
+        `Unsupported grant type: ${payloadOauthRefreshToken.grantType || ''}`,
+        {
+          context: 'OauthService method refreshToken',
+        },
+      );
+      throw OauthError.invalidGrant(
+        `Invalid grant type: ${payloadOauthRefreshToken.grantType || ''}`,
+      );
+    }
+    const token = await this.tokenService.decodeToken(refreshToken);
+    if (!token) {
+      this.authLogger.error(`Invalid refresh token: ${refreshToken}`, {
+        context: 'OauthService method refreshToken',
+      });
+      throw OauthError.invalidGrant('Invalid refresh token');
+    }
+    if (token.exp < Math.floor(Date.now() / 1000)) {
+      this.authLogger.error(
+        `Refresh token expired,  token exp: ${new Date(token.exp * 1000)}`,
+        {
+          context: 'OauthService method refreshToken',
+        },
+      );
+      throw OauthError.invalidGrant('Refresh token expired');
+    }
+    const userDB = await this.userService.findByEmail(token.username);
+    if (!userDB) {
+      this.authLogger.error(
+        `Invalid credentials user not found with email: ${token.username}`,
+        {
+          context: 'OauthService method refreshToken',
+        },
+      );
+      throw OauthError.unauthorizedClient('Invalid credentials');
+    }
+    const userClientConsentDB =
+      await this.userClientConsentService.findByUserIdAndClientId(
+        userDB.id,
+        token.aud,
+      );
+    if (!userClientConsentDB) {
+      this.authLogger.error(`Invalid client ID: ${token.aud}`, {
+        context: 'OauthService method refreshToken',
+      });
+      throw OauthError.invalidClient('Invalid client ID');
+    }
+    const newtToken = await this.tokenService.generateToken({
+      sub: userDB.id,
+      username: userDB.email,
+      scope: token.scope,
+      aud: token.aud,
+      iss: this.configEnvService.serviceURL,
+    });
+    if (!newtToken || typeof newtToken !== 'object') {
+      this.authLogger.error(`Failure to generate token: ${newtToken}`, {
+        context: 'OauthService method refreshToken',
+      });
+      throw new InternalServerErrorException('Failure to generate token');
+    }
+    return newtToken;
   }
 }

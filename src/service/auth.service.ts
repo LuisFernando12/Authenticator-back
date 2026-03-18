@@ -87,7 +87,7 @@ export class AuthService implements IAuthService {
       context: 'AuthService method Login',
     });
     return {
-      token,
+      ...token,
       redirect_uri: this.appconfigEnvService.redirectURI,
     };
   }

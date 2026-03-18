@@ -52,3 +52,11 @@ export class OauthTokenDTO {
   @ApiProperty()
   codeVerifier?: string;
 }
+export class OauthRefreshTokenDTO {
+  @IsString()
+  @ApiProperty()
+  grantType: string;
+  @IsString()
+  @ApiProperty()
+  refreshToken: string;
+}
