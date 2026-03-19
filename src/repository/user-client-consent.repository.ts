@@ -24,12 +24,8 @@ export class UserClientConsentRepository implements IUserClientConsentRepository
     try {
       const userClientConsent = this.userClientConsentRespository.create({
         ...data,
-        clients: {
-          clientId: data.clientId,
-        },
-        users: {
-          id: data.userId,
-        },
+        clientId: data.clientId,
+        userId: data.userId,
       });
       return await this.userClientConsentRespository.save(userClientConsent);
     } catch (error) {
@@ -42,13 +38,13 @@ export class UserClientConsentRepository implements IUserClientConsentRepository
   ): Promise<UserClientConsentEntity[]> {
     try {
       return this.userClientConsentRespository.find({
+        relations: {
+          users: true,
+          clients: true,
+        },
         where: {
-          users: {
-            id: userId,
-          },
-          clients: {
-            clientId: clientId,
-          },
+          userId: userId,
+          clientId: clientId,
         },
       });
     } catch (error) {

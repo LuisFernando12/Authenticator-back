@@ -4,7 +4,7 @@
   "description": "",
   "author": "Luis Fernando",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -18,7 +18,12 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "typeorm-ts-node-commonjs -d src/config/database/data-source.ts ",
+    "migration:generate": "pnpm typeorm-ts-node-commonjs migration:generate -d src/config/database/data-source.ts src/config/database/migrations/updateRelationUserClientConsent",
+    "migration:run": "pnpm typeorm  migration:run",
+    "migration:revert": "pnpm typeorm  migration:revert",
+    "migration:show": "pnpm typeorm  migration:show"
   },
   "dependencies": {
     "@nestjs-modules/ioredis": "^2.0.2",
@@ -33,6 +38,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "dotenv": "^17.3.1",
     "handlebars": "^4.7.8",
     "ioredis": "^5.10.0",
     "joi": "^18.0.2",
@@ -40,7 +46,6 @@
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "typeorm": "^0.3.28",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -69,6 +74,7 @@
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "typeorm": "^0.3.28",
     "typescript": "^5.9.3"
   }
 }

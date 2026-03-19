@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ClientEntity } from './client.entity';
 import { UserEntity } from './user.entity';
 
@@ -7,10 +13,10 @@ export class UserClientConsentEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   userId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   clientId: string;
 
   @Column({ type: 'text', array: true })
@@ -21,15 +27,23 @@ export class UserClientConsentEntity {
   })
   createAt: Date;
 
-  @ManyToMany(() => UserEntity, (user) => user.id, {
+  @ManyToOne(() => UserEntity, (user) => user.id, {
     cascade: true,
     onDelete: 'CASCADE',
   })
+  @JoinColumn({
+    name: 'user_id',
+    referencedColumnName: 'id',
+  })
   users: UserEntity;
 
-  @ManyToMany(() => ClientEntity, (client) => client.id, {
+  @ManyToOne(() => ClientEntity, (client) => client.id, {
     cascade: true,
     onDelete: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'client_id',
+    referencedColumnName: 'clientId',
   })
   clients: ClientEntity;
 }

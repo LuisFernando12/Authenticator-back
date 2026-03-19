@@ -2,10 +2,11 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
 import { TokenEntity } from './token.entity';
 import { UserClientConsentEntity } from './user-client-consent.entity';
 
@@ -24,7 +25,7 @@ export class UserEntity {
   @OneToOne(() => TokenEntity, (token) => token.user, { cascade: true })
   @JoinColumn()
   token: TokenEntity;
-  @ManyToMany(
+  @OneToMany(
     () => UserClientConsentEntity,
     (userClientConsent) => userClientConsent.users,
   )

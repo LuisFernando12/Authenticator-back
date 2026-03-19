@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserClientConsentEntity } from './user-client-consent.entity';
 
 @Entity('client')
@@ -24,7 +24,7 @@ export class ClientEntity {
   scopes: Array<string>;
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
-  @ManyToMany(
+  @OneToMany(
     () => UserClientConsentEntity,
     (userClientConsent) => userClientConsent.clients,
   )
