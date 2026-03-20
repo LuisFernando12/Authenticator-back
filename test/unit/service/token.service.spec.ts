@@ -1,6 +1,11 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthLogger } from '../../../src/config/logger/auth-logger.config';
 import {
   ITokenRepository,
   TokenRepository,
@@ -10,6 +15,7 @@ import {
   ITokenService,
   TokenService,
 } from '../../../src/service/token.service';
+import { mockAuthLogger } from './mock/logger.mock';
 
 describe('TokenService', () => {
   let tokenService: ITokenService;
@@ -17,6 +23,8 @@ describe('TokenService', () => {
     create: jest.fn(),
     findByUserId: jest.fn(),
     update: jest.fn(),
+    deleteToken: jest.fn(),
+    findByToken: jest.fn(),
   };
   const mockJwtService = {
     sign: jest.fn(),
@@ -43,6 +51,10 @@ describe('TokenService', () => {
         {
           provide: AppConfigEnvService,
           useValue: mockAppconfigEnvService,
+        },
+        {
+          provide: AuthLogger,
+          useValue: mockAuthLogger,
         },
       ],
     }).compile();
@@ -200,6 +212,173 @@ describe('TokenService', () => {
       expect(result).toEqual({
         sub: '1',
         username: 'john.doe@example.com',
+      });
+    });
+  });
+  describe('refreshToken', () => {
+    const tokenResult = {
+      id: '1',
+      userId: 'userId-01',
+      token: 'token',
+      refreshToken: 'refreshToken',
+      expiresAt: new Date('2023-01-01T00:00:00.000Z'),
+    };
+    const mockPayload = {
+      sub: 'sub-01',
+      username: 'jondoe@example.com',
+      aud: 'clientId-01',
+      iss: 'www.exemple.api.com',
+      scope: 'scope1 scope2',
+    };
+    it('should be refresh a token', async () => {
+      jest
+        .spyOn(mockTokenRepository, 'findByUserId')
+        .mockResolvedValueOnce(tokenResult as any)
+        .mockResolvedValueOnce(tokenResult as any);
+      jest
+        .spyOn(mockJwtService, 'signAsync')
+        .mockResolvedValueOnce('newRefreshToken')
+        .mockResolvedValueOnce('newToken');
+      mockTokenRepository.update = jest.fn().mockResolvedValueOnce({
+        affected: 1,
+      });
+
+      const result = await tokenService.refreshToken(
+        mockPayload,
+        'refreshToken',
+      );
+      expect(result).toEqual({
+        access_token: 'newToken',
+        expiresAt: tokenResult.expiresAt.toISOString(),
+        refresh_token: 'newRefreshToken',
+      });
+    });
+    it('should throw an error to refresh token with Token not found ', async () => {
+      mockTokenRepository.findByUserId = jest.fn().mockResolvedValueOnce(null);
+      const promise = tokenService.refreshToken(mockPayload, 'refreshToken');
+      await expect(promise).rejects.toThrow('Token not found');
+      await expect(promise).rejects.toThrow(NotFoundException);
+    });
+    it('should throw an error to refresh token with invalid refresh token ', async () => {
+      mockTokenRepository.findByUserId = jest
+        .fn()
+        .mockResolvedValueOnce(tokenResult as any);
+      const promise = tokenService.refreshToken(
+        mockPayload,
+        'refreshToken-invalid',
+      );
+      await expect(promise).rejects.toThrow('Invalid refresh token');
+      await expect(promise).rejects.toThrow(UnauthorizedException);
+    });
+    it('should throw an error to refresh token with failure to generate refresh token ', async () => {
+      mockTokenRepository.findByUserId = jest
+        .fn()
+        .mockResolvedValueOnce(tokenResult as any);
+      mockJwtService.signAsync = jest.fn().mockResolvedValueOnce(null);
+      const promise = tokenService.refreshToken(mockPayload, 'refreshToken');
+      await expect(promise).rejects.toThrow(
+        'Failure to generate refresh token',
+      );
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+    });
+    it('should throw an error to refresh token with failure to generate new token ', async () => {
+      mockTokenRepository.findByUserId = jest
+        .fn()
+        .mockResolvedValueOnce(tokenResult as any);
+      jest
+        .spyOn(mockJwtService, 'signAsync')
+        .mockResolvedValueOnce('newRefreshToken')
+        .mockResolvedValueOnce(null);
+      const promise = tokenService.refreshToken(mockPayload, 'refreshToken');
+      await expect(promise).rejects.toThrow('Failure to generate new token');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+  describe('revokeToken', () => {
+    const tokenResult = {
+      id: '1',
+      userId: 'userId-01',
+      token: 'token',
+      refreshToken: 'refreshToken',
+      expiresAt: new Date('2023-01-01T00:00:00.000Z'),
+    };
+    it('should revoke a token', async () => {
+      mockTokenRepository.findByToken = jest
+        .fn()
+        .mockResolvedValueOnce(tokenResult);
+      mockTokenRepository.deleteToken = jest.fn().mockResolvedValueOnce({
+        affected: 1,
+      });
+      const result = await tokenService.revokeToken('token');
+      expect(result).toEqual({
+        affected: 1,
+        accessToken: 'token',
+      });
+    });
+    it('should throw an error to revoke token with Token not found ', async () => {
+      mockTokenRepository.findByToken = jest.fn().mockResolvedValueOnce(null);
+      const promise = tokenService.revokeToken('token');
+      await expect(promise).rejects.toThrow('Token not found');
+      await expect(promise).rejects.toThrow(NotFoundException);
+    });
+    it('should throw an error to revoke token with failure to delete token ', async () => {
+      mockTokenRepository.findByToken = jest
+        .fn()
+        .mockResolvedValueOnce(tokenResult);
+      mockTokenRepository.deleteToken = jest.fn().mockResolvedValueOnce({
+        affected: 0,
+      });
+      const promise = tokenService.revokeToken('token');
+      await expect(promise).rejects.toThrow('Failure to delete token');
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+  describe('tokenIntrospect', () => {
+    const tokenResult = {
+      id: '1',
+      userId: 'userId-01',
+      token: 'token',
+      refreshToken: 'refreshToken',
+      expiresAt: new Date('2023-01-01T00:00:00.000Z'),
+    };
+    const tokenVerified = {
+      sub: 'sub-01',
+      username: 'jondoe@example.com',
+      aud: 'cleintId-01',
+      scope: 'scope1 scope2',
+      exp: 1,
+      iat: 1,
+    };
+    it('should introspect a token', async () => {
+      mockTokenRepository.findByToken = jest
+        .fn()
+        .mockResolvedValueOnce(tokenResult);
+      mockJwtService.verifyAsync = jest
+        .fn()
+        .mockResolvedValueOnce(tokenVerified);
+      const result = await tokenService.tokenIntrospect('token');
+      expect(result).toEqual({
+        active: true,
+        sub: 'sub-01',
+        client_id: 'cleintId-01',
+        scope: 'scope1 scope2',
+        exp: 1,
+        iat: 1,
+      });
+    });
+    it('should reuturn active false when token not found', async () => {
+      mockTokenRepository.findByToken = jest.fn().mockResolvedValueOnce(null);
+      const result = await tokenService.tokenIntrospect('token');
+      expect(result).toEqual({ active: false });
+    });
+    it('should return active false when token is invalid', async () => {
+      mockTokenRepository.findByToken = jest
+        .fn()
+        .mockResolvedValueOnce(tokenResult);
+      mockJwtService.verifyAsync = jest.fn().mockResolvedValueOnce(null);
+      const result = await tokenService.tokenIntrospect('token');
+      expect(result).toEqual({
+        active: false,
       });
     });
   });

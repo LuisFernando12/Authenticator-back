@@ -13,7 +13,7 @@ import {
 import { AppConfigEnvService } from './app-config-env.service';
 import { ClientService } from './client.service';
 import { RedisService } from './redis.service';
-import { TokenService } from './token.service';
+import { IResponseTokenIntrospect, TokenService } from './token.service';
 import { UserClientConsentService } from './user-client-consent.service';
 import { UserService } from './user.service';
 
@@ -27,6 +27,10 @@ export interface IOauthService {
   }>;
   login(payloadOauthLogin: any, QueryOauthLogin: any): Promise<any>;
   refreshToken(payloadOauthRefreshToken: OauthRefreshTokenDTO): Promise<any>;
+  revokeToken(token: string): Promise<any>;
+  tokenIntrospect(
+    token: string,
+  ): Promise<IResponseTokenIntrospect | { active: boolean }>;
 }
 export interface IPayloadAuthRequest {
   clientId: string;
@@ -592,19 +596,90 @@ export class OauthService implements IOauthService {
       });
       throw OauthError.invalidClient('Invalid client ID');
     }
-    const newtToken = await this.tokenService.generateToken({
-      sub: userDB.id,
-      username: userDB.email,
-      scope: token.scope,
-      aud: token.aud,
-      iss: this.configEnvService.serviceURL,
-    });
-    if (!newtToken || typeof newtToken !== 'object') {
-      this.authLogger.error(`Failure to generate token: ${newtToken}`, {
+    const newAccessToken = await this.tokenService.refreshToken(
+      {
+        sub: userDB.id,
+        username: userDB.email,
+        scope: token.scope,
+        aud: token.aud,
+        iss: this.configEnvService.serviceURL,
+      },
+      refreshToken,
+    );
+    if (!newAccessToken || typeof newAccessToken !== 'object') {
+      this.authLogger.error(`Failure to generate token: ${newAccessToken}`, {
         context: 'OauthService method refreshToken',
       });
       throw new InternalServerErrorException('Failure to generate token');
     }
-    return newtToken;
+    return newAccessToken;
+  }
+  async revokeToken(token: string): Promise<any> {
+    this.authLogger.log('Starting method revokeToken', {
+      context: 'OauthService method revokeToken',
+    });
+    const tokenIsValid = await this.tokenService.verifyToken(token);
+    if (!tokenIsValid) {
+      this.authLogger.error(`Invalid token: ${JSON.stringify(token)}`, {
+        context: 'OauthService method revokeToken',
+      });
+      throw OauthError.invalidRequest('Invalid token');
+    }
+    const tokenExpire = new Date(tokenIsValid.exp * 1000);
+    if (tokenExpire < new Date()) {
+      this.authLogger.error(`Token expired: ${tokenExpire}`, {
+        context: 'OauthService method revokeToken',
+      });
+      throw OauthError.invalidRequest('Token expired');
+    }
+    const tokenDeletedOnDB = await this.tokenService.revokeToken(token);
+    if (!tokenDeletedOnDB) {
+      this.authLogger.error(`Failure to revoke token: ${tokenDeletedOnDB}`, {
+        context: 'OauthService method revokeToken',
+      });
+      throw new InternalServerErrorException('Failure to revoke token');
+    }
+    const tokenDecoded = await this.tokenService.decodeToken(
+      tokenDeletedOnDB.accessToken,
+    );
+    const tokenDecodedExpires = new Date(tokenDecoded.exp * 1000);
+    const timeToExpireToken = Math.floor(
+      (tokenDecodedExpires.getTime() - new Date().getTime()) / 1000,
+    );
+    const revokeTokenBlocklist = await this.redisService.set(
+      `revoke-token-blocklist:${tokenDeletedOnDB.accessToken}`,
+      tokenDeletedOnDB.accessToken,
+      'EX',
+      timeToExpireToken || 300,
+    );
+    if (revokeTokenBlocklist !== 'OK') {
+      this.authLogger.error(
+        'Failure to save token like blocked on redis with the key: revoke-token-blocklist',
+        { context: 'OauthService method revokeToken' },
+      );
+      throw new InternalServerErrorException(
+        'Failure to save token like blocked on redis !',
+      );
+    }
+    return { message: 'Token revoked successfully' };
+  }
+  async tokenIntrospect(
+    token: string,
+  ): Promise<IResponseTokenIntrospect | { active: boolean }> {
+    this.authLogger.log('Starting method tokenIntrospect', {
+      context: 'OauthService method tokenIntrospect',
+    });
+    const tokenIsBolecked = await this.redisService.get(
+      `revoke-token-blocklist:${token}`,
+    );
+    if (tokenIsBolecked) {
+      this.authLogger.error(`Token is blocked: ${token}`, {
+        context: 'OauthService method tokenIntrospect',
+      });
+      return { active: false };
+    }
+    const tokenIntrospect = await this.tokenService.tokenIntrospect(token);
+
+    return tokenIntrospect;
   }
 }

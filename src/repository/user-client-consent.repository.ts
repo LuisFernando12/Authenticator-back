@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserClientConsentResponseDTO } from '../dto/user-client-consent-response.dto';
-import { UserClientConsentDTO } from '../dto/user-client-consent.dto';
+import { IUserClientConsentResponse } from '../dto/user-client-consent-response.interface';
+import { IUserClientConsent } from '../dto/user-client-consent.dto';
 import { UserClientConsentEntity } from '../entity/user-client-consent.entity';
 export interface IUserClientConsentRepository {
-  create(data: Partial<UserClientConsentDTO>): Promise<any>;
+  create(data: Partial<IUserClientConsent>): Promise<any>;
   findByUserIdAndClientId(
     userId: string,
     clientId: string,
@@ -19,8 +19,8 @@ export class UserClientConsentRepository implements IUserClientConsentRepository
     private readonly userClientConsentRespository: Repository<UserClientConsentEntity>,
   ) {}
   async create(
-    data: Partial<UserClientConsentDTO>,
-  ): Promise<UserClientConsentResponseDTO> {
+    data: Partial<IUserClientConsent>,
+  ): Promise<IUserClientConsentResponse> {
     try {
       const userClientConsent = this.userClientConsentRespository.create({
         ...data,

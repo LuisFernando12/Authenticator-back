@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserClientConsentDTO } from '../../../src/dto/user-client-consent.dto';
+import { IUserClientConsent } from '../../../src/dto/user-client-consent.dto';
 import { UserClientConsentRepository } from '../../../src/repository/user-client-consent.repository';
 import {
   IUserClientConsentService,
@@ -14,7 +14,7 @@ import { mockUserClientConsentRespository } from './mock/userClient.mock';
 
 describe('UserClientConsentService', () => {
   let userClientConsentService: IUserClientConsentService;
-  const mockUserClientConsent: UserClientConsentDTO = {
+  const mockUserClientConsent: IUserClientConsent = {
     userId: 'user-id',
     clientId: 'client-id',
     scopes: ['read', 'write'],

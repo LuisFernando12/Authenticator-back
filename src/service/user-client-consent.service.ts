@@ -4,16 +4,16 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { UserClientConsentResponseDTO } from '../dto/user-client-consent-response.dto';
-import { UserClientConsentDTO } from '../dto/user-client-consent.dto';
+import { IUserClientConsentResponse } from '../dto/user-client-consent-response.interface';
+import { IUserClientConsent } from '../dto/user-client-consent.dto';
 import { UserClientConsentRepository } from '../repository/user-client-consent.repository';
 export interface IUserClientConsentService {
-  create(userClientConsentPayload: UserClientConsentDTO): Promise<boolean>;
+  create(userClientConsentPayload: IUserClientConsent): Promise<boolean>;
   findByUserIdAndClientId(
     userId: string,
     clientId: string,
-  ): Promise<UserClientConsentResponseDTO[]>;
-  findByUserId(userId: string): Promise<UserClientConsentResponseDTO[]>;
+  ): Promise<IUserClientConsentResponse[]>;
+  findByUserId(userId: string): Promise<IUserClientConsentResponse[]>;
 }
 @Injectable()
 export class UserClientConsentService implements IUserClientConsentService {
@@ -21,9 +21,7 @@ export class UserClientConsentService implements IUserClientConsentService {
     private readonly userClientConsentRepository: UserClientConsentRepository,
   ) {}
 
-  async create(
-    userClientConsentPayload: UserClientConsentDTO,
-  ): Promise<boolean> {
+  async create(userClientConsentPayload: IUserClientConsent): Promise<boolean> {
     const userClientConsentDB = await this.userClientConsentRepository.create(
       userClientConsentPayload,
     );
@@ -37,7 +35,7 @@ export class UserClientConsentService implements IUserClientConsentService {
   async findByUserIdAndClientId(
     userId: string,
     clientId: string,
-  ): Promise<UserClientConsentResponseDTO[]> {
+  ): Promise<IUserClientConsentResponse[]> {
     if (!userId || !clientId) {
       throw new BadRequestException('Invalid params');
     }
@@ -51,7 +49,7 @@ export class UserClientConsentService implements IUserClientConsentService {
     }
     return userClientConsentDB;
   }
-  async findByUserId(userId: string): Promise<UserClientConsentResponseDTO[]> {
+  async findByUserId(userId: string): Promise<IUserClientConsentResponse[]> {
     if (!userId) {
       throw new BadRequestException('Invalid param');
     }

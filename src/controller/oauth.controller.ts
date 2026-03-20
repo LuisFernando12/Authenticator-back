@@ -16,6 +16,7 @@ import {
   OauthRefreshTokenDTO,
   OauthTokenDTO,
 } from '../dto/oauth-authorize.dto';
+import { RevokeTokenDTO, TokenIntrospectDTO } from '../dto/token.dto';
 import { OauthService } from '../service/oauth.service';
 export interface IOauthController {
   authorize(payloadOauthAuthorize: OauthAuthorizeDTO): Promise<{
@@ -31,6 +32,8 @@ export interface IOauthController {
     statusCode: number;
   }>;
   refreshToken({ refreshToken, grantType }: OauthRefreshTokenDTO): Promise<any>;
+  revokeToken({ token }: RevokeTokenDTO): Promise<any>;
+  tokenIntrospect({ token }: TokenIntrospectDTO): Promise<any>;
 }
 @Controller('oauth')
 export class OauthController implements IOauthController {
@@ -84,6 +87,7 @@ export class OauthController implements IOauthController {
     return { url: urlRedirect.toString(), statusCode: 302 };
   }
   @Post('/refresh-token')
+  @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: OauthRefreshTokenDTO })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -100,5 +104,29 @@ export class OauthController implements IOauthController {
     @Body() { refreshToken, grantType }: OauthRefreshTokenDTO,
   ): Promise<any> {
     return await this.oauthService.refreshToken({ refreshToken, grantType });
+  }
+  @Post('/revoke-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Token revoked successfully',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request' })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal Server Error',
+  })
+  async revokeToken(@Body() { token }: RevokeTokenDTO): Promise<any> {
+    return await this.oauthService.revokeToken(token);
+  }
+  @Post('/token-introspect')
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Token introspected successfully',
+  })
+  async tokenIntrospect(@Body() { token }: TokenIntrospectDTO): Promise<any> {
+    return await this.oauthService.tokenIntrospect(token);
   }
 }
