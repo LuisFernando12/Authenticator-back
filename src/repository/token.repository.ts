@@ -54,11 +54,11 @@ export class TokenRepository implements ITokenRepository {
   async findByToken(token: string): Promise<TokenEntity> {
     try {
       return this.tokenRepository
-        .createQueryBuilder()
-        .where({
+        .createQueryBuilder('token')
+        .where('token.token = :token', {
           token: token,
         })
-        .orWhere({
+        .orWhere('token.refreshToken = :refreshToken', {
           refreshToken: token,
         })
         .getOne();

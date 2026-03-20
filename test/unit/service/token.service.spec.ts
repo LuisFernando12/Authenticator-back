@@ -16,6 +16,7 @@ import {
   TokenService,
 } from '../../../src/service/token.service';
 import { mockAuthLogger } from './mock/logger.mock';
+import { mockTokenService } from './mock/token.mock';
 
 describe('TokenService', () => {
   let tokenService: ITokenService;
@@ -221,7 +222,7 @@ describe('TokenService', () => {
       userId: 'userId-01',
       token: 'token',
       refreshToken: 'refreshToken',
-      expiresAt: new Date('2023-01-01T00:00:00.000Z'),
+      expiresAt: mockTokenService.generateExpireAt(),
     };
     const mockPayload = {
       sub: 'sub-01',
@@ -249,7 +250,9 @@ describe('TokenService', () => {
       );
       expect(result).toEqual({
         access_token: 'newToken',
-        expiresAt: tokenResult.expiresAt.toISOString(),
+        expiresAt: new Date(
+          mockTokenService.generateExpireAt() * 1000,
+        ).toISOString(),
         refresh_token: 'newRefreshToken',
       });
     });

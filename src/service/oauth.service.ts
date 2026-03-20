@@ -559,7 +559,7 @@ export class OauthService implements IOauthService {
         `Invalid grant type: ${payloadOauthRefreshToken.grantType || ''}`,
       );
     }
-    const token = await this.tokenService.decodeToken(refreshToken);
+    const token = await this.tokenService.verifyToken(refreshToken);
     if (!token) {
       this.authLogger.error(`Invalid refresh token: ${refreshToken}`, {
         context: 'OauthService method refreshToken',

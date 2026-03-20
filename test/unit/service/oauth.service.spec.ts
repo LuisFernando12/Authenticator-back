@@ -755,7 +755,7 @@ describe('OauthService', () => {
       grantType: 'refresh_token',
     };
     it('should refresh token', async () => {
-      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
         username: 'john.doe@example.com',
         aud: 'client-id',
         scope: 'scope 1 scope 2',
@@ -792,13 +792,13 @@ describe('OauthService', () => {
     });
     it('should throw an error to invalid refresh token', async () => {
       payloadOauthRefreshToken.grantType = 'refresh_token';
-      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce(null);
+      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce(null);
       const promise = oauthService.refreshToken(payloadOauthRefreshToken);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Invalid refresh token');
     });
     it('should throw an error to refresh token expired', async () => {
-      mockTokenService.decodeToken = jest
+      mockTokenService.verifyToken = jest
         .fn()
         .mockResolvedValueOnce({ exp: 1773797907 });
       const promise = oauthService.refreshToken(payloadOauthRefreshToken);
@@ -806,7 +806,7 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Refresh token expired');
     });
     it('should throw an error to invalid credentials', async () => {
-      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
         username: 'john.doe@example.com',
         aud: 'client-id',
         scope: 'scope 1 scope 2',
@@ -817,7 +817,7 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid credentials');
     });
     it('should throw an error to user consent to client', async () => {
-      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
         username: 'john.doe@example.com',
         aud: 'client-id',
         scope: 'scope 1 scope 2',
@@ -831,7 +831,7 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid client ID');
     });
     it('should throw an error to generate token', async () => {
-      mockTokenService.decodeToken = jest.fn().mockResolvedValueOnce({
+      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
         username: 'john.doe@example.com',
         aud: 'client-id',
         scope: 'scope 1 scope 2',

@@ -166,11 +166,13 @@ export class TokenService implements ITokenService {
     if (!newAccessToken) {
       throw new InternalServerErrorException('Failure to generate new token');
     }
+    const expireAt = this.generateExpireAt();
+
     return this.saveToken(
       newAccessToken,
       refreshToken,
       payload.sub,
-      tokenDB.expiresAt,
+      new Date(expireAt * 1000),
     );
   }
   async revokeToken(
