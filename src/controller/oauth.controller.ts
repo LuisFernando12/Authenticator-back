@@ -86,7 +86,9 @@ export class OauthController implements IOauthController {
     );
     return { url: urlRedirect.toString(), statusCode: 302 };
   }
+
   @Post('/refresh-token')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: OauthRefreshTokenDTO })
   @ApiResponse({
@@ -106,6 +108,7 @@ export class OauthController implements IOauthController {
     return await this.oauthService.refreshToken({ refreshToken, grantType });
   }
   @Post('/revoke-token')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: String })
   @ApiResponse({
@@ -121,6 +124,7 @@ export class OauthController implements IOauthController {
     return await this.oauthService.revokeToken(token);
   }
   @Post('/token-introspect')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: HttpStatus.OK,
