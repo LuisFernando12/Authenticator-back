@@ -158,11 +158,11 @@ All endpoints are prefixed with `/api/auth`.
 
 | Method | Route                     | Description                       | Rate Limit |
 | ------ | ------------------------- | --------------------------------- | ---------- |
-| `POST` | `/login`                  | User login                        | 4 req/min  |
-| `GET`  | `/verify-email?token=`    | Activates account via JWT token   | —          |
-| `POST` | `/reset-password`         | Requests password reset by email  | 4 req/min  |
-| `POST` | `/new-password`           | Sets new password with Redis code | 4 req/min  |
-| `POST` | `/new-token/email-active` | Resends activation email          | 4 req/min  |
+| `POST` | `/login`                  | User login                        | 5 req/min  |
+| `GET`  | `/verify-email?token=`    | Activates account via JWT token   | 5 req/min  |
+| `POST` | `/reset-password`         | Requests password reset by email  | 5 req/min  |
+| `POST` | `/new-password`           | Sets new password with Redis code | 5 req/min  |
+| `POST` | `/new-token/email-active` | Resends activation email          | 5 req/min  |
 
 ### User — `/api/auth/user`
 
@@ -172,11 +172,14 @@ All endpoints are prefixed with `/api/auth`.
 
 ### OAuth2 — `/api/auth/oauth`
 
-| Method | Route        | Description                                                           | Rate Limit |
-| ------ | ------------ | --------------------------------------------------------------------- | ---------- |
-| `GET`  | `/authorize` | Starts OAuth2 flow, returns redirect with `oauthRequestId`            | —          |
-| `POST` | `/login`     | OAuth2 login — validates authRequest and generates `code`             | 5 req/min  |
-| `POST` | `/token`     | Exchanges `code` for `access_token` (PKCE and clientSecret supported) | 5 req/min  |
+| Method | Route               | Description                                                                                                 | Rate Limit |
+| ------ | ------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- |
+| `GET`  | `/authorize`        | Starts OAuth2 flow, returns redirect with `oauthRequestId`                                                  | —          |
+| `POST` | `/login`            | OAuth2 login — validates authRequest and generates `code`                                                   | 5 req/min  |
+| `POST` | `/token`            | Exchanges `code` for `access_token` (PKCE and clientSecret supported)                                       | 5 req/min  |
+| `POST` | `/refrash-token`    | Refreshes `access_token` and `refresh_token` passing a valid `refreshToken` on payload                      | 5 req/min  |
+| `POST` | `/revoke-token`     | Revokes `access_token` and `refresh_token` passing `refreshToken` or `accessToken` like token on payload    | 5 req/min  |
+| `POST` | `/token-introspect` | Introspects `access_token` or `refresh_token` passing `refreshToken` or `accessToken` like token on payload | 5 req/min  |
 
 ### Client — `/api/auth/client`
 

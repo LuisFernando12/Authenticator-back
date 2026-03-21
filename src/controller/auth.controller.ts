@@ -27,7 +27,7 @@ export interface IAuthController {
 }
 
 @Controller()
-@Throttle({ default: { limit: 4, ttl: 60000 } })
+@Throttle({ default: { limit: 5, ttl: 60000 } })
 export class AuthController implements IAuthController {
   constructor(private readonly authService: AuthService) {}
 
