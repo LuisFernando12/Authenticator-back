@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/LuisFernando12/Authenticator/compare/v1.1.1...v1.2.0) (2026-03-30)
+
+
+### Features
+
+* implement multi-token support and opaque refresh tokens ([9927989](https://github.com/LuisFernando12/Authenticator/commit/992798916fb998aa475509aa9f8f3ed37042b692))
+
 # [1.2.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.1.1-beta.1...v1.2.0-beta.1) (2026-03-30)
 
 
