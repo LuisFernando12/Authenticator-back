@@ -79,18 +79,6 @@ describe('UserClientConsentService', () => {
       await expect(promise).rejects.toThrow(BadRequestException);
       await expect(promise).rejects.toThrow('Invalid params');
     });
-    it('should throw an error to find a  consent by userId and clientId', async () => {
-      mockUserClientConsentRespository.findByUserIdAndClientId = jest
-        .fn()
-        .mockResolvedValueOnce(null);
-      const promise = userClientConsentService.findByUserIdAndClientId(
-        mockUserClientConsent.userId,
-        mockUserClientConsent.clientId,
-      );
-
-      await expect(promise).rejects.toThrow(NotFoundException);
-      await expect(promise).rejects.toThrow('Consents not found');
-    });
   });
   describe('findByUserId', () => {
     it('should find a user client consent by userId', async () => {
@@ -116,6 +104,22 @@ describe('UserClientConsentService', () => {
       );
       await expect(promise).rejects.toThrow(NotFoundException);
       await expect(promise).rejects.toThrow('Consents not found');
+    });
+  });
+  describe('findByConsentId', () => {
+    it('should find a user client consent by consentId', async () => {
+      mockUserClientConsentRespository.findByConsentId = jest
+        .fn()
+        .mockResolvedValueOnce(mockUserClientConsent);
+      const result = await userClientConsentService.findByConsentId(
+        mockUserClientConsent.userId,
+      );
+      expect(result).toEqual(mockUserClientConsent);
+    });
+    it('should throw an error to invalid param', async () => {
+      const promise = userClientConsentService.findByConsentId(null);
+      await expect(promise).rejects.toThrow(BadRequestException);
+      await expect(promise).rejects.toThrow('Invalid param');
     });
   });
 });

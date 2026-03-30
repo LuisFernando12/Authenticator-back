@@ -3,11 +3,16 @@ import { ITokenService } from '../../../src/service/token.service';
 export const mockTokenService: ITokenService & {
   generateExpireAt: () => number;
   generateRefreshToken: () => void;
+  getSecondByDays: () => number;
 } = {
   generateExpireAt: (seconds: number = 900): number => {
     const expiresAt = new Date(Date.now() + seconds * 1000);
     return Math.floor(expiresAt.valueOf() / 1000);
   },
+  getSecondByDays: (): number => {
+    return 15 * (24 * 60 * 60);
+  },
+  hashRefreshToken: jest.fn().mockResolvedValue('hashedRefreshToken'),
   generateToken: jest.fn().mockResolvedValue('token'),
   generateRefreshToken: jest.fn().mockResolvedValue('refreshToken'),
   saveToken: jest.fn().mockResolvedValue({
@@ -22,4 +27,5 @@ export const mockTokenService: ITokenService & {
   refreshToken: jest.fn(),
   revokeToken: jest.fn(),
   tokenIntrospect: jest.fn(),
+  findByRefreshToken: jest.fn(),
 };

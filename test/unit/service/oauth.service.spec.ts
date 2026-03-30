@@ -213,6 +213,9 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockToken);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+      mockUserClientConsentService.findByUserIdAndClientId = jest
+        .fn()
+        .mockResolvedValueOnce({ id: 'id-01' });
       const result = await oauthService.token(payloadOauthToken);
       expect(result).toEqual(mockTokenResponse);
     });
@@ -236,6 +239,11 @@ describe('OauthService', () => {
         .fn()
         .mockResolvedValueOnce(mockToken);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
+      mockUserClientConsentService.findByUserIdAndClientId = jest
+        .fn()
+        .mockResolvedValueOnce({
+          id: 'id-01',
+        });
       const result = await oauthService.token(payloadOauthToken);
       expect(result).toEqual(mockTokenResponse);
     });
@@ -401,6 +409,11 @@ describe('OauthService', () => {
         .mockResolvedValueOnce(mockClient);
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       mockRedisService.getdel = jest.fn().mockResolvedValueOnce(mockCode);
+      mockUserClientConsentService.findByUserIdAndClientId = jest
+        .fn()
+        .mockResolvedValueOnce({
+          id: 'id-01',
+        });
       mockTokenService.generateToken = jest.fn().mockResolvedValueOnce(null);
       const promise = oauthService.token(payloadOauthToken);
       await expect(promise).rejects.toThrow(InternalServerErrorException);
@@ -486,9 +499,12 @@ describe('OauthService', () => {
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
 
       jest.spyOn(mockRedisService, 'set').mockResolvedValueOnce('code');
-      mockUserClientConsentService.create = jest
+      mockUserClientConsentService.findByUserIdAndClientId = jest
         .fn()
-        .mockResolvedValueOnce(true);
+        .mockResolvedValueOnce({
+          id: 'id-01',
+        });
+
       const result = await oauthService.login(
         payloadOauthLogin,
         selfQueryOauthLogin,
@@ -508,6 +524,9 @@ describe('OauthService', () => {
         .mockResolvedValueOnce('code')
         .mockResolvedValueOnce('code-challenge')
         .mockResolvedValueOnce('code-challenge-method');
+      mockUserClientConsentService.findByUserIdAndClientId = jest
+        .fn()
+        .mockResolvedValueOnce(null);
       mockUserClientConsentService.create = jest
         .fn()
         .mockResolvedValueOnce(true);
@@ -755,15 +774,21 @@ describe('OauthService', () => {
       grantType: 'refresh_token',
     };
     it('should refresh token', async () => {
-      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
-        username: 'john.doe@example.com',
-        aud: 'client-id',
-        scope: 'scope 1 scope 2',
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        user: {
+          ...mockUser,
+        },
+        consentId: 'consent-id',
       });
+
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
-      mockUserClientConsentService.findByUserIdAndClientId = jest
+      mockUserClientConsentService.findByConsentId = jest
         .fn()
-        .mockResolvedValueOnce(true);
+        .mockResolvedValueOnce({
+          consentId: 'consent-id',
+          clientId: 'client-id',
+          scopes: ['scope 1', 'scope 2'],
+        });
       mockTokenService.refreshToken = jest.fn().mockResolvedValueOnce({
         token_type: 'Bearer',
         access_token: 'access_token',
@@ -798,18 +823,23 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid refresh token');
     });
     it('should throw an error to refresh token expired', async () => {
-      mockTokenService.verifyToken = jest
-        .fn()
-        .mockResolvedValueOnce({ exp: 1773797907 });
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        user: {
+          ...mockUser,
+        },
+        expiresAt: '2026-03-11 22:36:14',
+      });
       const promise = oauthService.refreshToken(payloadOauthRefreshToken);
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Refresh token expired');
     });
     it('should throw an error to invalid credentials', async () => {
-      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
-        username: 'john.doe@example.com',
-        aud: 'client-id',
-        scope: 'scope 1 scope 2',
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        user: {
+          ...mockUser,
+        },
+        expiresAt: '2026-04-11 22:36:14',
+        consentId: 'consent-id-01',
       });
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(null);
       const promise = oauthService.refreshToken(payloadOauthRefreshToken);
@@ -817,10 +847,11 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid credentials');
     });
     it('should throw an error to user consent to client', async () => {
-      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
-        username: 'john.doe@example.com',
-        aud: 'client-id',
-        scope: 'scope 1 scope 2',
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        user: {
+          ...mockUser,
+        },
+        expiresAt: '2026-04-11 22:36:14',
       });
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       mockUserClientConsentService.findByUserIdAndClientId = jest
@@ -831,15 +862,20 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid client ID');
     });
     it('should throw an error to generate token', async () => {
-      mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce({
-        username: 'john.doe@example.com',
-        aud: 'client-id',
-        scope: 'scope 1 scope 2',
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        user: {
+          ...mockUser,
+        },
+        expiresAt: '2026-04-11 22:36:14',
+        consentId: 'consent-id-01',
       });
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
-      mockUserClientConsentService.findByUserIdAndClientId = jest
+      mockUserClientConsentService.findByConsentId = jest
         .fn()
-        .mockResolvedValueOnce(true);
+        .mockResolvedValueOnce({
+          clientId: 'client-id',
+          scopes: ['scope 1', 'scope 2'],
+        });
       mockTokenService.generateToken = jest.fn().mockResolvedValueOnce(null);
       const promise = oauthService.refreshToken(payloadOauthRefreshToken);
       await expect(promise).rejects.toThrow(InternalServerErrorException);

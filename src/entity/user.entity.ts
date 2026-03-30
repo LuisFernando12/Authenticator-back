@@ -3,7 +3,6 @@ import {
   Entity,
   JoinColumn,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -22,12 +21,12 @@ export class UserEntity {
   password: string;
   @Column({ default: false })
   isVerified: boolean;
-  @OneToOne(() => TokenEntity, (token) => token.user, { cascade: true })
+  @OneToMany(() => TokenEntity, (token) => token.user, { cascade: true }) //One user can have N token
   @JoinColumn()
   token: TokenEntity;
   @OneToMany(
     () => UserClientConsentEntity,
-    (userClientConsent) => userClientConsent.users,
+    (userClientConsent) => userClientConsent.user,
   )
   userClientConsent: UserClientConsentEntity[];
   @Column('time with time zone', {
