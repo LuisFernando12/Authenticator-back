@@ -290,14 +290,22 @@ export class OauthService implements IOauthService {
         );
         throw OauthError.unauthorizedClient('Invalid credentials');
       }
+      const userClientConsentDB =
+        await this.userClientConsentService.findByUserIdAndClientId(
+          userDB.id,
+          clientId,
+        );
 
-      const accessToken = await this.tokenService.generateToken({
-        sub: userDB.id,
-        username: userDB.email,
-        scope: codeRedis.scope,
-        aud: clientDB.clientId,
-        iss: this.configEnvService.serviceURL,
-      });
+      const accessToken = await this.tokenService.generateToken(
+        {
+          sub: userDB.id,
+          username: userDB.email,
+          scope: codeRedis.scope,
+          aud: clientDB.clientId,
+          iss: this.configEnvService.serviceURL,
+        },
+        userClientConsentDB.id,
+      );
       if (!accessToken || typeof accessToken !== 'object') {
         this.authLogger.error(`Failure to generate token: ${accessToken}`, {
           context: 'OauthService method token',
@@ -519,19 +527,28 @@ export class OauthService implements IOauthService {
       });
       throw new InternalServerErrorException('Failure to save code on redis');
     }
-    const userClientConsent = await this.userClientConsentService.create({
-      userId: userDB.id,
-      clientId,
-      scopes: scope.split(' '),
-    });
-    if (!userClientConsent) {
-      this.authLogger.error(
-        `Failure to create user client consent: ${userClientConsent}`,
-        {
-          context: 'OauthService method login',
-        },
+    const userClientConsentsDB =
+      await this.userClientConsentService.findByUserIdAndClientId(
+        userDB.id,
+        clientId,
       );
-      throw OauthError.unauthorizedClient('Failure to user consent to client');
+    if (!userClientConsentsDB) {
+      const userClientConsent = await this.userClientConsentService.create({
+        userId: userDB.id,
+        clientId,
+        scopes: scope.split(' '),
+      });
+      if (!userClientConsent) {
+        this.authLogger.error(
+          `Failure to create user client consent: ${userClientConsent}`,
+          {
+            context: 'OauthService method login',
+          },
+        );
+        throw OauthError.unauthorizedClient(
+          'Failure to user consent to client',
+        );
+      }
     }
     this.authLogger.log('Successful login request', {
       context: 'OauthService method login',
@@ -559,26 +576,30 @@ export class OauthService implements IOauthService {
         `Invalid grant type: ${payloadOauthRefreshToken.grantType || ''}`,
       );
     }
-    const token = await this.tokenService.verifyToken(refreshToken);
-    if (!token) {
-      this.authLogger.error(`Invalid refresh token: ${refreshToken}`, {
+    const hash = this.tokenService.hashRefreshToken(refreshToken);
+    const refreshTokenDB = await this.tokenService.findByRefreshToken(hash);
+
+    if (!refreshTokenDB) {
+      this.authLogger.error(`Invalid refresh token: ${hash}`, {
         context: 'OauthService method refreshToken',
       });
-      throw OauthError.invalidGrant('Invalid refresh token');
+      throw OauthError.invalidClient('Invalid refresh token');
     }
-    if (token.exp < Math.floor(Date.now() / 1000)) {
+    if (new Date(refreshTokenDB.expiresAt) < new Date()) {
       this.authLogger.error(
-        `Refresh token expired,  token exp: ${new Date(token.exp * 1000)}`,
+        `Refresh token expired: ${refreshTokenDB.expiresAt}`,
         {
           context: 'OauthService method refreshToken',
         },
       );
-      throw OauthError.invalidGrant('Refresh token expired');
+      throw OauthError.invalidClient('Refresh token expired');
     }
-    const userDB = await this.userService.findByEmail(token.username);
+    const userDB = await this.userService.findByEmail(
+      refreshTokenDB.user.email,
+    );
     if (!userDB) {
       this.authLogger.error(
-        `Invalid credentials user not found with email: ${token.username}`,
+        `Invalid credentials user not found with email: ${refreshTokenDB.user.email}`,
         {
           context: 'OauthService method refreshToken',
         },
@@ -586,25 +607,26 @@ export class OauthService implements IOauthService {
       throw OauthError.unauthorizedClient('Invalid credentials');
     }
     const userClientConsentDB =
-      await this.userClientConsentService.findByUserIdAndClientId(
-        userDB.id,
-        token.aud,
+      await this.userClientConsentService.findByConsentId(
+        refreshTokenDB.consentId,
       );
     if (!userClientConsentDB) {
-      this.authLogger.error(`Invalid client ID: ${token.aud}`, {
+      this.authLogger.error(`Invalid client`, {
         context: 'OauthService method refreshToken',
       });
       throw OauthError.invalidClient('Invalid client ID');
     }
+
     const newAccessToken = await this.tokenService.refreshToken(
       {
         sub: userDB.id,
         username: userDB.email,
-        scope: token.scope,
-        aud: token.aud,
+        scope: userClientConsentDB.scopes.join(' '),
+        aud: userClientConsentDB.clientId,
         iss: this.configEnvService.serviceURL,
       },
-      refreshToken,
+      hash,
+      refreshTokenDB.consentId,
     );
     if (!newAccessToken || typeof newAccessToken !== 'object') {
       this.authLogger.error(`Failure to generate token: ${newAccessToken}`, {
@@ -640,15 +662,15 @@ export class OauthService implements IOauthService {
       throw new InternalServerErrorException('Failure to revoke token');
     }
     const tokenDecoded = await this.tokenService.decodeToken(
-      tokenDeletedOnDB.accessToken,
+      tokenDeletedOnDB.refreshToken,
     );
     const tokenDecodedExpires = new Date(tokenDecoded.exp * 1000);
     const timeToExpireToken = Math.floor(
       (tokenDecodedExpires.getTime() - new Date().getTime()) / 1000,
     );
     const revokeTokenBlocklist = await this.redisService.set(
-      `revoke-token-blocklist:${tokenDeletedOnDB.accessToken}`,
-      tokenDeletedOnDB.accessToken,
+      `revoke-token-blocklist:${tokenDeletedOnDB.refreshToken}`,
+      tokenDeletedOnDB.refreshToken,
       'EX',
       timeToExpireToken || 300,
     );

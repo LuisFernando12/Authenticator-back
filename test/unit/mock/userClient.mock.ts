@@ -5,9 +5,11 @@ export const mockUserClientConsentRespository: IUserClientConsentRepository = {
   create: jest.fn(),
   findByUserIdAndClientId: jest.fn(),
   findByUserId: jest.fn(),
+  findByConsentId: jest.fn(),
 };
 export const mockUserClientConsentService: IUserClientConsentService = {
   create: jest.fn(),
   findByUserIdAndClientId: jest.fn(),
   findByUserId: jest.fn(),
+  findByConsentId: jest.fn(),
 };

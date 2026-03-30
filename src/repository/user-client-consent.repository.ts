@@ -9,8 +9,9 @@ export interface IUserClientConsentRepository {
   findByUserIdAndClientId(
     userId: string,
     clientId: string,
-  ): Promise<UserClientConsentEntity[]>;
+  ): Promise<UserClientConsentEntity>;
   findByUserId(userId: string): Promise<UserClientConsentEntity[]>;
+  findByConsentId(consentId: string): Promise<UserClientConsentEntity>;
 }
 @Injectable()
 export class UserClientConsentRepository implements IUserClientConsentRepository {
@@ -27,41 +28,47 @@ export class UserClientConsentRepository implements IUserClientConsentRepository
         clientId: data.clientId,
         userId: data.userId,
       });
-      return await this.userClientConsentRespository.save(userClientConsent);
+      return (await this.userClientConsentRespository.save(
+        userClientConsent,
+      )) as any;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
-  findByUserIdAndClientId(
+  async findByUserIdAndClientId(
     userId: string,
     clientId: string,
-  ): Promise<UserClientConsentEntity[]> {
+  ): Promise<UserClientConsentEntity> {
+    try {
+      return await this.userClientConsentRespository
+        .createQueryBuilder('userClientConsent')
+        .where('userClientConsent.userId = :userId', { userId })
+        .andWhere('userClientConsent.clientId = :clientId', { clientId })
+        .getOne();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+  async findByUserId(userId: string): Promise<UserClientConsentEntity[]> {
     try {
       return this.userClientConsentRespository.find({
-        relations: {
-          users: true,
-          clients: true,
-        },
         where: {
-          userId: userId,
-          clientId: clientId,
+          userId,
         },
       });
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
-  findByUserId(userId: string): Promise<UserClientConsentEntity[]> {
+  async findByConsentId(consentId: string): Promise<UserClientConsentEntity> {
     try {
-      return this.userClientConsentRespository.find({
+      return this.userClientConsentRespository.findOne({
         where: {
-          users: {
-            id: userId,
-          },
+          id: consentId,
         },
       });
-    } catch (error) {
-      throw new InternalServerErrorException(error);
+    } catch (_error) {
+      throw new InternalServerErrorException('Failure to find consent');
     }
   }
 }

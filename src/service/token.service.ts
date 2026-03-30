@@ -7,7 +7,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { createHash, randomBytes } from 'node:crypto';
 import { DeleteResult } from 'typeorm';
+import { TokenEntity } from '../entity/token.entity';
 import { AppConfigEnvService } from './app-config-env.service';
 
 export interface IResponseTokenIntrospect {
@@ -29,12 +31,15 @@ interface IGenerateToken {
   type?: TypeToken;
 }
 export interface ITokenService {
-  generateToken(payload: IGenerateToken): Promise<any>;
+  generateToken(payload: IGenerateToken, consentId?: string): Promise<any>;
+  hashRefreshToken(refreshToken: string): string;
   saveToken(
     token: string,
     refreshToken: string,
     userId: string,
     expiresAt: Date,
+    consentId?: string,
+    oldRefreshTokenId?: string,
   ): Promise<any>;
   verifyToken(token: string): Promise<any>;
   decodeToken(token: string): Promise<any>;
@@ -44,6 +49,7 @@ export interface ITokenService {
   ): Promise<any>;
   revokeToken(token: string): Promise<any>;
   tokenIntrospect(token: string): Promise<any>;
+  findByRefreshToken(refreshToken: string): Promise<TokenEntity>;
 }
 
 @Injectable()
@@ -54,69 +60,64 @@ export class TokenService implements ITokenService {
     private appConfigEnvSevice: AppConfigEnvService,
     private readonly AuthLogger: AuthLogger,
   ) {}
-  private generateExpireAt(seconds: number = 900): number {
+  private getSecondsByDays(days: number): number {
+    return days * (24 * 60 * 60);
+  }
+  private generateExpireAt(seconds: number): number {
     const expiresAt = new Date(Date.now() + seconds * 1000);
     return Math.floor(expiresAt.valueOf() / 1000);
   }
-  private async generateRefreshToken(payload: IGenerateToken) {
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: `15d`,
-      secret: this.appConfigEnvSevice.secret,
-    });
-    if (!refreshToken) {
-      throw new InternalServerErrorException(
-        'Failure to generate refresh token',
-      );
-    }
+  private generateRefreshToken() {
+    const refreshToken = randomBytes(64).toString('base64url');
     return refreshToken;
   }
-
+  hashRefreshToken(refreshToken: string): string {
+    return createHash('sha256').update(refreshToken).digest('base64url');
+  }
   async saveToken(
     token: string,
     refreshToken: string,
     userId: string,
     expiresAt: Date,
+    consentId?: string,
+    oldRefreshTokenId?: string,
   ): Promise<any> {
-    const tokenDB = await this.tokenRepository.findByUserId(userId);
-    if (!tokenDB) {
-      const tokenSave = await this.tokenRepository.create({
-        token,
-        refreshToken,
-        user: { id: userId },
-        expiresAt: new Date(expiresAt),
+    const payloadToken = {
+      refreshToken: this.hashRefreshToken(refreshToken),
+      user: { id: userId },
+      expiresAt,
+    };
+    if (consentId) {
+      payloadToken['consentId'] = consentId;
+    }
+    if (!oldRefreshTokenId) {
+      const tokenSave = await this.tokenRepository.create(payloadToken);
+      if (!tokenSave) {
+        throw new InternalServerErrorException('Failure to save token');
+      }
+    }
+    if (oldRefreshTokenId) {
+      const updateTokenDB = await this.tokenRepository.update({
+        id: oldRefreshTokenId,
+        ...payloadToken,
       });
-      return {
-        access_token: tokenSave.token,
-        refresh_token: tokenSave.refreshToken,
-        expiresAt: expiresAt.toISOString(),
-      };
-    } else {
-      const payloadTokenUpdate = {
-        id: tokenDB.id,
-        token,
-        expiresAt: new Date(expiresAt),
-      };
-
-      payloadTokenUpdate['refreshToken'] = refreshToken;
-
-      const tokenUpdate = await this.tokenRepository.update(payloadTokenUpdate);
-      if (!tokenUpdate.affected) {
+      if (!updateTokenDB || updateTokenDB.affected === 0) {
         throw new InternalServerErrorException('Failure to update token');
       }
-      return {
-        access_token: token,
-        refresh_token: refreshToken,
-        expiresAt: expiresAt.toISOString(),
-      };
     }
+    return {
+      access_token: token,
+      refresh_token: refreshToken,
+      expiresAt: expiresAt.toISOString(),
+    };
   }
-
   async generateToken(
     payload: IGenerateToken,
+    consentId?: string,
   ): Promise<
     { access_token: string; refresh_token: string; expiresAt: string } | string
   > {
-    const expiresAt = this.generateExpireAt();
+    const expiresAt = this.generateExpireAt(this.getSecondsByDays(15));
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: `15min`,
       secret: this.appConfigEnvSevice.secret,
@@ -127,12 +128,13 @@ export class TokenService implements ITokenService {
     if (payload.type === 'verify-email') {
       return token;
     }
-    const refreshToken = await this.generateRefreshToken(payload);
+    const refreshToken = this.generateRefreshToken();
     return await this.saveToken(
       token,
       refreshToken,
       payload.sub,
       new Date(expiresAt * 1000),
+      consentId,
     );
   }
   async verifyToken(token: string): Promise<any> {
@@ -150,15 +152,17 @@ export class TokenService implements ITokenService {
   async refreshToken(
     payload: Omit<IGenerateToken, 'type'>,
     token: string,
+    consentId?: string,
   ): Promise<any> {
     const tokenDB = await this.tokenRepository.findByUserId(payload.sub);
-    if (!tokenDB) {
+    if (!tokenDB || tokenDB.length === 0) {
       throw new NotFoundException('Token not found');
     }
-    if (tokenDB.refreshToken !== token) {
+    const refreshTokenDB = tokenDB.find((item) => item.refreshToken === token);
+    if (!refreshTokenDB) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-    const refreshToken = await this.generateRefreshToken(payload);
+    const refreshToken = this.generateRefreshToken();
     const newAccessToken = await this.jwtService.signAsync(payload, {
       expiresIn: `15min`,
       secret: this.appConfigEnvSevice.secret,
@@ -166,19 +170,20 @@ export class TokenService implements ITokenService {
     if (!newAccessToken) {
       throw new InternalServerErrorException('Failure to generate new token');
     }
-    const expireAt = this.generateExpireAt();
-
+    const expireAt = this.generateExpireAt(this.getSecondsByDays(15));
     return this.saveToken(
       newAccessToken,
       refreshToken,
       payload.sub,
       new Date(expireAt * 1000),
+      consentId,
+      refreshTokenDB.id,
     );
   }
   async revokeToken(
     token: string,
-  ): Promise<DeleteResult & { accessToken: string }> {
-    const tokenDB = await this.tokenRepository.findByToken(token);
+  ): Promise<DeleteResult & { refreshToken: string }> {
+    const tokenDB = await this.tokenRepository.findByRefreshToken(token);
     if (!tokenDB) {
       throw new NotFoundException('Token not found');
     }
@@ -189,7 +194,7 @@ export class TokenService implements ITokenService {
 
     return {
       ...tokenDelete,
-      accessToken: tokenDB.token,
+      refreshToken: tokenDB.refreshToken,
     };
   }
   async tokenIntrospect(
@@ -198,13 +203,6 @@ export class TokenService implements ITokenService {
     this.AuthLogger.log('Starting method tokenIntrospect', {
       context: 'TokenService method tokenIntrospect',
     });
-    const tokenDB = await this.tokenRepository.findByToken(token);
-    if (!tokenDB) {
-      this.AuthLogger.error(`Token not found: ${token}`, {
-        context: 'TokenService method tokenIntrospect',
-      });
-      return { active: false };
-    }
     const tokenIsValid = await this.verifyToken(token);
     if (!tokenIsValid) {
       this.AuthLogger.error('Invalid token', {
@@ -221,5 +219,8 @@ export class TokenService implements ITokenService {
       exp: tokenIsValid.exp,
       iat: tokenIsValid.iat,
     };
+  }
+  async findByRefreshToken(refreshToken: string): Promise<TokenEntity> {
+    return await this.tokenRepository.findByRefreshToken(refreshToken);
   }
 }

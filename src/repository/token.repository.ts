@@ -4,13 +4,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { DeleteResult, Repository } from 'typeorm';
 export interface ITokenRepository {
   create(data: TokenEntityType): any;
-  findByUserId(userId: string): Promise<TokenEntity>;
-  update({ id, token, expiresAt, refreshToken }: ITokenUpdate): any;
-  findByToken(token: string): Promise<TokenEntity>;
+  findByUserId(userId: string): Promise<TokenEntity[]>;
+  update({ id, expiresAt, refreshToken }: ITokenUpdate): any;
+  findByRefreshToken(token: string): Promise<TokenEntity>;
   deleteToken(token: TokenEntity): Promise<DeleteResult>;
 }
 interface ITokenUpdate {
-  token: string;
   expiresAt: Date;
   id: string;
   refreshToken?: string;
@@ -28,9 +27,9 @@ export class TokenRepository implements ITokenRepository {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async findByUserId(userId: string): Promise<TokenEntity> {
+  async findByUserId(userId: string): Promise<TokenEntity[]> {
     try {
-      return await this.tokenRepository.findOne({
+      return await this.tokenRepository.find({
         where: {
           user: {
             id: userId,
@@ -41,27 +40,26 @@ export class TokenRepository implements ITokenRepository {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async update({ id, token, expiresAt, refreshToken }: ITokenUpdate) {
+  async update({ id, expiresAt, refreshToken }: ITokenUpdate) {
     try {
       return await this.tokenRepository.update(
         { id },
-        { token, expiresAt, refreshToken },
+        { expiresAt, refreshToken },
       );
     } catch (error: any) {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async findByToken(token: string): Promise<TokenEntity> {
+  async findByRefreshToken(token: string): Promise<TokenEntity> {
     try {
-      return this.tokenRepository
-        .createQueryBuilder('token')
-        .where('token.token = :token', {
-          token: token,
-        })
-        .orWhere('token.refreshToken = :refreshToken', {
+      return this.tokenRepository.findOne({
+        where: {
           refreshToken: token,
-        })
-        .getOne();
+        },
+        relations: {
+          user: true,
+        },
+      });
     } catch (error: any) {
       throw new InternalServerErrorException(error.message);
     }

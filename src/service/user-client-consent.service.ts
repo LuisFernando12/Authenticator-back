@@ -4,7 +4,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { IUserClientConsentResponse } from '../dto/user-client-consent-response.interface';
+import {
+  IUserClientConsentResponse,
+  IUserClientConsentResponseWithoutRelations,
+} from '../dto/user-client-consent-response.interface';
 import { IUserClientConsent } from '../dto/user-client-consent.dto';
 import { UserClientConsentRepository } from '../repository/user-client-consent.repository';
 export interface IUserClientConsentService {
@@ -12,8 +15,11 @@ export interface IUserClientConsentService {
   findByUserIdAndClientId(
     userId: string,
     clientId: string,
-  ): Promise<IUserClientConsentResponse[]>;
+  ): Promise<IUserClientConsentResponse>;
   findByUserId(userId: string): Promise<IUserClientConsentResponse[]>;
+  findByConsentId(
+    consentId: string,
+  ): Promise<IUserClientConsentResponseWithoutRelations>;
 }
 @Injectable()
 export class UserClientConsentService implements IUserClientConsentService {
@@ -35,7 +41,7 @@ export class UserClientConsentService implements IUserClientConsentService {
   async findByUserIdAndClientId(
     userId: string,
     clientId: string,
-  ): Promise<IUserClientConsentResponse[]> {
+  ): Promise<IUserClientConsentResponse> {
     if (!userId || !clientId) {
       throw new BadRequestException('Invalid params');
     }
@@ -44,10 +50,7 @@ export class UserClientConsentService implements IUserClientConsentService {
         userId,
         clientId,
       );
-    if (!userClientConsentDB || userClientConsentDB.length === 0) {
-      throw new NotFoundException('Consents not found');
-    }
-    return userClientConsentDB;
+    return userClientConsentDB as any;
   }
   async findByUserId(userId: string): Promise<IUserClientConsentResponse[]> {
     if (!userId) {
@@ -58,6 +61,14 @@ export class UserClientConsentService implements IUserClientConsentService {
     if (!userClientConsentDB || userClientConsentDB.length === 0) {
       throw new NotFoundException('Consents not found');
     }
-    return userClientConsentDB;
+    return userClientConsentDB as any;
+  }
+  async findByConsentId(
+    consentId: string,
+  ): Promise<IUserClientConsentResponseWithoutRelations> {
+    if (!consentId) {
+      throw new BadRequestException('Invalid param');
+    }
+    return await this.userClientConsentRepository.findByConsentId(consentId);
   }
 }

@@ -8,6 +8,7 @@ export class ClientEntity {
   @Column({
     nullable: false,
     unique: true,
+    name: 'client_id',
   })
   clientId: string;
   @Column({ nullable: true, unique: true })
@@ -26,7 +27,7 @@ export class ClientEntity {
   isActive: boolean;
   @OneToMany(
     () => UserClientConsentEntity,
-    (userClientConsent) => userClientConsent.clients,
+    (userClientConsent) => userClientConsent.client,
   )
   userClientConsent: UserClientConsentEntity[];
   @Column('timestamp with time zone', {
