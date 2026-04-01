@@ -15,6 +15,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
+    "test:clear": "jest --clearCache",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:cov:watch": "jest --coverage --watch",

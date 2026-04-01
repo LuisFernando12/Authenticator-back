@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
@@ -220,22 +221,60 @@ describe('AuthService', () => {
     });
   });
   describe('newPassword', () => {
-    const password = 'password123';
+    const password = 'password1234';
     const code = 123456;
     const email = 'john.doe@example.com';
     it('should update password', async () => {
-      mockRedisService.getdel = jest.fn().mockResolvedValueOnce(code);
+      mockUserRepository.findByEmail = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser);
+      mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
       mockUserRepository.updatePassword = jest.fn().mockResolvedValueOnce(true);
       const result = await authService.newPassword(password, code, email);
       expect(result).toEqual({ message: 'Updated password' });
     });
+    it('should throw an error to update password with invalid user', async () => {
+      mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
+      mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce(null);
+      const promise = authService.newPassword(password, code, email);
+      await expect(promise).rejects.toBeInstanceOf(NotFoundException);
+      await expect(promise).rejects.toThrow('User not found');
+    });
+    it('should throw an error to update password with user unverified', async () => {
+      mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
+      mockUserRepository.findByEmail = jest
+        .fn()
+        .mockResolvedValueOnce({ ...mockUser, isVerified: false });
+      const promise = authService.newPassword(password, code, email);
+      await expect(promise).rejects.toBeInstanceOf(BadRequestException);
+      await expect(promise).rejects.toThrow('User not verified');
+    });
+    it('should throw an error to update password with password already used', async () => {
+      mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
+      mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce({
+        ...mockUser,
+        password: encryptPassword(password),
+      });
+      const promise = authService.newPassword(password, code, email);
+      await expect(promise).rejects.toBeInstanceOf(ConflictException);
+      await expect(promise).rejects.toThrow(
+        'Password already used, please try again with another password!',
+      );
+    });
     it('should throw an error to update password with invalid code', async () => {
+      mockUserRepository.findByEmail = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser);
       mockRedisService.get = jest.fn().mockResolvedValueOnce(null);
       const promise = authService.newPassword(password, code, email);
       await expect(promise).rejects.toThrow('Invalid code !');
       await expect(promise).rejects.toThrow(BadRequestException);
     });
     it('should throw an error to update password with failure to update password', async () => {
+      mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
+      mockUserRepository.findByEmail = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser);
       mockRedisService.getdel = jest.fn().mockResolvedValueOnce(code);
       mockUserRepository.updatePassword = jest
         .fn()

@@ -6,6 +6,7 @@ import { EmailService } from '@/service/email.service';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { handlebarsSplitCharsHelper } from '../config/helper/handlebars-split-chars.healper';
 @Module({
   imports: [
     MailerModule.forRootAsync({
@@ -21,7 +22,7 @@ import { join } from 'path';
         },
         template: {
           dir: join(process.cwd(), '/src/templates'),
-          adapter: new HandlebarsAdapter(),
+          adapter: new HandlebarsAdapter(handlebarsSplitCharsHelper),
           options: {
             strict: true,
           },
