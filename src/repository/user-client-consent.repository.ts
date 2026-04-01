@@ -28,9 +28,7 @@ export class UserClientConsentRepository implements IUserClientConsentRepository
         clientId: data.clientId,
         userId: data.userId,
       });
-      return (await this.userClientConsentRespository.save(
-        userClientConsent,
-      )) as any;
+      return await this.userClientConsentRespository.save(userClientConsent);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

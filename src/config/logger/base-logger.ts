@@ -21,6 +21,6 @@ export class BaseLogger extends ConsoleLogger implements IBaseLogger {
     if (!payload.writeStreamType) {
       payload['writeStreamType'] = 'stdout';
     }
-    this.printAsJson(message, payload as any);
+    this.printAsJson(message, payload);
   }
 }

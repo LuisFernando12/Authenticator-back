@@ -7,8 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { createHash, randomBytes } from 'node:crypto';
-import { DeleteResult } from 'typeorm';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { TokenEntity } from '../entity/token.entity';
 import { AppConfigEnvService } from './app-config-env.service';
 
@@ -19,36 +18,59 @@ export interface IResponseTokenIntrospect {
   scope: string;
   exp: number;
   iat: number;
+  jti: string;
 }
-
-type TypeToken = 'verify-email' | '';
-interface IGenerateToken {
+export interface IGenerateToken {
   sub: string;
   username: string;
+  scope?: string;
   aud?: string;
   iss?: string;
-  scope?: string;
-  type?: TypeToken;
+  type?: 'verify-email' | '';
+}
+export interface IResponseGenerateToken {
+  access_token: string;
+  refresh_token: string;
+  expiresAt: string;
+}
+export interface IResponseVerifyToken extends IGenerateToken {
+  jti: string;
+  iat: number;
+  exp: number;
+}
+export interface ISaveToken {
+  token: string;
+  refreshToken: string;
+  userId: string;
+  expiresAt: Date;
+  consentId?: string;
+  oldRefreshTokenId?: string;
+  jti?: string;
 }
 export interface ITokenService {
-  generateToken(payload: IGenerateToken, consentId?: string): Promise<any>;
-  hashRefreshToken(refreshToken: string): string;
-  saveToken(
-    token: string,
-    refreshToken: string,
-    userId: string,
-    expiresAt: Date,
+  generateToken(
+    payload: IGenerateToken,
     consentId?: string,
-    oldRefreshTokenId?: string,
-  ): Promise<any>;
-  verifyToken(token: string): Promise<any>;
-  decodeToken(token: string): Promise<any>;
+  ): Promise<IResponseGenerateToken | string>;
+  hashRefreshToken(refreshToken: string): string;
+  saveToken({
+    token,
+    refreshToken,
+    userId,
+    expiresAt,
+    consentId,
+    oldRefreshTokenId,
+    jti,
+  }: ISaveToken): Promise<IResponseGenerateToken>;
+  verifyToken(token: string): Promise<IResponseVerifyToken>;
   refreshToken(
     payload: Omit<IGenerateToken, 'type'>,
     token: string,
-  ): Promise<any>;
-  revokeToken(token: string): Promise<any>;
-  tokenIntrospect(token: string): Promise<any>;
+  ): Promise<IResponseGenerateToken>;
+  revokeToken(token: string): Promise<void>;
+  tokenIntrospect(
+    token: string,
+  ): Promise<IResponseTokenIntrospect | { active: boolean }>;
   findByRefreshToken(refreshToken: string): Promise<TokenEntity>;
 }
 
@@ -74,18 +96,20 @@ export class TokenService implements ITokenService {
   hashRefreshToken(refreshToken: string): string {
     return createHash('sha256').update(refreshToken).digest('base64url');
   }
-  async saveToken(
-    token: string,
-    refreshToken: string,
-    userId: string,
-    expiresAt: Date,
-    consentId?: string,
-    oldRefreshTokenId?: string,
-  ): Promise<any> {
+  async saveToken({
+    token,
+    refreshToken,
+    userId,
+    expiresAt,
+    consentId,
+    oldRefreshTokenId,
+    jti,
+  }: ISaveToken): Promise<IResponseGenerateToken> {
     const payloadToken = {
       refreshToken: this.hashRefreshToken(refreshToken),
       user: { id: userId },
       expiresAt,
+      jti,
     };
     if (consentId) {
       payloadToken['consentId'] = consentId;
@@ -114,10 +138,10 @@ export class TokenService implements ITokenService {
   async generateToken(
     payload: IGenerateToken,
     consentId?: string,
-  ): Promise<
-    { access_token: string; refresh_token: string; expiresAt: string } | string
-  > {
+  ): Promise<IResponseGenerateToken | string> {
     const expiresAt = this.generateExpireAt(this.getSecondsByDays(15));
+    const jti = randomUUID();
+    payload['jti'] = jti;
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: `15min`,
       secret: this.appConfigEnvSevice.secret,
@@ -129,31 +153,29 @@ export class TokenService implements ITokenService {
       return token;
     }
     const refreshToken = this.generateRefreshToken();
-    return await this.saveToken(
-      token,
-      refreshToken,
-      payload.sub,
-      new Date(expiresAt * 1000),
+    return await this.saveToken({
+      token: token,
+      refreshToken: refreshToken,
+      userId: payload.sub,
+      expiresAt: new Date(expiresAt * 1000),
       consentId,
-    );
+      jti,
+    });
   }
-  async verifyToken(token: string): Promise<any> {
+  async verifyToken(token: string): Promise<IResponseVerifyToken> {
     try {
       return await this.jwtService.verifyAsync(token, {
         secret: this.appConfigEnvSevice.secret,
       });
     } catch (_error) {
-      return false;
+      throw new UnauthorizedException('Invalid token');
     }
-  }
-  async decodeToken(token: string): Promise<any> {
-    return await this.jwtService.decode(token);
   }
   async refreshToken(
     payload: Omit<IGenerateToken, 'type'>,
     token: string,
     consentId?: string,
-  ): Promise<any> {
+  ): Promise<IResponseGenerateToken> {
     const tokenDB = await this.tokenRepository.findByUserId(payload.sub);
     if (!tokenDB || tokenDB.length === 0) {
       throw new NotFoundException('Token not found');
@@ -163,6 +185,8 @@ export class TokenService implements ITokenService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     const refreshToken = this.generateRefreshToken();
+    const jti = randomUUID();
+    payload['jti'] = jti;
     const newAccessToken = await this.jwtService.signAsync(payload, {
       expiresIn: `15min`,
       secret: this.appConfigEnvSevice.secret,
@@ -171,54 +195,45 @@ export class TokenService implements ITokenService {
       throw new InternalServerErrorException('Failure to generate new token');
     }
     const expireAt = this.generateExpireAt(this.getSecondsByDays(15));
-    return this.saveToken(
-      newAccessToken,
-      refreshToken,
-      payload.sub,
-      new Date(expireAt * 1000),
+    return this.saveToken({
+      token: newAccessToken,
+      refreshToken: refreshToken,
+      userId: payload.sub,
+      expiresAt: new Date(expireAt * 1000),
       consentId,
-      refreshTokenDB.id,
-    );
+      oldRefreshTokenId: refreshTokenDB.id,
+      jti,
+    });
   }
-  async revokeToken(
-    token: string,
-  ): Promise<DeleteResult & { refreshToken: string }> {
-    const tokenDB = await this.tokenRepository.findByRefreshToken(token);
-    if (!tokenDB) {
-      throw new NotFoundException('Token not found');
-    }
-    const tokenDelete = await this.tokenRepository.deleteToken(tokenDB);
-    if (!tokenDelete.affected) {
+  async revokeToken(token: string): Promise<void> {
+    const tokenDelete = await this.tokenRepository.deleteToken(token);
+    if (tokenDelete.affected === 0) {
       throw new InternalServerErrorException('Failure to delete token');
     }
-
-    return {
-      ...tokenDelete,
-      refreshToken: tokenDB.refreshToken,
-    };
   }
   async tokenIntrospect(
     token: string,
   ): Promise<IResponseTokenIntrospect | { active: boolean }> {
-    this.AuthLogger.log('Starting method tokenIntrospect', {
-      context: 'TokenService method tokenIntrospect',
-    });
-    const tokenIsValid = await this.verifyToken(token);
-    if (!tokenIsValid) {
+    try {
+      this.AuthLogger.log('Starting method tokenIntrospect', {
+        context: 'TokenService method tokenIntrospect',
+      });
+      const tokenIsValid = await this.verifyToken(token);
+      return {
+        active: true,
+        sub: tokenIsValid.sub,
+        client_id: tokenIsValid.aud,
+        scope: tokenIsValid.scope,
+        jti: tokenIsValid.jti,
+        exp: tokenIsValid.exp,
+        iat: tokenIsValid.iat,
+      };
+    } catch (_error) {
       this.AuthLogger.error('Invalid token', {
         context: 'TokenService method tokenIntrospect',
       });
       return { active: false };
     }
-
-    return {
-      active: true,
-      sub: tokenIsValid.sub,
-      client_id: tokenIsValid.aud,
-      scope: tokenIsValid.scope,
-      exp: tokenIsValid.exp,
-      iat: tokenIsValid.iat,
-    };
   }
   async findByRefreshToken(refreshToken: string): Promise<TokenEntity> {
     return await this.tokenRepository.findByRefreshToken(refreshToken);

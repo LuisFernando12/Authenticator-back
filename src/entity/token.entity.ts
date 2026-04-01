@@ -25,6 +25,8 @@ export class TokenEntity {
   )
   @JoinColumn({ name: 'consent_id', referencedColumnName: 'id' })
   userClientConsent: UserClientConsentEntity;
+  @Column({ name: 'jti', nullable: false, type: 'uuid' })
+  jti: string;
   @Column({ name: 'consent_id', nullable: true })
   consentId?: string;
   @Column({ name: 'refresh_token' })
@@ -37,4 +39,5 @@ export interface TokenEntityType {
   user: { id: string };
   refreshToken: string;
   expiresAt: Date;
+  jti: string;
 }

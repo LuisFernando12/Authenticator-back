@@ -70,10 +70,7 @@ describe('TokenService', () => {
       username: 'john.doe@example.com',
     };
     it('should generate a object token with payload', async () => {
-      jest
-        .spyOn(mockJwtService, 'signAsync')
-        .mockResolvedValueOnce('token')
-        .mockResolvedValueOnce('refreshToken');
+      jest.spyOn(mockJwtService, 'signAsync').mockResolvedValueOnce('token');
       tokenService.saveToken = jest.fn().mockResolvedValueOnce({
         access_token: 'token',
         refresh_token: 'refreshToken',
@@ -110,6 +107,7 @@ describe('TokenService', () => {
       userId: '1',
       expiresAt: new Date('2023-01-01T00:00:00.000Z'),
       consentId: 'consentId',
+      jti: 'jti-01',
     };
     const payload = {
       refreshToken: data.refreshToken,
@@ -119,47 +117,28 @@ describe('TokenService', () => {
     };
     it('should save a token with consentId', async () => {
       mockTokenRepository.create = jest.fn().mockResolvedValueOnce(payload);
-      const result = await tokenService.saveToken(
-        data.token,
-        data.refreshToken,
-        data.userId,
-        data.expiresAt,
-        data.consentId,
-      );
+      const result = await tokenService.saveToken(data);
       expect(mockTokenRepository.create).toHaveBeenCalledWith({
-        refreshToken: expect.any(String),
+        refreshToken: mockTokenService.hashRefreshToken(data.refreshToken),
         user: { id: data.userId },
         expiresAt: data.expiresAt,
         consentId: data.consentId,
+        jti: data.jti,
       });
       expect(result).toEqual({
         access_token: 'token',
         refresh_token: 'refreshToken',
         expiresAt: data.expiresAt.toISOString(),
       });
-      //   refreshToken: data.refreshToken,
-      //   user: { id: data.userId },
-      //   expiresAt: data.expiresAt,
-      // });
-      // expect(result).toEqual({
-      //   access_token: data.token,
-      //   refresh_token: data.refreshToken,
-      //   expiresAt: data.expiresAt.toISOString(),
-      // });
     });
     it('should update a token when has a oldRefreshToken', async () => {
-      data['oldRefreshToken'] = 'oldRefreshToken';
       mockTokenRepository.update = jest.fn().mockResolvedValueOnce({
         affected: 1,
       });
-      const result = await tokenService.saveToken(
-        data.token,
-        data.refreshToken,
-        data.userId,
-        data.expiresAt,
-        data.consentId,
-        'oldRefreshToken',
-      );
+      const result = await tokenService.saveToken({
+        ...data,
+        oldRefreshTokenId: 'oldRefreshTokenId',
+      });
       expect(result).toEqual({
         access_token: data.token,
         refresh_token: data.refreshToken,
@@ -168,13 +147,7 @@ describe('TokenService', () => {
     });
     it('should throw an error to save token with failure to save token', async () => {
       mockTokenRepository.create = jest.fn().mockResolvedValueOnce(null);
-      const promise = tokenService.saveToken(
-        data.token,
-        data.refreshToken,
-        data.userId,
-        data.expiresAt,
-        data.consentId,
-      );
+      const promise = tokenService.saveToken(data);
       await expect(promise).rejects.toBeInstanceOf(
         InternalServerErrorException,
       );
@@ -185,28 +158,20 @@ describe('TokenService', () => {
       mockTokenRepository.update = jest.fn().mockResolvedValueOnce({
         affected: 0,
       });
-      const promise = tokenService.saveToken(
-        data.token,
-        data.refreshToken,
-        data.userId,
-        data.expiresAt,
-        data.consentId,
-        'oldRefreshToken',
-      );
+      const promise = tokenService.saveToken({
+        ...data,
+        oldRefreshTokenId: 'oldRefreshTokenId',
+      });
       await expect(promise).rejects.toThrow('Failure to update token');
       await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
     it('should throw an error to update a token with other failure like null or undefined', async () => {
       mockTokenRepository.findByUserId = jest.fn().mockResolvedValueOnce(data);
       mockTokenRepository.update = jest.fn().mockResolvedValueOnce(null);
-      const promise = tokenService.saveToken(
-        data.token,
-        data.refreshToken,
-        data.userId,
-        data.expiresAt,
-        data.consentId,
-        'oldRefreshToken',
-      );
+      const promise = tokenService.saveToken({
+        ...data,
+        oldRefreshTokenId: 'oldRefreshTokenId',
+      });
       await expect(promise).rejects.toThrow('Failure to update token');
       await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
@@ -229,22 +194,8 @@ describe('TokenService', () => {
     it('should throw an error to verify a token', async () => {
       mockJwtService.verifyAsync = jest.fn().mockRejectedValueOnce(null);
       const promise = tokenService.verifyToken(token);
-      await expect(promise).resolves.toBe(false);
-    });
-  });
-  describe('decodeToken', () => {
-    const token = 'token';
-    it('should decode a token', async () => {
-      mockJwtService.decode = jest.fn().mockResolvedValueOnce({
-        sub: '1',
-        username: 'john.doe@example.com',
-      });
-      const result = await tokenService.decodeToken(token);
-      expect(mockJwtService.decode).toHaveBeenCalledWith(token);
-      expect(result).toEqual({
-        sub: '1',
-        username: 'john.doe@example.com',
-      });
+      await expect(promise).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(promise).rejects.toThrow('Invalid token');
     });
   });
   describe('refreshToken', () => {
@@ -274,7 +225,7 @@ describe('TokenService', () => {
     it('should be refresh a token', async () => {
       mockTokenRepository.findByUserId = jest
         .fn()
-        .mockResolvedValueOnce(tokenResult as any);
+        .mockResolvedValueOnce(tokenResult);
       jest.spyOn(mockJwtService, 'signAsync').mockResolvedValueOnce('newToken');
       mockTokenRepository.update = jest.fn().mockResolvedValueOnce({
         affected: 1,
@@ -304,7 +255,7 @@ describe('TokenService', () => {
     it('should throw an error to refresh token with invalid refresh token ', async () => {
       mockTokenRepository.findByUserId = jest
         .fn()
-        .mockResolvedValueOnce(tokenResult as any);
+        .mockResolvedValueOnce(tokenResult);
       const promise = tokenService.refreshToken(
         mockPayload,
         'refreshToken-invalid',
@@ -327,7 +278,7 @@ describe('TokenService', () => {
     it('should throw an error to refresh token with failure to generate new token ', async () => {
       mockTokenRepository.findByUserId = jest
         .fn()
-        .mockResolvedValueOnce(tokenResult as any);
+        .mockResolvedValueOnce(tokenResult);
       mockJwtService.signAsync = jest.fn().mockResolvedValueOnce(null);
       const promise = tokenService.refreshToken(mockPayload, 'refreshToken');
       await expect(promise).rejects.toThrow('Failure to generate new token');
@@ -335,38 +286,14 @@ describe('TokenService', () => {
     });
   });
   describe('revokeToken', () => {
-    const tokenResult = {
-      id: '1',
-      userId: 'userId-01',
-      token: 'token',
-      refreshToken: 'refreshToken',
-      expiresAt: new Date('2023-01-01T00:00:00.000Z'),
-    };
     it('should revoke a token', async () => {
-      mockTokenRepository.findByRefreshToken = jest
-        .fn()
-        .mockResolvedValueOnce(tokenResult);
       mockTokenRepository.deleteToken = jest.fn().mockResolvedValueOnce({
         affected: 1,
       });
-      const result = await tokenService.revokeToken('token');
-      expect(result).toEqual({
-        affected: 1,
-        refreshToken: 'refreshToken',
-      });
-    });
-    it('should throw an error to revoke token with Token not found ', async () => {
-      mockTokenRepository.findByRefreshToken = jest
-        .fn()
-        .mockResolvedValueOnce(null);
-      const promise = tokenService.revokeToken('token');
-      await expect(promise).rejects.toThrow('Token not found');
-      await expect(promise).rejects.toThrow(NotFoundException);
+      await tokenService.revokeToken('token');
+      expect(mockTokenRepository.deleteToken).toHaveBeenCalledWith('token');
     });
     it('should throw an error to revoke token with failure to delete token ', async () => {
-      mockTokenRepository.findByRefreshToken = jest
-        .fn()
-        .mockResolvedValueOnce(tokenResult);
       mockTokenRepository.deleteToken = jest.fn().mockResolvedValueOnce({
         affected: 0,
       });

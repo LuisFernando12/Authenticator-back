@@ -5,14 +5,15 @@ import type { DeleteResult, Repository } from 'typeorm';
 export interface ITokenRepository {
   create(data: TokenEntityType): any;
   findByUserId(userId: string): Promise<TokenEntity[]>;
-  update({ id, expiresAt, refreshToken }: ITokenUpdate): any;
+  update({ id, expiresAt, refreshToken, jti }: ITokenUpdate): any;
   findByRefreshToken(token: string): Promise<TokenEntity>;
-  deleteToken(token: TokenEntity): Promise<DeleteResult>;
+  deleteToken(token: string): Promise<DeleteResult>;
 }
 interface ITokenUpdate {
   expiresAt: Date;
   id: string;
   refreshToken?: string;
+  jti: string;
 }
 @Injectable()
 export class TokenRepository implements ITokenRepository {
@@ -40,11 +41,11 @@ export class TokenRepository implements ITokenRepository {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async update({ id, expiresAt, refreshToken }: ITokenUpdate) {
+  async update({ id, expiresAt, refreshToken, jti }: ITokenUpdate) {
     try {
       return await this.tokenRepository.update(
         { id },
-        { expiresAt, refreshToken },
+        { expiresAt, refreshToken, jti },
       );
     } catch (error: any) {
       throw new InternalServerErrorException(error.message);
@@ -64,9 +65,11 @@ export class TokenRepository implements ITokenRepository {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async deleteToken(token: TokenEntity): Promise<DeleteResult> {
+  async deleteToken(refreshToken: string): Promise<DeleteResult> {
     try {
-      return await this.tokenRepository.delete(token);
+      return await this.tokenRepository.delete({
+        refreshToken: refreshToken,
+      });
     } catch (error: any) {
       throw new InternalServerErrorException(error.message);
     }

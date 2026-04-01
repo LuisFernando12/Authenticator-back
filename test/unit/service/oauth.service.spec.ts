@@ -883,29 +883,11 @@ describe('OauthService', () => {
     });
   });
   describe('revokeToken', () => {
-    const mockResultRevokeTokenSevice = {
-      affected: 1,
-      accessToken: 'accessToken',
-    };
-    const mockTokenVerified = {
-      sub: 'sub-01',
-      username: 'jhondoe@example.com',
-      scope: 'scope 1 scope 2',
-      aud: 'client-id',
-      iss: 'example.api.com',
-      iat: 1,
-      exp: Math.floor(Date.now() / 1000 + 1293899),
-    };
     it('should revoke token', async () => {
-      mockTokenService.verifyToken = jest
-        .fn()
-        .mockResolvedValueOnce(mockTokenVerified);
-      mockTokenService.revokeToken = jest
-        .fn()
-        .mockResolvedValueOnce(mockResultRevokeTokenSevice);
-      mockTokenService.decodeToken = jest
-        .fn()
-        .mockResolvedValueOnce(mockTokenVerified);
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        expiresAt: '2026-04-11 18:14:02',
+        jti: 'jti-01',
+      });
       mockRedisService.set = jest.fn().mockResolvedValueOnce('OK');
       const result = await oauthService.revokeToken('token');
       expect(result).toEqual({ message: 'Token revoked successfully' });
@@ -917,32 +899,19 @@ describe('OauthService', () => {
       await expect(promise).rejects.toThrow('Invalid token');
     });
     it('should throw an error to token expired', async () => {
-      mockTokenService.verifyToken = jest
-        .fn()
-        .mockResolvedValueOnce({ exp: 1 });
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        expiresAt: '2026-03-11 18:14:02',
+        jti: 'jti-01',
+      });
       const promise = oauthService.revokeToken('token');
       await expect(promise).rejects.toThrow(OauthError);
       await expect(promise).rejects.toThrow('Token expired');
     });
-    it('should throw an error to faliure to revoke token', async () => {
-      mockTokenService.verifyToken = jest
-        .fn()
-        .mockResolvedValueOnce(mockTokenVerified);
-      mockTokenService.revokeToken = jest.fn().mockResolvedValueOnce(null);
-      const promise = oauthService.revokeToken('token');
-      await expect(promise).rejects.toThrow(InternalServerErrorException);
-      await expect(promise).rejects.toThrow('Failure to revoke token');
-    });
     it('should throw an error to faliure to save token like blocked on redis !', async () => {
-      mockTokenService.verifyToken = jest
-        .fn()
-        .mockResolvedValueOnce(mockTokenVerified);
-      mockTokenService.revokeToken = jest
-        .fn()
-        .mockResolvedValueOnce(mockResultRevokeTokenSevice);
-      mockTokenService.decodeToken = jest
-        .fn()
-        .mockResolvedValueOnce({ exp: undefined });
+      mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
+        expiresAt: '2026-04-11 18:14:02',
+        jti: 'jti-01',
+      });
       mockRedisService.set = jest.fn().mockResolvedValueOnce(null);
       const promise = oauthService.revokeToken('token');
       await expect(promise).rejects.toThrow(InternalServerErrorException);
@@ -959,9 +928,9 @@ describe('OauthService', () => {
       scope: 'scope 1 scope 2',
       exp: 1,
       iat: 2,
+      jti: 'jti-01',
     };
     it('should token introspect', async () => {
-      mockRedisService.get = jest.fn().mockResolvedValueOnce(null);
       mockTokenService.tokenIntrospect = jest
         .fn()
         .mockResolvedValueOnce(mockResultTokenIntropect);
@@ -969,6 +938,17 @@ describe('OauthService', () => {
       expect(result).toEqual(mockResultTokenIntropect);
     });
     it('should return active false when has token on blocked list', async () => {
+      mockTokenService.tokenIntrospect = jest
+        .fn()
+        .mockResolvedValueOnce(mockResultTokenIntropect);
+      mockRedisService.get = jest.fn().mockResolvedValueOnce(true);
+      const result = await oauthService.tokenIntrospect('token');
+      expect(result).toEqual({ active: false });
+    });
+    it('should return active false when invalid token ', async () => {
+      mockTokenService.tokenIntrospect = jest
+        .fn()
+        .mockResolvedValueOnce({ active: false });
       mockRedisService.get = jest.fn().mockResolvedValueOnce(true);
       const result = await oauthService.tokenIntrospect('token');
       expect(result).toEqual({ active: false });

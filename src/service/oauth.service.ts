@@ -640,40 +640,31 @@ export class OauthService implements IOauthService {
     this.authLogger.log('Starting method revokeToken', {
       context: 'OauthService method revokeToken',
     });
-    const tokenIsValid = await this.tokenService.verifyToken(token);
-    if (!tokenIsValid) {
-      this.authLogger.error(`Invalid token: ${JSON.stringify(token)}`, {
+    const refreshTokenHash = this.tokenService.hashRefreshToken(token);
+    const tokenDB =
+      await this.tokenService.findByRefreshToken(refreshTokenHash);
+    if (!tokenDB) {
+      this.authLogger.error(`Invalid token: ${refreshTokenHash}`, {
         context: 'OauthService method revokeToken',
       });
       throw OauthError.invalidRequest('Invalid token');
     }
-    const tokenExpire = new Date(tokenIsValid.exp * 1000);
+    const tokenExpire = new Date(tokenDB.expiresAt);
     if (tokenExpire < new Date()) {
       this.authLogger.error(`Token expired: ${tokenExpire}`, {
         context: 'OauthService method revokeToken',
       });
       throw OauthError.invalidRequest('Token expired');
     }
-    const tokenDeletedOnDB = await this.tokenService.revokeToken(token);
-    if (!tokenDeletedOnDB) {
-      this.authLogger.error(`Failure to revoke token: ${tokenDeletedOnDB}`, {
-        context: 'OauthService method revokeToken',
-      });
-      throw new InternalServerErrorException('Failure to revoke token');
-    }
-    const tokenDecoded = await this.tokenService.decodeToken(
-      tokenDeletedOnDB.refreshToken,
-    );
-    const tokenDecodedExpires = new Date(tokenDecoded.exp * 1000);
-    const timeToExpireToken = Math.floor(
-      (tokenDecodedExpires.getTime() - new Date().getTime()) / 1000,
-    );
-    const revokeTokenBlocklist = await this.redisService.set(
-      `revoke-token-blocklist:${tokenDeletedOnDB.refreshToken}`,
-      tokenDeletedOnDB.refreshToken,
-      'EX',
-      timeToExpireToken || 300,
-    );
+    const [_, revokeTokenBlocklist] = await Promise.all([
+      this.tokenService.revokeToken(refreshTokenHash),
+      this.redisService.set(
+        `revoke-token-blocklist:${tokenDB.jti}`,
+        tokenDB.jti,
+        'EX',
+        900,
+      ),
+    ]);
     if (revokeTokenBlocklist !== 'OK') {
       this.authLogger.error(
         'Failure to save token like blocked on redis with the key: revoke-token-blocklist',
@@ -691,16 +682,19 @@ export class OauthService implements IOauthService {
     this.authLogger.log('Starting method tokenIntrospect', {
       context: 'OauthService method tokenIntrospect',
     });
-    const tokenIsBolecked = await this.redisService.get(
-      `revoke-token-blocklist:${token}`,
-    );
-    if (tokenIsBolecked) {
-      this.authLogger.error(`Token is blocked: ${token}`, {
-        context: 'OauthService method tokenIntrospect',
-      });
-      return { active: false };
-    }
     const tokenIntrospect = await this.tokenService.tokenIntrospect(token);
+    if (tokenIntrospect.active) {
+      const { jti } = tokenIntrospect as IResponseTokenIntrospect;
+      const tokenIsBolecked = await this.redisService.get(
+        `revoke-token-blocklist:${jti}`,
+      );
+      if (tokenIsBolecked) {
+        this.authLogger.error(`Token is blocked: ${token}`, {
+          context: 'OauthService method tokenIntrospect',
+        });
+        return { active: false };
+      }
+    }
 
     return tokenIntrospect;
   }

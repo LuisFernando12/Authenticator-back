@@ -161,6 +161,7 @@ describe('OauthController', () => {
       scope: 'scope1 scope2',
       exp: 2,
       iat: 1,
+      jti: 'jti-01',
     };
     it('should introspect token', async () => {
       mockOauthService.tokenIntrospect = jest

@@ -50,7 +50,7 @@ export class UserClientConsentService implements IUserClientConsentService {
         userId,
         clientId,
       );
-    return userClientConsentDB as any;
+    return userClientConsentDB;
   }
   async findByUserId(userId: string): Promise<IUserClientConsentResponse[]> {
     if (!userId) {
@@ -61,7 +61,7 @@ export class UserClientConsentService implements IUserClientConsentService {
     if (!userClientConsentDB || userClientConsentDB.length === 0) {
       throw new NotFoundException('Consents not found');
     }
-    return userClientConsentDB as any;
+    return userClientConsentDB;
   }
   async findByConsentId(
     consentId: string,

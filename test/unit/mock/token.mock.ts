@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { ITokenService } from '../../../src/service/token.service';
 
 export const mockTokenService: ITokenService & {
@@ -12,7 +13,9 @@ export const mockTokenService: ITokenService & {
   getSecondByDays: (): number => {
     return 15 * (24 * 60 * 60);
   },
-  hashRefreshToken: jest.fn().mockResolvedValue('hashedRefreshToken'),
+  hashRefreshToken: (refreshToken: string) => {
+    return createHash('sha256').update(refreshToken).digest('base64url');
+  },
   generateToken: jest.fn().mockResolvedValue('token'),
   generateRefreshToken: jest.fn().mockResolvedValue('refreshToken'),
   saveToken: jest.fn().mockResolvedValue({
@@ -20,10 +23,6 @@ export const mockTokenService: ITokenService & {
     expiresAt: '2023-01-01T00:00:00.000Z',
   }),
   verifyToken: jest.fn().mockResolvedValue(true),
-  decodeToken: jest.fn().mockResolvedValue({
-    sub: '1',
-    username: 'john.doe@example.com',
-  }),
   refreshToken: jest.fn(),
   revokeToken: jest.fn(),
   tokenIntrospect: jest.fn(),
