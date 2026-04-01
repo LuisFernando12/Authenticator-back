@@ -1,3 +1,10 @@
+# [1.3.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.2.0...v1.3.0-beta.1) (2026-04-01)
+
+
+### Features
+
+* enhance password reset flow with improved security and UX ([6086d2f](https://github.com/LuisFernando12/Authenticator/commit/6086d2f0d835e4c8162787efe2253e6ec0082d9a))
+
 # [1.2.0](https://github.com/LuisFernando12/Authenticator/compare/v1.1.1...v1.2.0) (2026-03-30)
 
 
