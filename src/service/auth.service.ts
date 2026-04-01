@@ -2,6 +2,7 @@ import { UserRepository } from '@/repository/user.repository';
 import { AppConfigEnvService } from '@/service/app-config-env.service';
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -170,7 +171,7 @@ export class AuthService implements IAuthService {
       context: 'AuthService method newPassword',
     });
     const codeRedis = Number(
-      await this.redisService.getdel(`reset-password-${email}`),
+      await this.redisService.get(`reset-password-${email}`),
     );
     if (code !== codeRedis) {
       this.authLogger.error(
@@ -181,10 +182,28 @@ export class AuthService implements IAuthService {
       );
       throw new BadRequestException('Invalid code !');
     }
-    password = await bcrypt.hash(password, bcrypt.genSaltSync());
+    const userDB = await this.userRepository.findByEmail(email);
+    if (!userDB) {
+      throw new NotFoundException('User not found');
+    }
+    if (!userDB.isVerified) {
+      throw new BadRequestException('User not verified');
+    }
+    if (bcrypt.compareSync(password, userDB.password)) {
+      throw new ConflictException(
+        'Password already used, please try again with another password!',
+        {
+          description: 'PASSWORD_ALREADY_USED',
+        },
+      );
+    }
+    const [_, newPassword] = await Promise.all([
+      this.redisService.del(`reset-password-${email}`),
+      bcrypt.hash(password, bcrypt.genSaltSync()),
+    ]);
     const passwordUpdate = await this.userRepository.updatePassword(
       email,
-      password,
+      newPassword,
     );
     if (!passwordUpdate) {
       this.authLogger.error(`Failure to update password: ${passwordUpdate}`, {

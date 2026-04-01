@@ -55,7 +55,7 @@ export class EmailService implements IEmailService {
         context: {
           username,
           resetPasswordURL: `${this.configEnv.serviceResetPasswordUrl}`,
-          code,
+          code: String(code),
         },
       });
       if (mailerResponse.accepted.length === 0) {

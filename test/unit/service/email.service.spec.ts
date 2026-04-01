@@ -84,7 +84,7 @@ describe('EmailService', () => {
       context: {
         username,
         resetPasswordURL: `${mockAppconfigEnvService.serviceResetPasswordUrl}`,
-        code,
+        code: String(code),
       },
     };
     it('should send a reset password email', async () => {
