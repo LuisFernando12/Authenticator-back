@@ -49,6 +49,7 @@ export class AuthController implements IAuthController {
   }
 
   @Post('/reset-password')
+  @HttpCode(HttpStatus.OK)
   @ApiBody({ type: ResetPasswordDTO })
   @ApiResponse({ status: 200, description: 'Password reset email sent.' })
   @ApiResponse({ status: 400, description: 'Email not found' })
@@ -59,19 +60,17 @@ export class AuthController implements IAuthController {
     return await this.authService.resetPassword(data.email);
   }
   @Post('/new-password')
+  @HttpCode(HttpStatus.OK)
   @ApiBody({ type: NewPasswordDTO })
   @ApiResponse({ status: 200, description: 'Password updated successfully.' })
   @ApiResponse({ status: 400, description: 'Invalid code or email' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async newPassword(@Body() data: NewPasswordDTO) {
-    return await this.authService.newPassword(
-      data.password,
-      data.code,
-      data.email,
-    );
+    return await this.authService.newPassword(data.password, data.code);
   }
   @Post('/new-token/email-active')
-  @ApiBody({ type: String })
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: NewTokenToActiveEmailDTO })
   @ApiResponse({ status: 200, description: 'Email sent successfully.' })
   @ApiResponse({
     status: 400,

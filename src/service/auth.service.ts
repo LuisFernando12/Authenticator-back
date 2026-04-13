@@ -142,7 +142,12 @@ export class AuthService implements IAuthService {
       throw new NotFoundException('User not found');
     }
     const code = crypto.randomInt(100000, 999999);
-    this.redisService.set(`reset-password-${email}`, code, 'EX', 600);
+    this.redisService.set(
+      `reset-password-${code}`,
+      JSON.stringify({ email }),
+      'EX',
+      600,
+    );
     const emailSend = await this.emailService.resetPassword(
       email,
       userDB.name,
@@ -165,24 +170,21 @@ export class AuthService implements IAuthService {
   async newPassword(
     password: string,
     code: number,
-    email: string,
   ): Promise<{ message: string }> {
     this.authLogger.log('Starting method newPassword', {
       context: 'AuthService method newPassword',
     });
-    const codeRedis = Number(
-      await this.redisService.get(`reset-password-${email}`),
+    const objectCodeRedis = await this.redisService.get(
+      `reset-password-${code}`,
     );
-    if (code !== codeRedis) {
-      this.authLogger.error(
-        'Invalid code: user code mismatch with redis code',
-        {
-          context: 'AuthService method newPassword',
-        },
-      );
+    if (!objectCodeRedis) {
+      this.authLogger.error('Invalid code: code not found in redis', {
+        context: 'AuthService method newPassword',
+      });
       throw new BadRequestException('Invalid code !');
     }
-    const userDB = await this.userRepository.findByEmail(email);
+    const codeRedis = JSON.parse(objectCodeRedis);
+    const userDB = await this.userRepository.findByEmail(codeRedis.email);
     if (!userDB) {
       throw new NotFoundException('User not found');
     }
@@ -198,11 +200,11 @@ export class AuthService implements IAuthService {
       );
     }
     const [_, newPassword] = await Promise.all([
-      this.redisService.del(`reset-password-${email}`),
+      this.redisService.del(`reset-password-${code}`),
       bcrypt.hash(password, bcrypt.genSaltSync()),
     ]);
     const passwordUpdate = await this.userRepository.updatePassword(
-      email,
+      codeRedis.email,
       newPassword,
     );
     if (!passwordUpdate) {
