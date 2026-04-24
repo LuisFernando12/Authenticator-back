@@ -1,3 +1,10 @@
+## [1.3.1-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.3.0...v1.3.1-beta.1) (2026-04-24)
+
+
+### Bug Fixes
+
+* update token expiration handling in tests refresh token and revoke token  to use dynamic dates ([9602361](https://github.com/LuisFernando12/Authenticator/commit/96023613f3dd4ab772c8e0d73b283ddc49b716ba))
+
 # [1.3.0](https://github.com/LuisFernando12/Authenticator/compare/v1.2.0...v1.3.0) (2026-04-01)
 
 
