@@ -773,6 +773,9 @@ describe('OauthService', () => {
       refreshToken: 'refresh-token',
       grantType: 'refresh_token',
     };
+    const mockValidDate = new Date();
+    mockValidDate.setDate(mockValidDate.getDate() + 1);
+
     it('should refresh token', async () => {
       mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
         user: {
@@ -838,7 +841,7 @@ describe('OauthService', () => {
         user: {
           ...mockUser,
         },
-        expiresAt: '2026-04-11 22:36:14',
+        expiresAt: mockValidDate.toISOString(),
         consentId: 'consent-id-01',
       });
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(null);
@@ -851,7 +854,7 @@ describe('OauthService', () => {
         user: {
           ...mockUser,
         },
-        expiresAt: '2026-04-11 22:36:14',
+        expiresAt: mockValidDate.toISOString(),
       });
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
       mockUserClientConsentService.findByUserIdAndClientId = jest
@@ -866,7 +869,7 @@ describe('OauthService', () => {
         user: {
           ...mockUser,
         },
-        expiresAt: '2026-04-11 22:36:14',
+        expiresAt: mockValidDate.toISOString(),
         consentId: 'consent-id-01',
       });
       mockUserService.findByEmail = jest.fn().mockResolvedValueOnce(mockUser);
@@ -883,9 +886,11 @@ describe('OauthService', () => {
     });
   });
   describe('revokeToken', () => {
+    const mockValidDate = new Date();
+    mockValidDate.setDate(mockValidDate.getDate() + 1);
     it('should revoke token', async () => {
       mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
-        expiresAt: '2026-04-11 18:14:02',
+        expiresAt: mockValidDate.toISOString(),
         jti: 'jti-01',
       });
       mockRedisService.set = jest.fn().mockResolvedValueOnce('OK');
@@ -909,7 +914,7 @@ describe('OauthService', () => {
     });
     it('should throw an error to faliure to save token like blocked on redis !', async () => {
       mockTokenService.findByRefreshToken = jest.fn().mockResolvedValueOnce({
-        expiresAt: '2026-04-11 18:14:02',
+        expiresAt: mockValidDate.toISOString(),
         jti: 'jti-01',
       });
       mockRedisService.set = jest.fn().mockResolvedValueOnce(null);
