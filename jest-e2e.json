@@ -16,7 +16,7 @@
   "testTimeout": 60000,
   "maxWorkers": 1,
   "forceExit": true,
-  "detectOpenHandles": true,
   "bail": 1,
-  "verbose": true
+  "verbose": true,
+  "globalSetup": "./test/e2e/setup/global-env.setup.ts"
 }
