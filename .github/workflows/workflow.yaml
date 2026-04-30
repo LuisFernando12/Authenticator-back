@@ -18,6 +18,7 @@ on:
 jobs:
   continuous-integration-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -44,6 +45,19 @@ jobs:
 
       - name: Run Test With Coverage
         run: pnpm test:cov
+      - name: Run E2E Tests
+        run: pnpm test:e2e
+        env:
+          SECRET: ${{ secrets.SECRET }}
+          SERVER_SMTP: ${{ secrets.SERVER_SMTP }}
+          SERVER_SMTP_USER_NAME: ${{ secrets.SERVER_SMTP_USER_NAME }}
+          SERVER_SMTP_PASSWORD: ${{ secrets.SERVER_SMTP_PASSWORD }}
+          OAUTH_LOGIN_URL: ${{ secrets.OAUTH_LOGIN_URL }}
+          SERVICE_URL: ${{ secrets.SERVICE_URL }}
+          SERVICE_RESET_PASSWORD_URL: ${{ secrets.SERVICE_RESET_PASSWORD_URL }}
+          SERVICE_VERIFY_EMAIL_URL: ${{ secrets.SERVICE_VERIFY_EMAIL_URL }}
+          REDIRECT_URI: ${{ secrets.REDIRECT_URI }}
+          CLIENT_SECRET_PEPPER: ${{ secrets.CLIENT_SECRET_PEPPER }}
       - name: Semantic Release
         run: npx semantic-release
         env:
