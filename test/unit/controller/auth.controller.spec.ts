@@ -87,7 +87,6 @@ describe('AuthController', () => {
       const result = await authController.newPassword({
         password: 'strongPassword',
         code: 123456,
-        email: 'john.doe@example.com',
       });
       expect(result).toEqual({
         message: 'Updated password',

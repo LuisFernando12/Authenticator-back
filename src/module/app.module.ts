@@ -21,22 +21,25 @@ import { UserModule } from './user.module';
     AppConfigModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        port: config.get('DB_PORT'),
-        username: config.get('USER_DB'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_NAME'),
-        entities: [
-          UserEntity,
-          TokenEntity,
-          ClientEntity,
-          UserClientConsentEntity,
-        ],
-        synchronize: false,
-        autoLoadEntities: true,
-        migrationsRun: true,
-      }),
+      useFactory: (config: ConfigService) => {
+        return {
+          type: 'postgres',
+          host: config.get('DB_HOST'),
+          port: config.get('DB_PORT'),
+          username: config.get('DB_USER'),
+          password: config.get('DB_PASSWORD'),
+          database: config.get('DB_NAME'),
+          entities: [
+            UserEntity,
+            TokenEntity,
+            ClientEntity,
+            UserClientConsentEntity,
+          ],
+          synchronize: false,
+          autoLoadEntities: true,
+          migrationsRun: true,
+        };
+      },
     }),
     ThrottlerModule.forRootAsync({
       useFactory: () => ({

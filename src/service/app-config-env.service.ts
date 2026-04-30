@@ -7,7 +7,7 @@ export class AppConfigEnvService {
   constructor(private readonly config: ConfigService) {}
 
   get userDB(): string {
-    return this.config.get<string>('USER_DB');
+    return this.config.get<string>('DB_USER');
   }
   get passwordDB(): string {
     return this.config.get<string>('DB_PASSWORD');
