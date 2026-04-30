@@ -1,3 +1,10 @@
+# [1.4.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.3.1-beta.1...v1.4.0-beta.1) (2026-04-30)
+
+
+### Features
+
+* add global setup for e2e tests ([48c7768](https://github.com/LuisFernando12/Authenticator/commit/48c7768844687f1ddb9e281a5a14c5541689fba2))
+
 ## [1.3.1-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.3.0...v1.3.1-beta.1) (2026-04-24)
 
 
