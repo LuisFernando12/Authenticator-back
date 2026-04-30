@@ -15,6 +15,7 @@ const config: Config = {
     '<rootDir>/src/repository',
     '<rootDir>/src/main.ts',
     '<rootDir>/jest.config.ts',
+    '<rootDir>/test/e2e/setup',
   ],
   collectCoverageFrom: ['**/*.ts'],
   coverageDirectory: '../coverage',
