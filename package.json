@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@nestjs-modules/ioredis": "^2.2.1",
+    "@nestjs-modules/mailer": "^2.3.4",
     "@nestjs/common": "^11.1.17",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.17",
@@ -46,14 +47,12 @@
     "joi": "^18.1.1",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2",
-    "zod": "^4.3.6"
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@eslint/js": "^10.0.1",
-    "@nestjs-modules/mailer": "^2.3.4",
     "@nestjs/cli": "^11.0.16",
     "@nestjs/microservices": "^11.1.17",
     "@nestjs/schematics": "^11.0.9",
