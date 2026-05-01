@@ -1,3 +1,11 @@
+# [1.4.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0-beta.1...v1.4.0-beta.2) (2026-05-01)
+
+
+### Bug Fixes
+
+* **config:** add updated pnpm-lock file ([e1aabd6](https://github.com/LuisFernando12/Authenticator/commit/e1aabd675449bef37519837fd552f8474eaba05f))
+* **config:** move mailer to dependencies ([64acedb](https://github.com/LuisFernando12/Authenticator/commit/64acedb3f4938285966320a080491fcab7a7866c))
+
 # [1.4.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.3.1-beta.1...v1.4.0-beta.1) (2026-04-30)
 
 
