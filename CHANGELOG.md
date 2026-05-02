@@ -1,3 +1,10 @@
+# [1.4.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0-beta.2...v1.4.0-beta.3) (2026-05-02)
+
+
+### Bug Fixes
+
+* update database field names and types for consistency ([6840177](https://github.com/LuisFernando12/Authenticator/commit/6840177ce1aebd5904427767c309ad21e1d244e3))
+
 # [1.4.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0-beta.1...v1.4.0-beta.2) (2026-05-01)
 
 
