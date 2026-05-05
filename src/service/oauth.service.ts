@@ -206,7 +206,13 @@ export class OauthService implements IOauthService {
       );
       throw OauthError.invalidGrant('Code verifier is required');
     }
-    if (clientSecret && clientSecret !== clientDB.clientSecret) {
+    if (
+      clientSecret &&
+      !bcrypt.compareSync(
+        clientSecret + this.configEnvService.clientSecretPepper,
+        clientDB.clientSecret,
+      )
+    ) {
       this.authLogger.error(`Client secret is invalid: ${clientSecret}`, {
         context: 'OauthService method token',
       });

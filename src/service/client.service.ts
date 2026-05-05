@@ -3,7 +3,8 @@ import { SaveClientDTO } from '@/dto/save-client.dto';
 import { ClientEntity } from '@/entity/client.entity';
 import { ClientRepository } from '@/repository/client.repository';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { createHmac, randomBytes, randomUUID } from 'node:crypto';
+import * as bcrypt from 'bcrypt';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { AppConfigEnvService } from './app-config-env.service';
 
 export interface IClientService {
@@ -20,14 +21,14 @@ export class ClientService implements IClientService {
   async create(client: SaveClientDTO) {
     client['clientId'] = client.name.split(' ')[0] + '-' + randomUUID();
     const clientSecret = randomBytes(64).toString('hex');
-    client['clientSecret'] = createHmac(
-      'sha256',
-      this.configEnvService.clientSecretPepper,
-    )
-      .update(clientSecret)
-      .digest('hex');
+    client['clientSecret'] = bcrypt.hashSync(
+      clientSecret + this.configEnvService.clientSecretPepper,
+      10,
+    );
     try {
-      return await this.clientRepository.create(client);
+      const clientDB = await this.clientRepository.create(client);
+      clientDB.clientSecret = clientSecret;
+      return clientDB;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
