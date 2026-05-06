@@ -3,6 +3,7 @@ import {
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
+import { hashSync } from 'bcrypt';
 import Redis from 'ioredis';
 import { Pool } from 'pg';
 import { DataSource } from 'typeorm';
@@ -93,7 +94,10 @@ export class DatabaseSetup {
     const client = await clientRepository.save({
       name: 'Fintech-Test',
       clientId: 'test-client-id',
-      clientSecret: 'test-client-secret',
+      clientSecret: hashSync(
+        'test-client-secret' + process.env.CLIENT_SECRET_PEPPER,
+        10,
+      ),
       isConfidential: true,
       redirectUris: ['http://localhost:4000/callback'],
       grantTypes: ['authorization_code', 'refresh_token', 'client_credentials'],
