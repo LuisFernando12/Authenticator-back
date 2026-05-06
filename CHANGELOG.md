@@ -1,3 +1,10 @@
+## [1.4.1-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v1.4.1-beta.1...v1.4.1-beta.2) (2026-05-06)
+
+
+### Bug Fixes
+
+* hash client secret using bcrypt on database.setup to fix e2e test ([2ee988d](https://github.com/LuisFernando12/Authenticator/commit/2ee988d311eb32e8dfce6482ec4cfb3e6b4e06b4))
+
 ## [1.4.1-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0...v1.4.1-beta.1) (2026-05-02)
 
 
