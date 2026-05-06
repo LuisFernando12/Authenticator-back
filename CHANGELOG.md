@@ -1,3 +1,15 @@
+# [1.5.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.4.1-beta.2...v1.5.0-beta.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* remove required validation for access token expiration and refresh token days ([578c0d1](https://github.com/LuisFernando12/Authenticator/commit/578c0d1699274426e15f317e710c08bcb4e1bbef))
+
+
+### Features
+
+* add token expiration configuration ([7396152](https://github.com/LuisFernando12/Authenticator/commit/7396152fc090f657d51c4e73e0aa183746c3c13d))
+
 ## [1.4.1-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v1.4.1-beta.1...v1.4.1-beta.2) (2026-05-06)
 
 
