@@ -28,6 +28,9 @@ export interface IGenerateToken {
   iss?: string;
   type?: 'verify-email' | '';
 }
+
+type StringValue =
+  `${number}${'s' | 'sec' | 'm' | 'min' | 'h' | 'd' | 'w' | 'y'}`;
 export interface IResponseGenerateToken {
   access_token: string;
   refresh_token: string;
@@ -139,11 +142,14 @@ export class TokenService implements ITokenService {
     payload: IGenerateToken,
     consentId?: string,
   ): Promise<IResponseGenerateToken | string> {
-    const expiresAt = this.generateExpireAt(this.getSecondsByDays(15));
+    const expiresAt = this.generateExpireAt(
+      this.getSecondsByDays(this.appConfigEnvSevice.refreshTokenExpiresDays),
+    );
     const jti = randomUUID();
     payload['jti'] = jti;
+
     const token = await this.jwtService.signAsync(payload, {
-      expiresIn: `15min`,
+      expiresIn: this.appConfigEnvSevice.accessTokenExpiresIn as StringValue,
       secret: this.appConfigEnvSevice.secret,
     });
     if (!token) {

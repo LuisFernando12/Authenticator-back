@@ -114,5 +114,33 @@ describe('AppConfigEnvService', () => {
       const result = appConfigEnvService.clientSecretPepper;
       expect(result).toBe('CLIENT_SECRET_PEPPER');
     });
+    it('should get ACCESS_TOKEN_EXPIRES_IN', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('ACCESS_TOKEN_EXPIRES_IN');
+      const result = appConfigEnvService.accessTokenExpiresIn;
+      expect(result).toBe('ACCESS_TOKEN_EXPIRES_IN');
+    });
+    it('should get REFRESH_TOKEN_EXPIRES_DAYS', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('REFRESH_TOKEN_EXPIRES_DAYS');
+      const result = appConfigEnvService.refreshTokenExpiresDays;
+      expect(result).toBe('REFRESH_TOKEN_EXPIRES_DAYS');
+    });
+    it('should get EMAIL_VERIFICATION_TOKEN_EXPIRES', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('EMAIL_VERIFICATION_TOKEN_EXPIRES');
+      const result = appConfigEnvService.emailVerificationTokenExpires;
+      expect(result).toBe('EMAIL_VERIFICATION_TOKEN_EXPIRES');
+    });
+    it('should get PASSWORD_RESET_TOKEN_EXPIRES', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('PASSWORD_RESET_TOKEN_EXPIRES');
+      const result = appConfigEnvService.passwordResetTokenExpires;
+      expect(result).toBe('PASSWORD_RESET_TOKEN_EXPIRES');
+    });
   });
 });

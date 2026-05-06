@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -53,5 +52,17 @@ export class AppConfigEnvService {
   }
   get clientSecretPepper(): string {
     return this.config.getOrThrow<string>('CLIENT_SECRET_PEPPER');
+  }
+  get accessTokenExpiresIn(): string {
+    return this.config.getOrThrow<string>('ACCESS_TOKEN_EXPIRES_IN');
+  }
+  get refreshTokenExpiresDays(): number {
+    return this.config.getOrThrow<number>('REFRESH_TOKEN_EXPIRES_DAYS');
+  }
+  get emailVerificationTokenExpires(): string {
+    return this.config.getOrThrow<string>('EMAIL_VERIFICATION_TOKEN_EXPIRES');
+  }
+  get passwordResetTokenExpires(): string {
+    return this.config.getOrThrow<string>('PASSWORD_RESET_TOKEN_EXPIRES');
   }
 }

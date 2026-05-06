@@ -36,6 +36,8 @@ describe('TokenService', () => {
   };
   const mockAppconfigEnvService = {
     secret: 'secret',
+    accessTokenExpiresIn: '15min',
+    refreshTokenExpiresDays: 15,
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -78,8 +80,8 @@ describe('TokenService', () => {
       });
       const result = await tokenService.generateToken(payload);
       expect(mockJwtService.signAsync).toHaveBeenCalledWith(payload, {
-        expiresIn: '15min',
         secret: mockAppconfigEnvService.secret,
+        expiresIn: '15min',
       });
       expect(result).toEqual({
         access_token: 'token',
