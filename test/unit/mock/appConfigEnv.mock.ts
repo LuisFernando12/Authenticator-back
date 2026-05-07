@@ -11,7 +11,7 @@ export const mockAppconfigEnvService = {
   serviceVerifyEmailURL: 'http://localhost:3000/verify-email',
   serviceResetPasswordUrl: 'http://localhost:3000/reset-password',
   oauthLoginURL: 'http://localhost:3000/login',
-  accessTokenExpiresIn: '15m',
+  accessTokenExpiresIn: '15min',
   refreshTokenExpiresDays: 15,
   emailVerificationTokenExpires: '6h',
   passwordResetTokenExpires: '1h',

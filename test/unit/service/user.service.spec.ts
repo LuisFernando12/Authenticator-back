@@ -44,12 +44,14 @@ describe('UserService', () => {
       password: 'password123',
     };
     it('should register a new user', async () => {
-      mockUserRepository.create = jest.fn().mockResolvedValueOnce(user);
       mockUserRepository.existsUser = jest.fn().mockResolvedValueOnce(false);
-      mockUserRepository.activeAccount = jest.fn().mockResolvedValueOnce(true);
+      mockTokenService.generateEmailVerificationToken = jest
+        .fn()
+        .mockResolvedValueOnce('token');
       mockEmailService.sendActivationEmail = jest
         .fn()
         .mockResolvedValueOnce('OK');
+      mockUserRepository.create = jest.fn().mockResolvedValueOnce(user);
 
       const result = await userService.register(user);
       expect(result).toBe('OK');
@@ -79,11 +81,13 @@ describe('UserService', () => {
       await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
     it('should show  a message "Failure to send email" ', async () => {
-      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
-      mockUserRepository.create = jest.fn().mockResolvedValueOnce(user);
+      mockTokenService.generateEmailVerificationToken = jest
+        .fn()
+        .mockResolvedValueOnce('token');
       mockEmailService.sendActivationEmail = jest
         .fn()
         .mockResolvedValueOnce('Failure to send email');
+      mockUserRepository.create = jest.fn().mockResolvedValueOnce(user);
       const result = await userService.register(user);
       expect(mockEmailService.sendActivationEmail).toHaveBeenCalledWith(
         user.email,

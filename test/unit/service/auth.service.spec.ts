@@ -292,7 +292,9 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
+      mockTokenService.generateEmailVerificationToken = jest
+        .fn()
+        .mockResolvedValueOnce('token');
       mockEmailService.sendActivationEmail = jest
         .fn()
         .mockResolvedValueOnce('OK');
@@ -331,7 +333,9 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
+      mockTokenService.generateEmailVerificationToken = jest
+        .fn()
+        .mockResolvedValueOnce('token');
       mockEmailService.sendActivationEmail = jest
         .fn()
         .mockResolvedValueOnce('Failure to send email');
