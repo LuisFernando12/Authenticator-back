@@ -312,7 +312,7 @@ export class OauthService implements IOauthService {
         },
         userClientConsentDB.id,
       );
-      if (!accessToken || typeof accessToken !== 'object') {
+      if (!accessToken) {
         this.authLogger.error(`Failure to generate token: ${accessToken}`, {
           context: 'OauthService method token',
         });

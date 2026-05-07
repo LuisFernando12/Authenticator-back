@@ -16,7 +16,7 @@ import { RedisService } from './redis.service';
 import { TokenService } from './token.service';
 export interface IAuthService {
   login: (email: string, password: string) => any;
-  verifyEmail(token: string): Promise<{ message: string }>;
+  activeAccount(token: string): Promise<{ message: string }>;
   resetPassword(email: string): Promise<{ message: string }>;
   newPassword(
     password: string,
@@ -92,7 +92,7 @@ export class AuthService implements IAuthService {
       redirect_uri: this.appconfigEnvService.redirectURI,
     };
   }
-  async verifyEmail(token: string) {
+  async activeAccount(token: string) {
     this.authLogger.log('Starting method verifyEmail', {
       context: 'AuthService method verifyEmail',
     });

@@ -141,7 +141,7 @@ export class TokenService implements ITokenService {
   async generateToken(
     payload: IGenerateToken,
     consentId?: string,
-  ): Promise<IResponseGenerateToken | string> {
+  ): Promise<IResponseGenerateToken> {
     const expiresAt = this.generateExpireAt(
       this.getSecondsByDays(this.appConfigEnvSevice.refreshTokenExpiresDays),
     );
