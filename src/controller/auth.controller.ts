@@ -45,7 +45,7 @@ export class AuthController implements IAuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async verifyEmail(@Query('token') token: string) {
-    return await this.authService.verifyEmail(token);
+    return await this.authService.activeAccount(token);
   }
 
   @Post('/reset-password')

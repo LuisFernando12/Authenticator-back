@@ -27,4 +27,5 @@ export const mockTokenService: ITokenService & {
   revokeToken: jest.fn(),
   tokenIntrospect: jest.fn(),
   findByRefreshToken: jest.fn(),
+  generateEmailVerificationToken: jest.fn(),
 };

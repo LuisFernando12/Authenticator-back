@@ -9,7 +9,7 @@ describe('AuthController', () => {
   let authController: IAuthController;
   const mockAuthService: IAuthService = {
     login: jest.fn(),
-    verifyEmail: jest.fn(),
+    activeAccount: jest.fn(),
     resetPassword: jest.fn(),
     sendNewTokenToEmailActive: jest.fn(),
     newPassword: jest.fn(),
@@ -44,7 +44,7 @@ describe('AuthController', () => {
   });
   describe('verifyEmail', () => {
     it('should verify a email', async () => {
-      mockAuthService.verifyEmail = jest.fn().mockResolvedValue({
+      mockAuthService.activeAccount = jest.fn().mockResolvedValue({
         message: 'Account activated successfully',
       });
       const result = await authController.verifyEmail('token');

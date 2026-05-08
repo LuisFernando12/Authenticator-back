@@ -161,19 +161,19 @@ describe('AuthService', () => {
         .fn()
         .mockResolvedValueOnce(mockUser);
       mockUserRepository.activeAccount = jest.fn().mockResolvedValueOnce(true);
-      const result = await authService.verifyEmail('token');
+      const result = await authService.activeAccount('token');
       expect(result).toEqual({ message: 'Account activated successfully' });
     });
     it('should throw an error to verify an email with invalid token', async () => {
       mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce(false);
-      const promise = authService.verifyEmail('token');
+      const promise = authService.activeAccount('token');
       await expect(promise).rejects.toThrow('Unauthorized');
       await expect(promise).rejects.toThrow(UnauthorizedException);
     });
     it('should throw a error to verify email with a invalid user', async () => {
       mockTokenService.verifyToken = jest.fn().mockResolvedValueOnce(token);
       mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      const promise = authService.verifyEmail('token');
+      const promise = authService.activeAccount('token');
       await expect(promise).rejects.toThrow('Bad Request');
       await expect(promise).rejects.toThrow(BadRequestException);
     });
@@ -183,7 +183,7 @@ describe('AuthService', () => {
         .fn()
         .mockResolvedValueOnce(mockUser);
       mockUserRepository.activeAccount = jest.fn().mockResolvedValueOnce(false);
-      const promise = authService.verifyEmail('token');
+      const promise = authService.activeAccount('token');
       await expect(promise).rejects.toThrow('Failure to activate account');
       await expect(promise).rejects.toThrow(InternalServerErrorException);
     });
@@ -292,7 +292,9 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
+      mockTokenService.generateEmailVerificationToken = jest
+        .fn()
+        .mockResolvedValueOnce('token');
       mockEmailService.sendActivationEmail = jest
         .fn()
         .mockResolvedValueOnce('OK');
@@ -331,7 +333,9 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
-      mockTokenService.generateToken = jest.fn().mockResolvedValueOnce('token');
+      mockTokenService.generateEmailVerificationToken = jest
+        .fn()
+        .mockResolvedValueOnce('token');
       mockEmailService.sendActivationEmail = jest
         .fn()
         .mockResolvedValueOnce('Failure to send email');

@@ -16,7 +16,7 @@ import { RedisService } from './redis.service';
 import { TokenService } from './token.service';
 export interface IAuthService {
   login: (email: string, password: string) => any;
-  verifyEmail(email: string): Promise<{ message: string }>;
+  activeAccount(token: string): Promise<{ message: string }>;
   resetPassword(email: string): Promise<{ message: string }>;
   newPassword(
     password: string,
@@ -92,18 +92,15 @@ export class AuthService implements IAuthService {
       redirect_uri: this.appconfigEnvService.redirectURI,
     };
   }
-  async verifyEmail(token: string) {
+  async activeAccount(token: string) {
     this.authLogger.log('Starting method verifyEmail', {
       context: 'AuthService method verifyEmail',
     });
     const tokenIsValid = await this.tokenService.verifyToken(token);
-    if (!tokenIsValid || tokenIsValid.type !== 'verify-email') {
-      this.authLogger.error(
-        `Invalid token: ${tokenIsValid || tokenIsValid.type}`,
-        {
-          context: 'AuthService method verifyEmail',
-        },
-      );
+    if (!tokenIsValid) {
+      this.authLogger.error(`Invalid token: ${tokenIsValid}`, {
+        context: 'AuthService method verifyEmail',
+      });
       throw new UnauthorizedException();
     }
     const { username } = tokenIsValid;
@@ -236,18 +233,14 @@ export class AuthService implements IAuthService {
       });
       throw new BadRequestException('Account already active');
     }
-    const token = await this.tokenService.generateToken({
+    const token = await this.tokenService.generateEmailVerificationToken({
       sub: safeUser.id,
       username: safeUser.email,
-      type: 'verify-email',
     });
-    if (!token || typeof token !== 'string') {
-      this.authLogger.error(
-        `Fail to generate token with: ${token} and typeof ${typeof token}`,
-        {
-          context: 'AuthService method sendNewTokenToEmailActive',
-        },
-      );
+    if (!token) {
+      this.authLogger.error(`Fail to generate token with: ${token}`, {
+        context: 'AuthService method sendNewTokenToEmailActive',
+      });
       throw new InternalServerErrorException('Failure to generate token');
     }
     const sendNewEmail = await this.emailService.sendActivationEmail(

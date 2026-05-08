@@ -175,7 +175,10 @@ describe('OauthService', () => {
     };
     const mockClient = {
       clientId: 'client-id',
-      clientSecret: 'client-secret',
+      clientSecret: bcrypt.hashSync(
+        'client-secret' + mockAppconfigEnvService.clientSecretPepper,
+        10,
+      ),
       redirectUris: ['http://localhost:3000/callback'],
       isConfidential: false,
     };

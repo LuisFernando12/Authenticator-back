@@ -29,7 +29,7 @@ export class UserEntity {
     (userClientConsent) => userClientConsent.user,
   )
   userClientConsent: UserClientConsentEntity[];
-  @Column('time with time zone', {
+  @Column('timestamp with time zone', {
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;

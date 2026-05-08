@@ -15,6 +15,7 @@ import {
   ITokenService,
   TokenService,
 } from '../../../src/service/token.service';
+import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
 import { mockAuthLogger } from '../mock/logger.mock';
 import { mockTokenService } from '../mock/token.mock';
 
@@ -33,9 +34,6 @@ describe('TokenService', () => {
     verifyAsync: jest.fn(),
     verify: jest.fn(),
     decode: jest.fn(),
-  };
-  const mockAppconfigEnvService = {
-    secret: 'secret',
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -78,8 +76,8 @@ describe('TokenService', () => {
       });
       const result = await tokenService.generateToken(payload);
       expect(mockJwtService.signAsync).toHaveBeenCalledWith(payload, {
-        expiresIn: '15min',
         secret: mockAppconfigEnvService.secret,
+        expiresIn: '15min',
       });
       expect(result).toEqual({
         access_token: 'token',
@@ -87,17 +85,39 @@ describe('TokenService', () => {
         refresh_token: 'refreshToken',
       });
     });
-    it('should generate a string token with payload', async () => {
-      payload['type'] = 'verify-email';
-      mockJwtService.signAsync = jest.fn().mockResolvedValueOnce('token');
-      const result = await tokenService.generateToken(payload);
-      expect(result).toBe('token');
-    });
     it('should throw an error to generate a token', async () => {
       mockJwtService.signAsync = jest.fn().mockResolvedValueOnce(null);
       const promise = tokenService.generateToken(payload);
       await expect(promise).rejects.toThrow(InternalServerErrorException);
       await expect(promise).rejects.toThrow('Failure to generate token');
+    });
+  });
+  describe('generateEmailVerificationToken', () => {
+    const payload = {
+      sub: '1',
+      username: 'john.doe@example.com',
+    };
+    it('should generate a object token with payload', async () => {
+      jest.spyOn(mockJwtService, 'signAsync').mockResolvedValueOnce('token');
+      tokenService.saveToken = jest.fn().mockResolvedValueOnce({
+        access_token: 'token',
+        refresh_token: 'refreshToken',
+        expiresAt: '2023-01-01T00:00:00.000Z',
+      });
+      const result = await tokenService.generateEmailVerificationToken(payload);
+      expect(mockJwtService.signAsync).toHaveBeenCalledWith(payload, {
+        secret: mockAppconfigEnvService.secret,
+        expiresIn: mockAppconfigEnvService.emailVerificationTokenExpires,
+      });
+      expect(result).toEqual('token');
+    });
+    it('should throw an error to generate a token', async () => {
+      mockJwtService.signAsync = jest.fn().mockResolvedValueOnce(null);
+      const promise = tokenService.generateEmailVerificationToken(payload);
+      await expect(promise).rejects.toThrow(InternalServerErrorException);
+      await expect(promise).rejects.toThrow(
+        'Failure to generate email verification token',
+      );
     });
   });
   describe('saveToken', () => {

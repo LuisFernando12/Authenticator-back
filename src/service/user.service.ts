@@ -38,12 +38,12 @@ export class UserService implements IUserService {
       throw new InternalServerErrorException('failed user register');
     }
     try {
-      const verification_token = await this.tokenService.generateToken({
-        sub: userDB.id,
-        username: userDB.email,
-        type: 'verify-email',
-      });
-      if (!verification_token || typeof verification_token !== 'string') {
+      const verification_token =
+        await this.tokenService.generateEmailVerificationToken({
+          sub: userDB.id,
+          username: userDB.email,
+        });
+      if (!verification_token) {
         throw new InternalServerErrorException('Failure to generate token');
       }
       const emailResponse = await this.emailService.sendActivationEmail(

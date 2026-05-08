@@ -26,8 +26,10 @@ export interface IGenerateToken {
   scope?: string;
   aud?: string;
   iss?: string;
-  type?: 'verify-email' | '';
 }
+
+type StringValue =
+  `${number}${'s' | 'sec' | 'm' | 'min' | 'h' | 'd' | 'w' | 'y'}`;
 export interface IResponseGenerateToken {
   access_token: string;
   refresh_token: string;
@@ -72,6 +74,7 @@ export interface ITokenService {
     token: string,
   ): Promise<IResponseTokenIntrospect | { active: boolean }>;
   findByRefreshToken(refreshToken: string): Promise<TokenEntity>;
+  generateEmailVerificationToken(payload: IGenerateToken): Promise<string>;
 }
 
 @Injectable()
@@ -138,20 +141,21 @@ export class TokenService implements ITokenService {
   async generateToken(
     payload: IGenerateToken,
     consentId?: string,
-  ): Promise<IResponseGenerateToken | string> {
-    const expiresAt = this.generateExpireAt(this.getSecondsByDays(15));
+  ): Promise<IResponseGenerateToken> {
+    const expiresAt = this.generateExpireAt(
+      this.getSecondsByDays(this.appConfigEnvSevice.refreshTokenExpiresDays),
+    );
     const jti = randomUUID();
     payload['jti'] = jti;
+
     const token = await this.jwtService.signAsync(payload, {
-      expiresIn: `15min`,
+      expiresIn: this.appConfigEnvSevice.accessTokenExpiresIn as StringValue,
       secret: this.appConfigEnvSevice.secret,
     });
     if (!token) {
       throw new InternalServerErrorException('Failure to generate token');
     }
-    if (payload.type === 'verify-email') {
-      return token;
-    }
+
     const refreshToken = this.generateRefreshToken();
     return await this.saveToken({
       token: token,
@@ -161,6 +165,21 @@ export class TokenService implements ITokenService {
       consentId,
       jti,
     });
+  }
+  async generateEmailVerificationToken(
+    payload: IGenerateToken,
+  ): Promise<string> {
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: this.appConfigEnvSevice
+        .emailVerificationTokenExpires as StringValue,
+      secret: this.appConfigEnvSevice.secret,
+    });
+    if (!token) {
+      throw new InternalServerErrorException(
+        'Failure to generate email verification token',
+      );
+    }
+    return token;
   }
   async verifyToken(token: string): Promise<IResponseVerifyToken> {
     try {
