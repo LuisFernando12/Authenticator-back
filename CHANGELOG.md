@@ -1,3 +1,19 @@
+# [1.5.0](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0...v1.5.0) (2026-05-08)
+
+
+### Bug Fixes
+
+* **config:** add updated pnpm-lock file ([e1aabd6](https://github.com/LuisFernando12/Authenticator/commit/e1aabd675449bef37519837fd552f8474eaba05f))
+* **config:** move mailer to dependencies ([64acedb](https://github.com/LuisFernando12/Authenticator/commit/64acedb3f4938285966320a080491fcab7a7866c))
+* hash client secret using bcrypt on database.setup to fix e2e test ([2ee988d](https://github.com/LuisFernando12/Authenticator/commit/2ee988d311eb32e8dfce6482ec4cfb3e6b4e06b4))
+* remove required validation for access token expiration and refresh token days ([578c0d1](https://github.com/LuisFernando12/Authenticator/commit/578c0d1699274426e15f317e710c08bcb4e1bbef))
+* update database field names and types for consistency ([6840177](https://github.com/LuisFernando12/Authenticator/commit/6840177ce1aebd5904427767c309ad21e1d244e3))
+
+
+### Features
+
+* add token expiration configuration ([7396152](https://github.com/LuisFernando12/Authenticator/commit/7396152fc090f657d51c4e73e0aa183746c3c13d))
+
 # [1.5.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.4.1-beta.2...v1.5.0-beta.1) (2026-05-06)
 
 
