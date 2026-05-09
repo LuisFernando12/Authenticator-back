@@ -139,7 +139,7 @@ export class AuthService implements IAuthService {
       throw new NotFoundException('User not found');
     }
     const code = crypto.randomInt(100000, 999999);
-    this.redisService.set(
+    await this.redisService.set(
       `reset-password-${code}`,
       JSON.stringify({ email }),
       'EX',

@@ -207,13 +207,15 @@ export class TokenService implements ITokenService {
     const jti = randomUUID();
     payload['jti'] = jti;
     const newAccessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: `15min`,
+      expiresIn: this.appConfigEnvSevice.accessTokenExpiresIn as StringValue,
       secret: this.appConfigEnvSevice.secret,
     });
     if (!newAccessToken) {
       throw new InternalServerErrorException('Failure to generate new token');
     }
-    const expireAt = this.generateExpireAt(this.getSecondsByDays(15));
+    const expireAt = this.generateExpireAt(
+      this.getSecondsByDays(this.appConfigEnvSevice.refreshTokenExpiresDays),
+    );
     return this.saveToken({
       token: newAccessToken,
       refreshToken: refreshToken,
