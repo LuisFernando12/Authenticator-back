@@ -223,20 +223,19 @@ describe('AuthService', () => {
   describe('newPassword', () => {
     const password = 'password1234';
     const code = 123456;
-    const email = 'john.doe@example.com';
     it('should update password', async () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce(mockUser);
       mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
       mockUserRepository.updatePassword = jest.fn().mockResolvedValueOnce(true);
-      const result = await authService.newPassword(password, code, email);
+      const result = await authService.newPassword(password, code);
       expect(result).toEqual({ message: 'Updated password' });
     });
     it('should throw an error to update password with invalid user', async () => {
       mockRedisService.get = jest.fn().mockResolvedValueOnce(code);
       mockUserRepository.findByEmail = jest.fn().mockResolvedValueOnce(null);
-      const promise = authService.newPassword(password, code, email);
+      const promise = authService.newPassword(password, code);
       await expect(promise).rejects.toBeInstanceOf(NotFoundException);
       await expect(promise).rejects.toThrow('User not found');
     });
@@ -245,7 +244,7 @@ describe('AuthService', () => {
       mockUserRepository.findByEmail = jest
         .fn()
         .mockResolvedValueOnce({ ...mockUser, isVerified: false });
-      const promise = authService.newPassword(password, code, email);
+      const promise = authService.newPassword(password, code);
       await expect(promise).rejects.toBeInstanceOf(BadRequestException);
       await expect(promise).rejects.toThrow('User not verified');
     });
@@ -255,7 +254,7 @@ describe('AuthService', () => {
         ...mockUser,
         password: encryptPassword(password),
       });
-      const promise = authService.newPassword(password, code, email);
+      const promise = authService.newPassword(password, code);
       await expect(promise).rejects.toBeInstanceOf(ConflictException);
       await expect(promise).rejects.toThrow(
         'Password already used, please try again with another password!',
@@ -266,7 +265,7 @@ describe('AuthService', () => {
         .fn()
         .mockResolvedValueOnce(mockUser);
       mockRedisService.get = jest.fn().mockResolvedValueOnce(null);
-      const promise = authService.newPassword(password, code, email);
+      const promise = authService.newPassword(password, code);
       await expect(promise).rejects.toThrow('Invalid code !');
       await expect(promise).rejects.toThrow(BadRequestException);
     });
@@ -279,7 +278,7 @@ describe('AuthService', () => {
       mockUserRepository.updatePassword = jest
         .fn()
         .mockResolvedValueOnce(false);
-      const promise = authService.newPassword(password, code, email);
+      const promise = authService.newPassword(password, code);
       await expect(promise).rejects.toThrow('Failure to update password');
       await expect(promise).rejects.toThrow(InternalServerErrorException);
     });

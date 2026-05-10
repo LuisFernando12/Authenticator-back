@@ -18,11 +18,7 @@ export interface IAuthService {
   login: (email: string, password: string) => any;
   activeAccount(token: string): Promise<{ message: string }>;
   resetPassword(email: string): Promise<{ message: string }>;
-  newPassword(
-    password: string,
-    code: number,
-    email: string,
-  ): Promise<{ message: string }>;
+  newPassword(password: string, code: number): Promise<{ message: string }>;
   sendNewTokenToEmailActive(email: string): Promise<{ message: string }>;
 }
 @Injectable()
