@@ -38,6 +38,7 @@ export interface IOauthController {
   tokenIntrospect({ token }: TokenIntrospectDTO): Promise<any>;
 }
 @Controller('oauth')
+@Throttle({ default: { limit: 5, ttl: 60000 } })
 export class OauthController implements IOauthController {
   constructor(private readonly oauthService: OauthService) {}
   @Get('/authorize')
@@ -55,7 +56,6 @@ export class OauthController implements IOauthController {
     );
     return { url: urlRedirect.toString(), statusCode: 302 };
   }
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/token')
   @ApiBody({ type: OauthTokenDTO })
   @ApiResponse({
@@ -69,7 +69,6 @@ export class OauthController implements IOauthController {
     return await this.oauthService.token(payloadOauthToken);
   }
 
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/login')
   @Redirect()
   @HttpCode(HttpStatus.FOUND)
@@ -91,7 +90,6 @@ export class OauthController implements IOauthController {
   }
 
   @Post('/refresh-token')
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiBody({ type: OauthRefreshTokenDTO })
   @ApiResponse({
@@ -111,7 +109,6 @@ export class OauthController implements IOauthController {
     return await this.oauthService.refreshToken({ refreshToken, grantType });
   }
   @Post('/revoke-token')
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: String })
   @ApiResponse({
@@ -127,7 +124,6 @@ export class OauthController implements IOauthController {
     return await this.oauthService.revokeToken(token);
   }
   @Post('/token-introspect')
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: HttpStatus.OK,

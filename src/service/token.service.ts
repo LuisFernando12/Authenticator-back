@@ -26,6 +26,7 @@ export interface IGenerateToken {
   scope?: string;
   aud?: string;
   iss?: string;
+  type?: 'access' | 'email_verification';
 }
 
 type StringValue =
@@ -82,7 +83,7 @@ export class TokenService implements ITokenService {
   constructor(
     private readonly tokenRepository: TokenRepository,
     private readonly jwtService: JwtService,
-    private appConfigEnvSevice: AppConfigEnvService,
+    private appConfigEnvService: AppConfigEnvService,
     private readonly AuthLogger: AuthLogger,
   ) {}
   private getSecondsByDays(days: number): number {
@@ -95,6 +96,13 @@ export class TokenService implements ITokenService {
   private generateRefreshToken() {
     const refreshToken = randomBytes(64).toString('base64url');
     return refreshToken;
+  }
+  private async generateAccessToken(payload: IGenerateToken): Promise<string> {
+    payload['type'] = 'access';
+    return await this.jwtService.signAsync(payload, {
+      expiresIn: this.appConfigEnvService.accessTokenExpiresIn as StringValue,
+      secret: this.appConfigEnvService.secret,
+    });
   }
   hashRefreshToken(refreshToken: string): string {
     return createHash('sha256').update(refreshToken).digest('base64url');
@@ -143,15 +151,11 @@ export class TokenService implements ITokenService {
     consentId?: string,
   ): Promise<IResponseGenerateToken> {
     const expiresAt = this.generateExpireAt(
-      this.getSecondsByDays(this.appConfigEnvSevice.refreshTokenExpiresDays),
+      this.getSecondsByDays(this.appConfigEnvService.refreshTokenExpiresDays),
     );
     const jti = randomUUID();
     payload['jti'] = jti;
-
-    const token = await this.jwtService.signAsync(payload, {
-      expiresIn: this.appConfigEnvSevice.accessTokenExpiresIn as StringValue,
-      secret: this.appConfigEnvSevice.secret,
-    });
+    const token = await this.generateAccessToken(payload);
     if (!token) {
       throw new InternalServerErrorException('Failure to generate token');
     }
@@ -169,10 +173,11 @@ export class TokenService implements ITokenService {
   async generateEmailVerificationToken(
     payload: IGenerateToken,
   ): Promise<string> {
+    payload['type'] = 'email_verification';
     const token = await this.jwtService.signAsync(payload, {
-      expiresIn: this.appConfigEnvSevice
+      expiresIn: this.appConfigEnvService
         .emailVerificationTokenExpires as StringValue,
-      secret: this.appConfigEnvSevice.secret,
+      secret: this.appConfigEnvService.secret,
     });
     if (!token) {
       throw new InternalServerErrorException(
@@ -184,7 +189,7 @@ export class TokenService implements ITokenService {
   async verifyToken(token: string): Promise<IResponseVerifyToken> {
     try {
       return await this.jwtService.verifyAsync(token, {
-        secret: this.appConfigEnvSevice.secret,
+        secret: this.appConfigEnvService.secret,
       });
     } catch (_error) {
       throw new UnauthorizedException('Invalid token');
@@ -206,15 +211,12 @@ export class TokenService implements ITokenService {
     const refreshToken = this.generateRefreshToken();
     const jti = randomUUID();
     payload['jti'] = jti;
-    const newAccessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: this.appConfigEnvSevice.accessTokenExpiresIn as StringValue,
-      secret: this.appConfigEnvSevice.secret,
-    });
+    const newAccessToken = await this.generateAccessToken(payload);
     if (!newAccessToken) {
       throw new InternalServerErrorException('Failure to generate new token');
     }
     const expireAt = this.generateExpireAt(
-      this.getSecondsByDays(this.appConfigEnvSevice.refreshTokenExpiresDays),
+      this.getSecondsByDays(this.appConfigEnvService.refreshTokenExpiresDays),
     );
     return this.saveToken({
       token: newAccessToken,
