@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY package*.json ./
 
+ENV HUSKY=0
+
 RUN npm install --quiet --no-optional --no-fund --loglevel=error
 
 COPY . .
