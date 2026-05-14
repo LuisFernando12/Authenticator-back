@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --quiet --no-optional --no-fund --loglevel=error
+ENV HUSKY=0
+
+RUN npm install --quiet --no-fund --loglevel=error
 
 COPY . .
 
@@ -18,6 +20,7 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 
+
 EXPOSE 3000
 
-CMD [ "node", "dist/main" ]
+CMD [ "node", "dist/src/main" ]
