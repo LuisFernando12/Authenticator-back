@@ -13,7 +13,7 @@ enum HttpStatus {
 }
 
 export class OauthDomainError extends Error {
-  constructor(errorPayload: IOauthDomainPayload, status: StatusCode) {
+  constructor(errorPayload: IOauthDomainPayload, _status: StatusCode) {
     super(errorPayload.message);
     this.name = 'OauthDomainError';
     console.log(errorPayload);
