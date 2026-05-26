@@ -54,7 +54,7 @@ export interface ITokenService {
   generateToken(
     payload: IGenerateToken,
     consentId?: string,
-  ): Promise<IResponseGenerateToken | string>;
+  ): Promise<IResponseGenerateToken>;
   hashRefreshToken(refreshToken: string): string;
   saveToken({
     token,
@@ -69,6 +69,7 @@ export interface ITokenService {
   refreshToken(
     payload: Omit<IGenerateToken, 'type'>,
     token: string,
+    consentId?: string,
   ): Promise<IResponseGenerateToken>;
   revokeToken(token: string): Promise<void>;
   tokenIntrospect(

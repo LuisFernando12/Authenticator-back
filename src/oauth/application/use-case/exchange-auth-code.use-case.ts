@@ -1,0 +1,91 @@
+import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
+import { OauthTokenDTO } from '../../../dto/oauth-authorize.dto';
+import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
+import { PkceChallengeValueObject } from '../../domain/value-object/pkce-challenge.value-object';
+import { RedirectUriValueObject } from '../../domain/value-object/redirectUri.value-object';
+import { ClientServicePort } from '../port/client-service.port';
+import { ConfigServicePort } from '../port/config-service.port';
+import { HashedClientSecretServicePort } from '../port/hashed-client-secret.port';
+import { RedisServicePort } from '../port/redis-service-port';
+import { TokenServicePort } from '../port/token-service.port';
+import { UserClientConsentServicePort } from '../port/user-client-consent-service.port';
+import { UserServicePort } from '../port/user-service.port';
+
+export interface IExchangeOauthCodeUseCaseResponse {
+  token_type: string;
+  access_token: string;
+  refresh_token: string;
+  scope: string;
+  expiresAt: string;
+}
+export interface IEXchangeOauthCodeToToken {
+  grantType: string;
+  clientId: string;
+  clientSecret?: string;
+  redirectUri: string;
+  code: string;
+  codeVerifier?: string;
+}
+export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
+  constructor(
+    private readonly clientServicePort: ClientServicePort,
+    private readonly tokenServicePort: TokenServicePort,
+    private readonly redisServicePort: RedisServicePort,
+    private readonly hashedClientSecretServicePort: HashedClientSecretServicePort,
+    private readonly userServicePort: UserServicePort,
+    private readonly userClientConsentServicePort: UserClientConsentServicePort,
+    private readonly configService: ConfigServicePort,
+  ) {}
+  async execute(payload: IEXchangeOauthCodeToToken): Promise<OauthAccessToken> {
+    const {
+      clientId,
+      code,
+      clientSecret,
+      redirectUri,
+      grantType,
+      codeVerifier,
+    } = payload;
+    if (grantType !== 'authorization_code') {
+      throw new Error(`Unsupported grant type ${grantType || ''}`);
+    }
+
+    const isPKCE = !!codeVerifier;
+
+    const clientDB = await this.clientServicePort.findByClientId(clientId);
+    clientDB.isValidRedirectUri(RedirectUriValueObject.create(redirectUri));
+
+    clientDB.startAuthorizationCodeFlow(isPKCE);
+
+    this.hashedClientSecretServicePort.compareHashClientSecret({
+      clientSecret,
+      clientSecretHashed: clientDB.clientSecret,
+      clientSecretPepper: this.configService.clientSecretPepper,
+    });
+    const codeRedis = await this.redisServicePort.consumeOauthCode(code);
+
+    clientDB.validPkceChallenge(
+      PkceChallengeValueObject.create(
+        codeRedis.codeChallenge,
+        codeRedis.codeChallengeMethod,
+      ),
+      codeVerifier,
+    );
+    const userDB = await this.userServicePort.findByEmail(codeRedis.userEmail);
+    const userClientConsentDB =
+      await this.userClientConsentServicePort.findConsentByUserIdAndClientId(
+        userDB.id,
+        clientId,
+      );
+
+    return await this.tokenServicePort.generateToken(
+      {
+        sub: userDB.id,
+        username: userDB.email,
+        scope: codeRedis.scope,
+        aud: clientId,
+        iss: this.configService.serviceURL,
+      },
+      userClientConsentDB.id,
+    );
+  }
+}

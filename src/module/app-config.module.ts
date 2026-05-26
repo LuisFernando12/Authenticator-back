@@ -33,6 +33,6 @@ import * as j from 'joi';
     }),
   ],
   providers: [AppConfigEnvService],
-  exports: [AppConfigEnvService],
+  exports: [AppConfigEnvService, ConfigModule],
 })
 export class AppConfigModule {}

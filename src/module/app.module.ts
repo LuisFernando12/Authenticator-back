@@ -7,12 +7,12 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientEntity } from '../entity/client.entity';
 import { UserClientConsentEntity } from '../entity/user-client-consent.entity';
+import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
 import { AppConfigModule } from './app-config.module';
 import { AuthModule } from './auth.module';
 import { ClientModule } from './client.module';
 import { EmailModule } from './email.module';
 import { HealthModule } from './health.module';
-import { OauthModule } from './oauth.module';
 import { TokenModule } from './token.module';
 import { UserModule } from './user.module';
 

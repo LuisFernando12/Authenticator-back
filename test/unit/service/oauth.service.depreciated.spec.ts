@@ -15,8 +15,9 @@ import { AppConfigEnvService } from '../../../src/service/app-config-env.service
 import { ClientService } from '../../../src/service/client.service';
 import {
   IOauthService,
+  IPayloadAuthRequest,
   OauthService,
-} from '../../../src/service/oauth.service';
+} from '../../../src/service/oauth.service.depreciated';
 import { RedisService } from '../../../src/service/redis.service';
 import { TokenService } from '../../../src/service/token.service';
 import { UserClientConsentService } from '../../../src/service/user-client-consent.service';
@@ -28,7 +29,6 @@ import { mockRedisService } from '../mock/redis.mock';
 import { mockTokenService } from '../mock/token.mock';
 import { mockUserService } from '../mock/user.mock';
 import { mockUserClientConsentService } from '../mock/userClient.mock';
-import { IPayloadAuthRequest } from './../../../src/service/oauth.service';
 
 describe('OauthService', () => {
   let oauthService: IOauthService;

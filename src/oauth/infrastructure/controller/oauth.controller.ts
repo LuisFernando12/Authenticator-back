@@ -10,14 +10,20 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, OmitType } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { LoginDTO } from '../dto/login.dto';
+import { LoginDTO } from '../../../dto/login.dto';
 import {
   OauthAuthorizeDTO,
   OauthRefreshTokenDTO,
   OauthTokenDTO,
-} from '../dto/oauth-authorize.dto';
-import { RevokeTokenDTO, TokenIntrospectDTO } from '../dto/token.dto';
-import { OauthService } from '../service/oauth.service.depreciated';
+} from '../../../dto/oauth-authorize.dto';
+import { RevokeTokenDTO, TokenIntrospectDTO } from '../../../dto/token.dto';
+import { AuthorizeUseCase } from '../../application/use-case/authorize.use-case';
+import { ExchangeOauthCodeUseCase } from '../../application/use-case/exchange-auth-code.use-case';
+import { LoginUseCase } from '../../application/use-case/login.use-case';
+import { RefreshTokenUseCase } from '../../application/use-case/refresh-token.use-case';
+import { RevokeTokenUseCase } from '../../application/use-case/revoke-token.use-case';
+import { TokenIntrospectUseCase } from '../../application/use-case/token-introspect.use-case';
+
 export interface IOauthController {
   authorize(
     payloadOauthAuthorize: Omit<OauthAuthorizeDTO, 'oauthRequestId'>,
@@ -40,7 +46,14 @@ export interface IOauthController {
 @Controller('oauth')
 @Throttle({ default: { limit: 5, ttl: 60000 } })
 export class OauthController implements IOauthController {
-  constructor(private readonly oauthService: OauthService) {}
+  constructor(
+    private readonly authorizeUseCase: AuthorizeUseCase,
+    private readonly loginUseCase: LoginUseCase,
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    private readonly revokeTokenUseCase: RevokeTokenUseCase,
+    private readonly tokenIntrospectUseCase: TokenIntrospectUseCase,
+    private readonly exchangeOauthCodeUseCase: ExchangeOauthCodeUseCase,
+  ) {}
   @Get('/authorize')
   @Redirect()
   @HttpCode(HttpStatus.FOUND)
@@ -51,7 +64,7 @@ export class OauthController implements IOauthController {
   async authorize(
     @Query() payloadOauthAuthorize: Omit<OauthAuthorizeDTO, 'oauthRequestId'>,
   ): Promise<any> {
-    const urlRedirect = await this.oauthService.authorize(
+    const urlRedirect = await this.authorizeUseCase.execute(
       payloadOauthAuthorize,
     );
     return { url: urlRedirect.toString(), statusCode: 302 };
@@ -66,7 +79,7 @@ export class OauthController implements IOauthController {
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden' })
   async token(@Body() payloadOauthToken: OauthTokenDTO): Promise<any> {
-    return await this.oauthService.token(payloadOauthToken);
+    return await this.exchangeOauthCodeUseCase.execute(payloadOauthToken);
   }
 
   @Post('/login')
@@ -82,7 +95,7 @@ export class OauthController implements IOauthController {
     @Body() payloadOauthLogin: LoginDTO,
     @Query() QueryOauthLogin: OauthAuthorizeDTO,
   ): Promise<any> {
-    const urlRedirect = await this.oauthService.login(
+    const urlRedirect = await this.loginUseCase.execute(
       payloadOauthLogin,
       QueryOauthLogin,
     );
@@ -106,7 +119,7 @@ export class OauthController implements IOauthController {
   async refreshToken(
     @Body() { refreshToken, grantType }: OauthRefreshTokenDTO,
   ): Promise<any> {
-    return await this.oauthService.refreshToken({ refreshToken, grantType });
+    return await this.refreshTokenUseCase.execute({ refreshToken, grantType });
   }
   @Post('/revoke-token')
   @HttpCode(HttpStatus.OK)
@@ -121,7 +134,7 @@ export class OauthController implements IOauthController {
     description: 'Internal Server Error',
   })
   async revokeToken(@Body() { token }: RevokeTokenDTO): Promise<any> {
-    return await this.oauthService.revokeToken(token);
+    return await this.revokeTokenUseCase.execute(token);
   }
   @Post('/token-introspect')
   @HttpCode(HttpStatus.OK)
@@ -130,6 +143,6 @@ export class OauthController implements IOauthController {
     description: 'Token introspected successfully',
   })
   async tokenIntrospect(@Body() { token }: TokenIntrospectDTO): Promise<any> {
-    return await this.oauthService.tokenIntrospect(token);
+    return await this.tokenIntrospectUseCase.execute(token);
   }
 }
