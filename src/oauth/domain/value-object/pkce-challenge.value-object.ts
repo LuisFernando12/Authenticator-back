@@ -1,9 +1,10 @@
 import * as crypto from 'node:crypto';
 import { OauthDomainError } from '../error/oauth-domain.error';
+
 export class PkceChallengeValueObject {
   constructor(
     private readonly challenge: string,
-    private readonly challengeMathod: string,
+    private readonly challengeMethod: string,
   ) {}
   static create(codeChallenge: string, codeChallengeMethod: string) {
     if (!codeChallenge && !codeChallengeMethod) {
@@ -26,6 +27,11 @@ export class PkceChallengeValueObject {
       .digest('base64url');
     if (this.challenge !== codeChallegeVerify) {
       throw new Error('Invalid code verifier');
+    }
+  }
+  methodIsAccepted() {
+    if (this.challengeMethod !== 'sha256') {
+      throw OauthDomainError.invalidGrant('Invalid code challenge method !');
     }
   }
 }

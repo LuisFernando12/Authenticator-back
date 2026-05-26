@@ -4,7 +4,7 @@ import { RedirectUriValueObject } from '../value-object/redirectUri.value-object
 import { ScopeValueObject } from '../value-object/scopes.value-object';
 interface ClientProps {
   clientId: string;
-  clientSecret: string;
+  clientSecret?: string;
   isConfidential: boolean;
   name: string;
   redirectUris: Array<string>;

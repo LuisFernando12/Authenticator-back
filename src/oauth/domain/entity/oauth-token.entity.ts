@@ -1,7 +1,10 @@
+import { OauthUserClientConsent } from './oauth-user-client-consent';
+import { OauthUser } from './user.entity';
+
 interface IOauthTokenProps {
   id: string;
-  user: any;
-  userClientConsent: any;
+  user: OauthUser;
+  userClientConsent: OauthUserClientConsent;
   jti: string;
   consentId?: string;
   refreshToken: string;
@@ -12,10 +15,10 @@ export class OauthToken {
   get id(): string {
     return this.tokenProps.id;
   }
-  get user(): any {
+  get user(): OauthUser {
     return this.tokenProps.user;
   }
-  get userClientConsent(): any {
+  get userClientConsent(): OauthUserClientConsent {
     return this.tokenProps.userClientConsent;
   }
   get jti(): string {

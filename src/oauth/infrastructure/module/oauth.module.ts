@@ -115,11 +115,8 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
     },
     {
       provide: HASHED_CLIENT_SECRET_SERVICE_PORT,
-      useFactory: (
-        appConfigEnvService: AppConfigEnvService,
-      ): HashedClientSecretServicePort =>
-        new HashedClientSecretServiceAdapter(appConfigEnvService),
-      inject: [AppConfigEnvService],
+      useFactory: (): HashedClientSecretServicePort =>
+        new HashedClientSecretServiceAdapter(),
     },
     {
       provide: USER_SERVICE_PORT,

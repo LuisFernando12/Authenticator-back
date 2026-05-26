@@ -59,6 +59,7 @@ export class TokenRepository implements ITokenRepository {
         },
         relations: {
           user: true,
+          userClientConsent: true,
         },
       });
     } catch (error: any) {

@@ -1,11 +1,9 @@
-import { AppConfigEnvService } from '@/core/domain/service/app-config-env.service';
 import {
   HashedClientSecretServicePort,
   ICompareHashClientSecret,
 } from '@/oauth/application/port/hashed-client-secret.port';
 import * as bcrypt from 'bcrypt';
 export class HashedClientSecretServiceAdapter implements HashedClientSecretServicePort {
-  constructor(private readonly appConfigEnvService: AppConfigEnvService) {}
   compareHashClientSecret({
     clientSecret,
     clientSecretHashed,

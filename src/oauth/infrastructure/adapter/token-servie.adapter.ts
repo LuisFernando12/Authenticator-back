@@ -6,7 +6,11 @@ import {
   TokenServicePort,
 } from '../../application/port/token-service.port';
 import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
+import { OauthClient } from '../../domain/entity/oauth-client.entity';
 import { OauthToken } from '../../domain/entity/oauth-token.entity';
+import { OauthUserClientConsent } from '../../domain/entity/oauth-user-client-consent';
+import { OauthUser } from '../../domain/entity/user.entity';
+import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 
 export class TokenServiceAdapter implements TokenServicePort {
   constructor(private readonly tokenService: ITokenService) {}
@@ -70,7 +74,28 @@ export class TokenServiceAdapter implements TokenServicePort {
   }
   async findByRefreshToken(refreshToken: string): Promise<OauthToken> {
     const oauthToken = await this.tokenService.findByRefreshToken(refreshToken);
-    return new OauthToken(oauthToken);
+    if (!oauthToken) {
+      throw OauthDomainError.invalidClient();
+    }
+    const { id, user, userClientConsent, jti, consentId, expiresAt } =
+      oauthToken;
+    return new OauthToken({
+      id,
+      user: new OauthUser(user),
+      userClientConsent: new OauthUserClientConsent({
+        id: userClientConsent.id,
+        userId: userClientConsent.userId,
+        clientId: userClientConsent.clientId,
+        user: new OauthUser(userClientConsent.user),
+        client: new OauthClient(userClientConsent.client),
+        grantedAt: userClientConsent.grantedAt,
+        revokeAt: userClientConsent.revokeAt,
+      }),
+      jti,
+      consentId,
+      refreshToken,
+      expiresAt,
+    });
   }
   async revokeToken(refreshToken: string): Promise<void> {
     try {
