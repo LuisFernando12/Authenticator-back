@@ -31,7 +31,6 @@ export class OauthToken {
     return this.tokenProps.expiresAt;
   }
   validateRefreshTokenIsValid() {
-    console.log(this.tokenProps.expiresAt);
     if (new Date(this.tokenProps.expiresAt) < new Date()) {
       throw new Error('Refresh token expired');
     }

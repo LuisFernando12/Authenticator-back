@@ -32,7 +32,7 @@ export class RedisServiceAdapter implements RedisServicePort {
       await this.redisService.getAndDeleteOnRedis(`oauth-code-${key}`),
     );
     if (!codeRedis) {
-      throw new Error('Authorization code expired');
+      throw OauthDomainError.invalidClient('Authorization code expired');
     }
     return codeRedis;
   }
@@ -46,7 +46,9 @@ export class RedisServiceAdapter implements RedisServicePort {
       300,
     );
     if (!saveCodeRedis) {
-      throw new Error('Failure to save code on redis');
+      throw OauthDomainError.internalServerError(
+        'Failure to save code on redis',
+      );
     }
     return saveCodeRedis;
   }

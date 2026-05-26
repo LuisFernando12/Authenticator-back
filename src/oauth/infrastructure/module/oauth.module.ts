@@ -9,10 +9,7 @@ import { ClientModule } from '../../../module/client.module';
 import { TokenModule } from '../../../module/token.module';
 import { UserClientConsentModule } from '../../../module/user-client-consent.module';
 import { UserModule } from '../../../module/user.module';
-import {
-  ClientService,
-  IClientService as IClientServiceLegacy,
-} from '../../../service/client.service';
+import { ClientService } from '../../../service/client.service';
 import { ITokenService, TokenService } from '../../../service/token.service';
 import {
   IUserClientConsentService,
@@ -53,7 +50,6 @@ import { LoginUseCase } from '../../application/use-case/login.use-case';
 import { RefreshTokenUseCase } from '../../application/use-case/refresh-token.use-case';
 import { RevokeTokenUseCase } from '../../application/use-case/revoke-token.use-case';
 import { TokenIntrospectUseCase } from '../../application/use-case/token-introspect.use-case';
-import { LoginService } from '../../domain/service/login.service';
 
 import {
   GENERATE_ID_SERVICE_PORT,
@@ -192,27 +188,6 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         USER_SERVICE_PORT,
         USER_CLIENT_CONSENT_SERVICE_PORT,
         CONFIG_SERVICE_PORT,
-      ],
-    },
-    {
-      provide: LoginService,
-      useFactory: (
-        redisService: RedisService,
-        clientService: IClientServiceLegacy,
-        userClientConsentService: IUserClientConsentService,
-        userService: IUserService,
-      ) =>
-        new LoginService(
-          redisService,
-          clientService,
-          userClientConsentService,
-          userService,
-        ),
-      inject: [
-        RedisService,
-        ClientService,
-        UserClientConsentService,
-        UserService,
       ],
     },
     {

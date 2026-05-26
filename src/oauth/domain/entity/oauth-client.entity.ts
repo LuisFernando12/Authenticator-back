@@ -58,7 +58,7 @@ export class OauthClient {
     if (!this.scopes?.length) {
       return;
     }
-    if (!scopes.constains(this.scopes)) {
+    if (!scopes.contains(this.scopes)) {
       throw OauthDomainError.invalidGrant('Scope not allowed');
     }
   }

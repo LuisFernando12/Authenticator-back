@@ -15,7 +15,6 @@ export class UserClientConsentServiceAdapter implements UserClientConsentService
     return userClientConsentDB;
   }
   async findConsentByUserIdAndClientId(userId: string, clientId: string) {
-    console.log(`clientid: ${clientId} -  userId: ${userId}`);
     const userClientConsentDB =
       await this.userClientConsentService.findByUserIdAndClientId(
         userId,

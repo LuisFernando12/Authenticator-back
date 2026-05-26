@@ -10,7 +10,7 @@ export class ScopeValueObject {
   toString() {
     return this.scopes.join(' ');
   }
-  constains(scopes: Array<string>) {
-    return scopes.some((scope) => this.scopes.includes(scope));
+  contains(scopes: Array<string>) {
+    return this.scopes.every((scope) => scopes.includes(scope));
   }
 }
