@@ -45,15 +45,15 @@ export class AuthUser {
     return;
   }
   isVerifiedAccount(flow: AuthFlow): void {
-    switch (AuthFlow[flow]) {
-      case AuthFlow.sendNewTokenToEmailActive || AuthFlow.activeAccount:
-        if (this.userProps.isVerified)
-          throw AuthDomainError.badRequest('Account already active');
-        break;
-      default:
-        if (!this.userProps.isVerified)
-          throw AuthDomainError.badRequest('Account not verified');
-        break;
+    if (
+      flow === AuthFlow.sendNewTokenToEmailActive ||
+      flow === AuthFlow.activeAccount
+    ) {
+      if (this.userProps.isVerified)
+        throw AuthDomainError.badRequest('Account already active');
+    } else {
+      if (!this.userProps.isVerified)
+        throw AuthDomainError.badRequest('Account not verified');
     }
   }
   isSamePassword(value: boolean) {
