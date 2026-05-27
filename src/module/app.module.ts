@@ -1,3 +1,4 @@
+import { AuthModule } from '@/auth/infrastructure/module/auth.module';
 import { TokenEntity } from '@/entity/token.entity';
 import { UserEntity } from '@/entity/user.entity';
 import { Module } from '@nestjs/common';
@@ -9,7 +10,6 @@ import { ClientEntity } from '../entity/client.entity';
 import { UserClientConsentEntity } from '../entity/user-client-consent.entity';
 import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
 import { AppConfigModule } from './app-config.module';
-import { AuthModule } from './auth.module';
 import { ClientModule } from './client.module';
 import { EmailModule } from './email.module';
 import { HealthModule } from './health.module';

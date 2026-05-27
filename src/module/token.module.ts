@@ -6,11 +6,12 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from './app-config.module';
+import { AuthLoggerModule } from './auth-logger.module';
 
 @Module({
   imports: [
     JwtModule.registerAsync({
-      imports: [AppConfigModule],
+      imports: [AppConfigModule, AuthLoggerModule],
       inject: [AppConfigEnvService],
       useFactory: (config: AppConfigEnvService) => ({
         global: true,

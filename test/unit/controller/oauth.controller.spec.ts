@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   IOauthController,
   OauthController,
-} from '../../../src/controller/oauth.controller';
+} from '../../../src/controller/oauth.controller.deprecieted';
 import { LoginDTO } from '../../../src/dto/login.dto';
 import {
   OauthAuthorizeDTO,

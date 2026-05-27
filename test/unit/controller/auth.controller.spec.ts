@@ -2,8 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   AuthController,
   IAuthController,
-} from '../../../src/controller/auth.controller';
-import { AuthService, IAuthService } from '../../../src/service/auth.service';
+} from '../../../src/controller/auth.controller.depreciated';
+import {
+  AuthService,
+  IAuthService,
+} from '../../../src/service/auth.service.deprecieted';
 
 describe('AuthController', () => {
   let authController: IAuthController;

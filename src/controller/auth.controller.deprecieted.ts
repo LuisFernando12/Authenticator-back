@@ -1,7 +1,6 @@
 import { LoginDTO } from '@/dto/login.dto';
 import { NewPasswordDTO } from '@/dto/new-password.dto';
 import { ResetPasswordDTO } from '@/dto/reset-password.dto';
-import { AuthService } from '@/service/auth.service';
 import {
   Body,
   Controller,
@@ -14,6 +13,7 @@ import {
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { NewTokenToActiveEmailDTO } from '../dto/new-token.dto';
+import { AuthService } from '../service/auth.service.deprecieted';
 
 export interface IAuthController {
   login(data: LoginDTO): Promise<any>;
