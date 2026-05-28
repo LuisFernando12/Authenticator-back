@@ -1,5 +1,5 @@
 import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
-import { AuthFlow } from '../../domain/entity/auth-user.entity';
+import { AuthFlow } from '../../domain/enum/auth-flow.enum';
 import { ConfigServicePort } from '../port/config-service.port';
 import { TokenServicePort } from '../port/token-service.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
@@ -34,7 +34,9 @@ export class LoginUseCase implements BaseUseCase<IPayloadLoginUseCase> {
     });
 
     return {
-      ...token['tokenProps'],
+      access_token: token.accessToken,
+      refresh_token: token.refreshToken,
+      expiresAt: token.expiresAt,
       redirect_uri: this.configServicePort.redirectURI,
     };
   }

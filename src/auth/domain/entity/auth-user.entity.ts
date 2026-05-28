@@ -1,3 +1,4 @@
+import { AuthFlow } from '../enum/auth-flow.enum';
 import { AuthDomainError } from '../error/auth-domain.error';
 
 export interface IUserProps {
@@ -8,13 +9,7 @@ export interface IUserProps {
   isVerified: boolean;
   createdAt: Date;
 }
-export enum AuthFlow {
-  login = 'login',
-  activeAccount = 'activeAccount',
-  resetPassword = 'resetPassword',
-  newPassword = 'newPassword',
-  sendNewTokenToEmailActive = 'sendNewTokenToEmailActive',
-}
+
 export class AuthUser {
   constructor(private readonly userProps: IUserProps) {}
   get id(): string {
@@ -49,11 +44,13 @@ export class AuthUser {
       flow === AuthFlow.sendNewTokenToEmailActive ||
       flow === AuthFlow.activeAccount
     ) {
-      if (this.userProps.isVerified)
+      if (this.userProps.isVerified) {
         throw AuthDomainError.badRequest('Account already active');
+      }
     } else {
-      if (!this.userProps.isVerified)
+      if (!this.userProps.isVerified) {
         throw AuthDomainError.badRequest('Account not verified');
+      }
     }
   }
   isSamePassword(value: boolean) {

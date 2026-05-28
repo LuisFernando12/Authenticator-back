@@ -6,7 +6,4 @@ export abstract class RedisServicePort {
     code: number,
   ): Promise<{ email: string }>;
   abstract clearResetPasswordCodeOTP(code: number): Promise<void>;
-  // abstract saveEmailVerificationToken(): Promise<boolean>;
-  // abstract consumeEmailVerificationToken(): Promise<string>;
-  // abstract clearEmailVerificationToken(): Promise<boolean>;
 }

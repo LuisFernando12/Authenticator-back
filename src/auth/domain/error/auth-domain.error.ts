@@ -18,7 +18,7 @@ export class AuthDomainError extends Error {
   readonly error: string;
   constructor(errorPayload: IOauthDomainPayload, status: StatusCode) {
     super(errorPayload.message);
-    this.name = 'OauthDomainError';
+    this.name = 'AuthDomainError';
     this.error = errorPayload.error;
     this.status = status;
   }

@@ -1,5 +1,5 @@
 import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
-import { AuthFlow } from '../../domain/entity/auth-user.entity';
+import { AuthFlow } from '../../domain/enum/auth-flow.enum';
 import { RedisServicePort } from '../port/redisService.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
 import { UserValidateCredentialsServicePort } from '../port/user-validate-credentials-service.port';
@@ -11,7 +11,7 @@ export class NewPasswordUseCase implements BaseUseCase<{
   constructor(
     private readonly redisServicePort: RedisServicePort,
     private readonly userRepositoryPort: UserRepositoryPort,
-    private readonly UserValidateCredentialsServicePort: UserValidateCredentialsServicePort,
+    private readonly userValidateCredentialsServicePort: UserValidateCredentialsServicePort,
   ) {}
   async execute(payload: {
     password: string;
@@ -23,16 +23,17 @@ export class NewPasswordUseCase implements BaseUseCase<{
     const userDB = await this.userRepositoryPort.findByEmail(codeRedis.email);
     userDB.isVerifiedAccount(AuthFlow.newPassword);
     const validatePassword =
-      await this.UserValidateCredentialsServicePort.validate(
+      await this.userValidateCredentialsServicePort.validate(
         password,
         userDB.password,
       );
     userDB.isSamePassword(validatePassword);
-    const [_, newPassword] = await Promise.all([
+    const hashedPassword =
+      await this.userValidateCredentialsServicePort.encrypt(password);
+    await Promise.all([
+      this.userRepositoryPort.updatePassword(codeRedis.email, hashedPassword),
       this.redisServicePort.clearResetPasswordCodeOTP(code),
-      this.UserValidateCredentialsServicePort.encrypt(password),
     ]);
-    await this.userRepositoryPort.updatePassword(codeRedis.email, newPassword);
     return { message: 'Updated password' };
   }
 }

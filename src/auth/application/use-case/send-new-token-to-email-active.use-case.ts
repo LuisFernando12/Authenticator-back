@@ -1,5 +1,5 @@
 import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
-import { AuthFlow } from '../../domain/entity/auth-user.entity';
+import { AuthFlow } from '../../domain/enum/auth-flow.enum';
 import { EmailServicePort } from '../port/email-service.port';
 import { TokenServicePort } from '../port/token-service.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
