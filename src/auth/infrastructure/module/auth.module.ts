@@ -30,7 +30,7 @@ import {
 import {
   REDIS_SERVICE_PORT,
   RedisServicePort,
-} from '../../application/port/redisService.port';
+} from '../../application/port/redis-service.port';
 import {
   TOKEN_SERVICE_PORT,
   TokenServicePort,

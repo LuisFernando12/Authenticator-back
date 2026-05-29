@@ -63,8 +63,8 @@ import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
 import { GenerateIdServiceAdapter } from '../adapter/generate-id-service.adapter';
 import { HashedClientSecretServiceAdapter } from '../adapter/hashed-client-secret-service.adapter';
 import { RedisServiceAdapter } from '../adapter/redis-service.adapter';
-import { TokenServiceAdapter } from '../adapter/token-servie.adapter';
-import { UserClientConsentServiceAdapter } from '../adapter/user-client-consent-service.adpter';
+import { TokenServiceAdapter } from '../adapter/token-service.adapter';
+import { UserClientConsentServiceAdapter } from '../adapter/user-client-consent-service.adapter';
 import { UserServiceAdapter } from '../adapter/user-service.adapter';
 
 @Module({

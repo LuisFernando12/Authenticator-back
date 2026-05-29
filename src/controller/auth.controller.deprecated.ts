@@ -13,7 +13,7 @@ import {
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { NewTokenToActiveEmailDTO } from '../dto/new-token.dto';
-import { AuthService } from '../service/auth.service.deprecieted';
+import { AuthService } from '../service/auth.service.deprecated';
 
 export interface IAuthController {
   login(data: LoginDTO): Promise<any>;

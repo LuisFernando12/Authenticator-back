@@ -17,7 +17,7 @@ import {
   IOauthService,
   IPayloadAuthRequest,
   OauthService,
-} from '../../../src/service/oauth.service.depreciated';
+} from '../../../src/service/oauth.service.deprecated';
 import { RedisService } from '../../../src/service/redis.service';
 import { TokenService } from '../../../src/service/token.service';
 import { UserClientConsentService } from '../../../src/service/user-client-consent.service';

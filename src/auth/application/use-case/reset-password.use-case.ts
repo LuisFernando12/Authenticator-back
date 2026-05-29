@@ -2,7 +2,7 @@ import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
 import { AuthFlow } from '../../domain/enum/auth-flow.enum';
 import { EmailServicePort } from '../port/email-service.port';
 import { GenerateOtpServicePort } from '../port/generate-otp-service.port';
-import { RedisServicePort } from '../port/redisService.port';
+import { RedisServicePort } from '../port/redis-service.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
 
 export class ResetPasswordUseCase implements BaseUseCase<string> {

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   IOauthController,
   OauthController,
-} from '../../../src/controller/oauth.controller.deprecieted';
+} from '../../../src/controller/oauth.controller.deprecated';
 import { LoginDTO } from '../../../src/dto/login.dto';
 import {
   OauthAuthorizeDTO,
@@ -13,7 +13,7 @@ import { RevokeTokenDTO, TokenIntrospectDTO } from '../../../src/dto/token.dto';
 import {
   IOauthService,
   OauthService,
-} from '../../../src/service/oauth.service.depreciated';
+} from '../../../src/service/oauth.service.deprecated';
 import { IResponseTokenIntrospect } from '../../../src/service/token.service';
 
 describe('OauthController', () => {

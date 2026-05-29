@@ -1,5 +1,5 @@
 import { RedisService } from '../../../core/domain/service/redis.service';
-import { RedisServicePort } from '../../application/port/redisService.port';
+import { RedisServicePort } from '../../application/port/redis-service.port';
 import { AuthDomainError } from '../../domain/error/auth-domain.error';
 
 export class RedisServiceAdapter implements RedisServicePort {

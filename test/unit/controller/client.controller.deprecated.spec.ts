@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   ClientController,
   IClientController,
-} from '../../../src/controller/client.controller.deprecieted';
+} from '../../../src/controller/client.controller.deprecated';
 import { SaveClientDTO } from '../../../src/dto/save-client.dto';
 import { ClientService } from '../../../src/service/client.service';
 import { mockClientService } from '../mock/client.mock';

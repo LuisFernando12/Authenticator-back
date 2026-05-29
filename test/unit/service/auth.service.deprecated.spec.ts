@@ -14,7 +14,7 @@ import { AppConfigEnvService } from '../../../src/service/app-config-env.service
 import {
   AuthService,
   IAuthService,
-} from '../../../src/service/auth.service.deprecieted';
+} from '../../../src/service/auth.service.deprecated';
 import { EmailService } from '../../../src/service/email.service';
 import { RedisService } from '../../../src/service/redis.service';
 import { TokenService } from '../../../src/service/token.service';

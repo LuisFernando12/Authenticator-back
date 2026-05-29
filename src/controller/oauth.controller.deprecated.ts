@@ -17,7 +17,7 @@ import {
   OauthTokenDTO,
 } from '../dto/oauth-authorize.dto';
 import { RevokeTokenDTO, TokenIntrospectDTO } from '../dto/token.dto';
-import { OauthService } from '../service/oauth.service.depreciated';
+import { OauthService } from '../service/oauth.service.deprecated';
 export interface IOauthController {
   authorize(
     payloadOauthAuthorize: Omit<OauthAuthorizeDTO, 'oauthRequestId'>,

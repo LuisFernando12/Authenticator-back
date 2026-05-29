@@ -22,7 +22,7 @@ import {
 import { CreateClientUseCase } from '../../application/use-case/create-client.use-case';
 import { FindByClientIdUseCase } from '../../application/use-case/find-by-clientId.use-case';
 import { ClientRepositoryAdapter } from '../adapter/client-repository.adapter';
-import { ConfigServiceAdapter } from '../adapter/consfig-service.adapter';
+import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
 import { GenerateClientsServiceAdapter } from '../adapter/generate-clients-service';
 import { ClientController } from '../controller/client.controller';
 
