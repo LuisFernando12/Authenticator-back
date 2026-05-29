@@ -26,7 +26,7 @@ export class PkceChallengeValueObject {
       .update(codeVerifier)
       .digest('base64url');
     if (this.challenge !== codeChallegeVerify) {
-      throw new Error('Invalid code verifier');
+      throw OauthDomainError.invalidGrant('Invalid code verifier');
     }
   }
   methodIsAccepted() {

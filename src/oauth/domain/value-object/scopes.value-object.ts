@@ -1,9 +1,11 @@
+import { OauthDomainError } from '../error/oauth-domain.error';
+
 export class ScopeValueObject {
   constructor(private readonly scopes: Array<string>) {}
   static create(value: string) {
     const scope = value.split(' ').map((scope) => scope.trim());
     if (scope.length === 0) {
-      throw new Error('Scope is required');
+      throw OauthDomainError.invalidRequest('Scope is required');
     }
     return new ScopeValueObject([...new Set(scope)]);
   }

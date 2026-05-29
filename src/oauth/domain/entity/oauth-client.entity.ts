@@ -44,12 +44,14 @@ export class OauthClient {
       redirectUri.equals(uri),
     );
     if (!allowed) {
-      throw new Error('Redirect URI not allowed');
+      throw OauthDomainError.invalidGrant('Redirect URI not allowed');
     }
   }
-  grantTypIsSupported(grantType: string): void {
+  grantTypeIsSuspported(grantType: string): void {
     if (grantType !== 'authorization_code') {
-      throw new Error(`Unsupported grant type ${grantType || ''}`);
+      throw OauthDomainError.unsupportedGrantType(
+        `Unsupported grant type ${grantType || ''}`,
+      );
     }
   }
   isValidScopes(scopes: ScopeValueObject | string): void {

@@ -1,3 +1,4 @@
+import { OauthDomainError } from '../error/oauth-domain.error';
 import { OauthUserClientConsent } from './oauth-user-client-consent';
 import { OauthUser } from './user.entity';
 
@@ -35,7 +36,7 @@ export class OauthToken {
   }
   validateRefreshTokenIsValid() {
     if (new Date(this.tokenProps.expiresAt) < new Date()) {
-      throw new Error('Refresh token expired');
+      throw OauthDomainError.invalidRequest('Refresh token expired');
     }
   }
 }
