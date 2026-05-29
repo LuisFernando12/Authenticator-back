@@ -17,5 +17,5 @@ export class SaveClientDTO {
   @ApiProperty()
   @IsBoolean()
   @IsOptional()
-  isConfidential?: boolean;
+  isConfidential: boolean;
 }

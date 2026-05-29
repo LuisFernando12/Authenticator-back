@@ -1,11 +1,18 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SaveClientDTO } from '../dto/save-client.dto';
 import { ClientEntity } from '../entity/client.entity';
 
+type ICreateClientPayload = Omit<
+  ClientEntity,
+  'id' | 'createdAt' | 'userClientConsent'
+>;
 export interface IClientRepository {
-  create(client: SaveClientDTO): Promise<ClientEntity>;
+  create(client: ICreateClientPayload): Promise<ClientEntity>;
   findByClientId(clientId: string): Promise<ClientEntity>;
   findByClientSecret(clientSecret: string): Promise<ClientEntity>;
 }
@@ -16,10 +23,13 @@ export class ClientRepository implements IClientRepository {
     @InjectRepository(ClientEntity)
     private readonly clientRepository: Repository<ClientEntity>,
   ) {}
-  async create(client: SaveClientDTO) {
+  async create(client: ICreateClientPayload) {
     try {
       return await this.clientRepository.save(client);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code && error.code === '23505') {
+        throw new ConflictException('Client already exists');
+      }
       throw new InternalServerErrorException(error);
     }
   }

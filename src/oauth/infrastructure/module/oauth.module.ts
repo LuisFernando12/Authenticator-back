@@ -1,3 +1,4 @@
+import { ClientModule } from '@/client/infrastructure/module/client.module';
 import { RedisService } from '@/core/domain/service/redis.service';
 import { OauthController } from '@/oauth/infrastructure/controller/oauth.controller';
 import { Module } from '@nestjs/common';
@@ -5,11 +6,9 @@ import { ConfigService } from '@nestjs/config';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
 import { AppConfigModule } from '../../../module/app-config.module';
-import { ClientModule } from '../../../module/client.module';
 import { TokenModule } from '../../../module/token.module';
 import { UserClientConsentModule } from '../../../module/user-client-consent.module';
 import { UserModule } from '../../../module/user.module';
-import { ClientService } from '../../../service/client.service';
 import { ITokenService, TokenService } from '../../../service/token.service';
 import {
   IUserClientConsentService,
@@ -52,13 +51,14 @@ import { RevokeTokenUseCase } from '../../application/use-case/revoke-token.use-
 import { TokenIntrospectUseCase } from '../../application/use-case/token-introspect.use-case';
 
 import {
+  ClientRepository,
+  IClientRepository,
+} from '../../../repository/client.repository';
+import {
   GENERATE_ID_SERVICE_PORT,
   GenerateIdServicePort,
 } from '../../application/port/generate-id-service.port';
-import {
-  ClientServiceAdapter,
-  IClientService,
-} from '../adapter/client-service.adapter';
+import { ClientServiceAdapter } from '../adapter/client-service.adapter';
 import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
 import { GenerateIdServiceAdapter } from '../adapter/generate-id-service.adapter';
 import { HashedClientSecretServiceAdapter } from '../adapter/hashed-client-secret-service.adapter';
@@ -91,9 +91,9 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
     },
     {
       provide: CLIENT_SERVICE_PORT,
-      useFactory: (clientService: IClientService): ClientServicePort =>
-        new ClientServiceAdapter(clientService),
-      inject: [ClientService],
+      useFactory: (clientRepository: IClientRepository): ClientServicePort =>
+        new ClientServiceAdapter(clientRepository),
+      inject: [ClientRepository],
     },
     {
       provide: USER_CLIENT_CONSENT_SERVICE_PORT,

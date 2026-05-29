@@ -16,6 +16,7 @@ describe('ClientService', () => {
     redirectUris: ['http://localhost:3000/callback'],
     grantTypes: ['authorization_code'],
     scopes: ['read', 'write'],
+    isConfidential: false,
   };
 
   let clientService: ClientService;

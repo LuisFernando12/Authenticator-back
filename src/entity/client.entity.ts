@@ -15,7 +15,7 @@ export class ClientEntity {
   clientSecret?: string;
   @Column({ nullable: false, default: false })
   isConfidential: boolean;
-  @Column({ nullable: false })
+  @Column({ nullable: false, unique: true })
   name: string;
   @Column({ type: 'text', array: true, unique: true })
   redirectUris: Array<string>;

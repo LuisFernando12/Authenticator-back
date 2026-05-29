@@ -26,7 +26,9 @@ export class ClientService implements IClientService {
       10,
     );
     try {
-      const clientDB = await this.clientRepository.create(client);
+      const clientDB = await this.clientRepository.create(
+        client as ClientEntity,
+      );
       clientDB.clientSecret = clientSecret;
       return clientDB;
     } catch (error) {
