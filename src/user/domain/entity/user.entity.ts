@@ -30,7 +30,7 @@ export class User {
   }
   userIsVerified(): void {
     if (!this.userProps.isVerified) {
-      UserDomainError.badRequest('User not verified');
+      throw UserDomainError.badRequest('User not verified');
     }
   }
 }
