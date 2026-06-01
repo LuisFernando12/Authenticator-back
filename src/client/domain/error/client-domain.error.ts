@@ -1,4 +1,4 @@
-interface IOauthDomainPayload {
+interface IClientDomainPayload {
   error: string;
   message: string;
 }
@@ -16,7 +16,7 @@ enum HttpStatus {
 export class ClientDomainError extends Error {
   readonly status: StatusCode;
   readonly error: string;
-  constructor(errorPayload: IOauthDomainPayload, status: StatusCode) {
+  constructor(errorPayload: IClientDomainPayload, status: StatusCode) {
     super(errorPayload.message);
     this.name = 'ClientDomainError';
     this.error = errorPayload.error;
@@ -37,22 +37,9 @@ export class ClientDomainError extends Error {
     return new ClientDomainError(
       {
         error: 'invalid_client',
-        message:
-          description ||
-          'Client authentication failed (e.g., unknown client, no client authentication included, or unsupported authentication method).',
+        message: description || 'Client not found',
       },
-      HttpStatus.UNAUTHORIZED,
-    );
-  }
-  static invalidGrant(description?: string): ClientDomainError {
-    return new ClientDomainError(
-      {
-        error: 'invalid_grant',
-        message:
-          description ||
-          'The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.',
-      },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.NOT_FOUND,
     );
   }
   static conflict(description?: string): ClientDomainError {

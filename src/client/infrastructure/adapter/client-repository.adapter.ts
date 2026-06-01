@@ -27,7 +27,7 @@ export class ClientRepositoryAdapter implements ClientRepositoryPort {
   }
   async findByClientId(clientId: string): Promise<Client> {
     if (!clientId) {
-      throw ClientDomainError.invalidGrant('Client ID not found');
+      throw ClientDomainError.invalidRequest();
     }
     const clientDB = await this.clientRepository.findByClientId(clientId);
     if (!clientDB) {

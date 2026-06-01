@@ -43,12 +43,7 @@ export class Client {
   get createdAt(): Date {
     return this.props.createdAt;
   }
-  set clientSecret(clientSecret: string) {
-    this.props.clientSecret = clientSecret;
-  }
-  set isActive(isActive: boolean) {
-    this.props.isActive = isActive;
-  }
+
   static create(props: IClientProps) {
     return new Client(props);
   }
