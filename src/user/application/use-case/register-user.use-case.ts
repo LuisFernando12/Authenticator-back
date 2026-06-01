@@ -19,8 +19,8 @@ export class RegisterUserUseCase implements BaseUseCase<IRegisterUserPayload> {
   async execute(payload: IRegisterUserPayload): Promise<{ message: string }> {
     await this.userRepositoryPort.existsUser(payload.email);
 
-    payload.password = await this.encryptServicePort.encrypt(payload.password);
-    const user = new User(payload);
+    const password = await this.encryptServicePort.encrypt(payload.password);
+    const user = new User({ ...payload, password });
     const userDB = await this.userRepositoryPort.create(user);
 
     const verification_token =
