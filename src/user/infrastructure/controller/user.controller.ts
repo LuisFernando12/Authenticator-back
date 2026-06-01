@@ -1,4 +1,4 @@
-import { UserDTO } from '@/dto/user.dto';
+import { UserDTO } from '@/user/infrastructure/dto/user.dto';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { RegisterUserUseCase } from '../../application/use-case/register-user.use-case';
