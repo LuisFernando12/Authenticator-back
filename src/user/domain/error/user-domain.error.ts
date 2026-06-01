@@ -31,6 +31,15 @@ export class UserDomainError extends Error {
       HttpStatus.BAD_REQUEST,
     );
   }
+  static notFound(description?: string) {
+    return new UserDomainError(
+      {
+        error: 'not_found',
+        message: description || 'Not Found!',
+      },
+      HttpStatus.NOT_FOUND,
+    );
+  }
   static conflict(description?: string): UserDomainError {
     return new UserDomainError(
       {

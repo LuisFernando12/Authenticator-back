@@ -25,10 +25,10 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
     });
   }
   async findByEmail(email: string): Promise<User> {
-    try {
-      return await this.userRepository.findByEmail(email);
-    } catch (_error) {
-      throw UserDomainError.internalServerError('Failure to find user');
+    const userDB = await this.userRepository.findByEmail(email);
+    if (!userDB) {
+      throw UserDomainError.notFound('User not found');
     }
+    return userDB;
   }
 }
