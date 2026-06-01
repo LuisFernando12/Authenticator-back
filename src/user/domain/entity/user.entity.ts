@@ -9,7 +9,7 @@ export interface IUserProps {
   createdAt?: Date;
 }
 export class User {
-  constructor(public userProps: IUserProps) {}
+  constructor(private readonly userProps: IUserProps) {}
   get id(): string {
     return this.userProps.id;
   }
