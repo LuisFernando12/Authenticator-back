@@ -21,7 +21,7 @@ import {
 import { RedisService } from '../../../src/service/redis.service';
 import { TokenService } from '../../../src/service/token.service';
 import { UserClientConsentService } from '../../../src/service/user-client-consent.service';
-import { UserService } from '../../../src/service/user.service';
+import { UserService } from '../../../src/service/user.service.deprected';
 import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
 import { mockClientService } from '../mock/client.mock';
 import { mockAuthLogger, mockBaseLogger } from '../mock/logger.mock';

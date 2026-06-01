@@ -15,7 +15,7 @@ import { ClientService } from './client.service';
 import { RedisService } from './redis.service';
 import { IResponseTokenIntrospect, TokenService } from './token.service';
 import { UserClientConsentService } from './user-client-consent.service';
-import { UserService } from './user.service';
+import { UserService } from './user.service.deprected';
 
 export interface IOauthService {
   authorize(payloadOauth: OauthAuthorizeDTO): Promise<URL>;

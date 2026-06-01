@@ -14,7 +14,10 @@ import {
   IUserClientConsentService,
   UserClientConsentService,
 } from '../../../service/user-client-consent.service';
-import { IUserService, UserService } from '../../../service/user.service';
+import {
+  IUserService,
+  UserService,
+} from '../../../service/user.service.deprected';
 import {
   CLIENT_SERVICE_PORT,
   ClientServicePort,

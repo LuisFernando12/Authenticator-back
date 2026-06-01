@@ -2,6 +2,7 @@ import { AuthModule } from '@/auth/infrastructure/module/auth.module';
 import { ClientModule } from '@/client/infrastructure/module/client.module';
 import { TokenEntity } from '@/entity/token.entity';
 import { UserEntity } from '@/entity/user.entity';
+import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -14,7 +15,6 @@ import { AppConfigModule } from './app-config.module';
 import { EmailModule } from './email.module';
 import { HealthModule } from './health.module';
 import { TokenModule } from './token.module';
-import { UserModule } from './user.module';
 
 @Module({
   imports: [

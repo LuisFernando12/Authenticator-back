@@ -6,7 +6,7 @@ import { UserDTO, UserResponseDTO } from '../dto/user.dto';
 export interface IUserRepository {
   create(
     data: UserEntityType,
-  ): Promise<Omit<UserResponseDTO, 'userClientConsent' | 'password'>>;
+  ): Promise<Omit<UserResponseDTO, 'userClientConsent'> & { password: string }>;
   findByEmail(email: string): Promise<UserResponseDTO & { password: string }>;
   existsUser(email: string): Promise<boolean>;
   activeAccount(email: string): Promise<boolean>;
@@ -35,7 +35,9 @@ export class UserRepository implements IUserRepository {
 
   async create(
     data: UserDTO,
-  ): Promise<Omit<UserResponseDTO, 'userClientConsent' | 'password'>> {
+  ): Promise<
+    Omit<UserResponseDTO, 'userClientConsent'> & { password: string }
+  > {
     const user = this.userRepository.create(data);
     return await this.userRepository.save(user);
   }

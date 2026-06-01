@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { IUserService } from '../../../service/user.service';
+import { IUserService } from '../../../service/user.service.deprected';
 import {
   IValidanteCredentialsPayload,
   UserServicePort,

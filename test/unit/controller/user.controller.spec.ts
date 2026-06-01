@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   IUserController,
   UserController,
-} from '../../../src/controller/user.controller';
-import { UserService } from '../../../src/service/user.service';
+} from '../../../src/controller/user.controller.deprecated';
+import { UserService } from '../../../src/service/user.service.deprected';
 import { mockUserService } from '../mock/user.mock';
 
 describe('UserController', () => {
