@@ -1,4 +1,4 @@
-import { UserDomainError } from '../error/user-domain.erros';
+import { UserDomainError } from '../error/user-domain.error';
 
 export interface IUserProps {
   id?: string;

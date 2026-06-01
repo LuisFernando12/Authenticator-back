@@ -1,7 +1,7 @@
 import { UserRepository } from '../../../repository/user.repository';
 import { UserRepositoryPort } from '../../application/port/user-repository.port';
 import { User } from '../../domain/entity/user.entity';
-import { UserDomainError } from '../../domain/error/user-domain.erros';
+import { UserDomainError } from '../../domain/error/user-domain.error';
 
 export class UserRepositoryAdapter implements UserRepositoryPort {
   constructor(private readonly userRepository: UserRepository) {}

@@ -3,7 +3,7 @@ import {
   IGenerateEmailVerificationToken,
   TokenServicePort,
 } from '../../application/port/token-service.port';
-import { UserDomainError } from '../../domain/error/user-domain.erros';
+import { UserDomainError } from '../../domain/error/user-domain.error';
 
 export class TokenServiceAdapter implements TokenServicePort {
   constructor(private readonly tokenService: TokenService) {}

@@ -3,7 +3,7 @@ import {
   EmailServicePort,
   ISendActivationEmailPayload,
 } from '../../application/port/email-service.port';
-import { UserDomainError } from '../../domain/error/user-domain.erros';
+import { UserDomainError } from '../../domain/error/user-domain.error';
 
 export class EmailServiceAdapter implements EmailServicePort {
   constructor(private readonly emailService: EmailService) {}
