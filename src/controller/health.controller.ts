@@ -1,4 +1,4 @@
-import { AppConfigEnvService } from '@/service/app-config-env.service';
+import { AppConfigEnvService } from '@/service/app-config-env.service.deprecated';
 import { Controller, Get } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
 import {

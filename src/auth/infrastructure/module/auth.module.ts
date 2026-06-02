@@ -1,5 +1,6 @@
 import { AuthController } from '@/auth/infrastructure/controller/auth.controller';
 import { UserEntity } from '@/entity/user.entity';
+import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +9,6 @@ import { RedisService } from '../../../core/domain/service/redis.service';
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
 import { EmailModule } from '../../../module/email.module';
 import { TokenModule } from '../../../module/token.module';
-import { UserModule } from '../../../module/user.module';
 import {
   IUserRepository,
   UserRepository,

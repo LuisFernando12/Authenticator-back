@@ -1,6 +1,6 @@
 import { TokenEntity } from '@/entity/token.entity';
 import { TokenRepository } from '@/repository/token.repository';
-import { AppConfigEnvService } from '@/service/app-config-env.service';
+import { AppConfigEnvService } from '@/service/app-config-env.service.deprecated';
 import { TokenService } from '@/service/token.service';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';

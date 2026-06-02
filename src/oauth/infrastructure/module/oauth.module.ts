@@ -1,6 +1,7 @@
 import { ClientModule } from '@/client/infrastructure/module/client.module';
 import { RedisService } from '@/core/domain/service/redis.service';
 import { OauthController } from '@/oauth/infrastructure/controller/oauth.controller';
+import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
@@ -8,16 +9,11 @@ import { RedisServiceImplement } from '../../../core/infrastructure/service/redi
 import { AppConfigModule } from '../../../module/app-config.module';
 import { TokenModule } from '../../../module/token.module';
 import { UserClientConsentModule } from '../../../module/user-client-consent.module';
-import { UserModule } from '../../../module/user.module';
 import { ITokenService, TokenService } from '../../../service/token.service';
 import {
   IUserClientConsentService,
   UserClientConsentService,
 } from '../../../service/user-client-consent.service';
-import {
-  IUserService,
-  UserService,
-} from '../../../service/user.service.deprected';
 import {
   CLIENT_SERVICE_PORT,
   ClientServicePort,
@@ -57,6 +53,10 @@ import {
   ClientRepository,
   IClientRepository,
 } from '../../../repository/client.repository';
+import {
+  IUserRepository,
+  UserRepository,
+} from '../../../repository/user.repository';
 import {
   GENERATE_ID_SERVICE_PORT,
   GenerateIdServicePort,
@@ -123,9 +123,9 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
     },
     {
       provide: USER_SERVICE_PORT,
-      useFactory: (userService: IUserService): UserServicePort =>
-        new UserServiceAdapter(userService),
-      inject: [UserService],
+      useFactory: (userRepository: IUserRepository): UserServicePort =>
+        new UserServiceAdapter(userRepository),
+      inject: [UserRepository],
     },
     {
       provide: CONFIG_SERVICE_PORT,

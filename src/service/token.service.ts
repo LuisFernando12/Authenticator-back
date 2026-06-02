@@ -9,7 +9,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { TokenEntity } from '../entity/token.entity';
-import { AppConfigEnvService } from './app-config-env.service';
+import { AppConfigEnvService } from './app-config-env.service.deprecated';
 
 export interface IResponseTokenIntrospect {
   active: boolean;

@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { IUserService } from '../../../service/user.service.deprected';
+import { IUserRepository } from '../../../repository/user.repository';
 import {
   IValidanteCredentialsPayload,
   UserServicePort,
@@ -8,9 +8,9 @@ import { OauthUser } from '../../domain/entity/user.entity';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 
 export class UserServiceAdapter implements UserServicePort {
-  constructor(private readonly userService: IUserService) {}
+  constructor(private readonly userRepository: IUserRepository) {}
   async findByEmail(email: string): Promise<OauthUser> {
-    const userDB = await this.userService.findByEmail(email);
+    const userDB = await this.userRepository.findByEmail(email);
     if (!userDB) {
       throw new Error('Invalid credentials');
     }

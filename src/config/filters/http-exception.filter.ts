@@ -12,7 +12,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const status = exception.status;
-    console.log(exception);
+
     response.status(status).json({
       error: exception.error.toLocaleUpperCase(),
       message: exception.message,

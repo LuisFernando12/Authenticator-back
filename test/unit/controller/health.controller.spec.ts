@@ -10,7 +10,7 @@ import {
   HealthController,
   IHealthController,
 } from '../../../src/controller/health.controller';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
 import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
 
 describe('HealthController', () => {

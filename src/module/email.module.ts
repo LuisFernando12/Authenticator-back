@@ -1,7 +1,7 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 
-import { AppConfigEnvService } from '@/service/app-config-env.service';
+import { AppConfigEnvService } from '@/service/app-config-env.service.deprecated';
 import { EmailService } from '@/service/email.service';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { ConfigService } from '@nestjs/config';

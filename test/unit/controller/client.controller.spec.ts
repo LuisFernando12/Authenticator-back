@@ -5,7 +5,7 @@ import {
   IClientController,
 } from '../../../src/controller/client.controller.deprecated';
 import { SaveClientDTO } from '../../../src/dto/save-client.dto';
-import { ClientService } from '../../../src/service/client.service';
+import { ClientService } from '../../../src/service/client.service.deprected';
 import { mockClientService } from '../mock/client.mock';
 
 describe('ClientController', () => {

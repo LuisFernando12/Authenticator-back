@@ -10,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthLogger } from '../../../src/config/logger/auth-logger.config';
 import { BaseLogger } from '../../../src/config/logger/base-logger';
 import { UserRepository } from '../../../src/repository/user.repository';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
 import {
   AuthService,
   IAuthService,

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { AuthLogger } from '../config/logger/auth-logger.config';
-import { AppConfigEnvService } from './app-config-env.service';
+import { AppConfigEnvService } from './app-config-env.service.deprecated';
 @Injectable()
 export class RedisService
   extends Redis

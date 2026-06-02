@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
 import {
   EmailService,
   IEmailService,

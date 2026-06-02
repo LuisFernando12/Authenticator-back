@@ -6,8 +6,8 @@ import {
   ClientRepository,
   IClientRepository,
 } from '../../../src/repository/client.repository';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
-import { ClientService } from '../../../src/service/client.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
+import { ClientService } from '../../../src/service/client.service.deprected';
 import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
 
 describe('ClientService', () => {

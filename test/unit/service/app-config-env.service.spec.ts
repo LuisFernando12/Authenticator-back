@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
 
 describe('AppConfigEnvService', () => {
   let appConfigEnvService: AppConfigEnvService;

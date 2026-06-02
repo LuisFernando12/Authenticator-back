@@ -10,7 +10,7 @@ export class UserClientConsentServiceAdapter implements UserClientConsentService
     const userClientConsentDB =
       await this.userClientConsentService.findByConsentId(consentId);
     if (!userClientConsentDB) {
-      throw new Error('Consents not found !');
+      throw OauthDomainError.invalidGrant('Consents not found !');
     }
     return userClientConsentDB;
   }
@@ -21,7 +21,7 @@ export class UserClientConsentServiceAdapter implements UserClientConsentService
         clientId,
       );
     if (!userClientConsentDB) {
-      throw new Error('Consents not found !');
+      throw OauthDomainError.invalidGrant('Consents not found !');
     }
     return userClientConsentDB;
   }

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthLogger } from '../../../src/config/logger/auth-logger.config';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
 import { RedisService } from '../../../src/service/redis.service';
 import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
 import { mockAuthLogger } from '../mock/logger.mock';

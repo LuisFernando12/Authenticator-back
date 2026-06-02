@@ -1,4 +1,4 @@
-import { AppConfigEnvService } from '@/service/app-config-env.service';
+import { AppConfigEnvService } from '@/service/app-config-env.service.deprecated';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';

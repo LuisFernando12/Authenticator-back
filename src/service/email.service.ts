@@ -1,6 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { AppConfigEnvService } from './app-config-env.service';
+import { AppConfigEnvService } from './app-config-env.service.deprecated';
 
 export interface IEmailService {
   sendActivationEmail(

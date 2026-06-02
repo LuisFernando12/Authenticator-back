@@ -11,8 +11,8 @@ import {
   OauthRefreshTokenDTO,
   OauthTokenDTO,
 } from '../../../src/dto/oauth-authorize.dto';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
-import { ClientService } from '../../../src/service/client.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
+import { ClientService } from '../../../src/service/client.service.deprected';
 import {
   IOauthService,
   IPayloadAuthRequest,

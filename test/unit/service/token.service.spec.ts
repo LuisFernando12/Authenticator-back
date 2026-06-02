@@ -10,7 +10,7 @@ import {
   ITokenRepository,
   TokenRepository,
 } from '../../../src/repository/token.repository';
-import { AppConfigEnvService } from '../../../src/service/app-config-env.service';
+import { AppConfigEnvService } from '../../../src/service/app-config-env.service.deprecated';
 import {
   ITokenService,
   TokenService,
