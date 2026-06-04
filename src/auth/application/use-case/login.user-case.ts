@@ -11,7 +11,7 @@ export interface IPayloadLoginUseCase {
 export class LoginUseCase implements BaseUseCase<IPayloadLoginUseCase> {
   constructor(
     private readonly userRepositoryPort: UserRepositoryPort,
-    private readonly userValidateCretentialsServicePort: UserValidateCredentialsServicePort,
+    private readonly userValidateCredentialsServicePort: UserValidateCredentialsServicePort,
     private readonly tokenServicePort: TokenServicePort,
     private readonly configServicePort: ConfigServicePort,
   ) {}
@@ -21,7 +21,7 @@ export class LoginUseCase implements BaseUseCase<IPayloadLoginUseCase> {
     const userDB = await this.userRepositoryPort.findByEmail(email);
 
     const isMatchedPassword =
-      await this.userValidateCretentialsServicePort.validate(
+      await this.userValidateCredentialsServicePort.validate(
         password,
         userDB.password,
       );

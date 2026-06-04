@@ -115,13 +115,13 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
       provide: LoginUseCase,
       useFactory: (
         userRepositoryPort: UserRepositoryPort,
-        userValidateCretentialsServicePort: UserValidateCredentialsServicePort,
+        userValidateCredentialsServicePort: UserValidateCredentialsServicePort,
         tokenServicePort: TokenServicePort,
         configServicePort: ConfigServicePort,
       ) =>
         new LoginUseCase(
           userRepositoryPort,
-          userValidateCretentialsServicePort,
+          userValidateCredentialsServicePort,
           tokenServicePort,
           configServicePort,
         ),
