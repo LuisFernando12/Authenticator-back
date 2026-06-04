@@ -1,5 +1,4 @@
 import { AuthController } from '@/auth/infrastructure/controller/auth.controller';
-import { UserEntity } from '@/entity/user.entity';
 import { TokenModule } from '@/token/infrastructure/module/token.module';
 import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
@@ -57,12 +56,7 @@ import { UserValidateCredentialsServiceAdapter } from '../adapter/user-validate-
 import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserEntity]),
-    TokenModule,
-    UserModule,
-    EmailModule,
-  ],
+  imports: [TypeOrmModule, TokenModule, UserModule, EmailModule],
   controllers: [AuthController],
   providers: [
     {
