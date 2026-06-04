@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ITokenService } from '../../../src/service/token.service';
+import { ITokenService } from '../../../src/service/token.service.deprecated';
 
 export const mockTokenService: ITokenService & {
   generateExpireAt: () => number;

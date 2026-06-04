@@ -14,7 +14,7 @@ import {
   IOauthService,
   OauthService,
 } from '../../../src/service/oauth.service.deprecated';
-import { IResponseTokenIntrospect } from '../../../src/service/token.service';
+import { IResponseTokenIntrospect } from '../../../src/service/token.service.deprecated';
 
 describe('OauthController', () => {
   let oauthController: IOauthController;

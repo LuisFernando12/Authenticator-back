@@ -14,7 +14,7 @@ import { AppConfigEnvService } from '../../../src/service/app-config-env.service
 import {
   ITokenService,
   TokenService,
-} from '../../../src/service/token.service';
+} from '../../../src/service/token.service.deprecated';
 import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
 import { mockAuthLogger } from '../mock/logger.mock';
 import { mockTokenService } from '../mock/token.mock';

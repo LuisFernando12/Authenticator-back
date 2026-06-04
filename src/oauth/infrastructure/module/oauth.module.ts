@@ -1,15 +1,14 @@
 import { ClientModule } from '@/client/infrastructure/module/client.module';
 import { RedisService } from '@/core/domain/service/redis.service';
 import { OauthController } from '@/oauth/infrastructure/controller/oauth.controller';
+import { TokenModule } from '@/token/infrastructure/module/token.module';
 import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
 import { AppConfigModule } from '../../../module/app-config.module';
-import { TokenModule } from '../../../module/token.module';
 import { UserClientConsentModule } from '../../../module/user-client-consent.module';
-import { ITokenService, TokenService } from '../../../service/token.service';
 import {
   IUserClientConsentService,
   UserClientConsentService,
@@ -57,6 +56,7 @@ import {
   IUserRepository,
   UserRepository,
 } from '../../../repository/user.repository';
+import { ITokenService } from '../../../token/application/service/token.service';
 import {
   GENERATE_ID_SERVICE_PORT,
   GenerateIdServicePort,
@@ -108,7 +108,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
       provide: TOKEN_SERVICE_PORT,
       useFactory: (tokenService: ITokenService): TokenServicePort =>
         new TokenServiceAdapter(tokenService),
-      inject: [TokenService],
+      inject: [ITokenService],
     },
     {
       provide: REDIS_SERVICE_PORT,

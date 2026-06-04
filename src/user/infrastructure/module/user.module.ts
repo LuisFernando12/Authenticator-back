@@ -1,5 +1,5 @@
 import { UserEntity } from '@/entity/user.entity';
-import { TokenModule } from '@/module/token.module';
+import { TokenModule } from '@/token/infrastructure/module/token.module';
 import {
   EMAIL_SERVICE_PORT,
   EmailServicePort,
@@ -23,7 +23,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailModule } from '../../../module/email.module';
 import { UserRepository } from '../../../repository/user.repository';
 import { EmailService } from '../../../service/email.service';
-import { TokenService } from '../../../service/token.service';
+import { ITokenService } from '../../../token/application/service/token.service';
 import { FindUserByEmailUseCase } from '../../application/use-case/find-user-by-email.use-case';
 import { RegisterUserUseCase } from '../../application/use-case/register-user.use-case';
 import { EmailServiceAdapter } from '../adapter/email-service.adapter';
@@ -48,9 +48,9 @@ import { UserRepositoryAdapter } from '../adapter/user-repository.adapter';
     },
     {
       provide: TOKEN_SERVICE_PORT,
-      useFactory: (tokenService: TokenService): TokenServicePort =>
+      useFactory: (tokenService: ITokenService): TokenServicePort =>
         new TokenServiceAdapter(tokenService),
-      inject: [TokenService],
+      inject: [ITokenService],
     },
     {
       provide: USER_REPOSITORY_PORT,

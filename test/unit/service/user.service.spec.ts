@@ -6,7 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserDTO } from '../../../src/dto/user.dto';
 import { UserRepository } from '../../../src/repository/user.repository';
 import { EmailService } from '../../../src/service/email.service';
-import { TokenService } from '../../../src/service/token.service';
+import { TokenService } from '../../../src/service/token.service.deprecated';
 import { UserService } from '../../../src/service/user.service.deprected';
 import { mockEmailService } from '../mock/email.mock';
 import { mockTokenService } from '../mock/token.mock';

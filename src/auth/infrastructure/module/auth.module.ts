@@ -1,5 +1,6 @@
 import { AuthController } from '@/auth/infrastructure/controller/auth.controller';
 import { UserEntity } from '@/entity/user.entity';
+import { TokenModule } from '@/token/infrastructure/module/token.module';
 import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -8,13 +9,12 @@ import { AppConfigEnvService } from '../../../core/domain/service/app-config-env
 import { RedisService } from '../../../core/domain/service/redis.service';
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
 import { EmailModule } from '../../../module/email.module';
-import { TokenModule } from '../../../module/token.module';
 import {
   IUserRepository,
   UserRepository,
 } from '../../../repository/user.repository';
 import { EmailService, IEmailService } from '../../../service/email.service';
-import { ITokenService, TokenService } from '../../../service/token.service';
+import { ITokenService } from '../../../token/application/service/token.service';
 import {
   CONFIG_SERVICE_PORT,
   ConfigServicePort,
@@ -93,7 +93,7 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
       provide: TOKEN_SERVICE_PORT,
       useFactory: (tokenService: ITokenService): TokenServicePort =>
         new TokenServiceAdapter(tokenService),
-      inject: [TokenService],
+      inject: [ITokenService],
     },
     {
       provide: USER_REPOSITORY_PORT,

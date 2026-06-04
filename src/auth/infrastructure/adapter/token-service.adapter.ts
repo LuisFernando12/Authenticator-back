@@ -1,4 +1,4 @@
-import { ITokenService } from '../../../service/token.service';
+import { ITokenService } from '../../../token/application/service/token.service';
 import {
   IPayloadToken,
   TokenServicePort,
@@ -10,7 +10,7 @@ import { VerifyTokenValueObject } from '../../domain/value-object/verify-token.v
 export class TokenServiceAdapter implements TokenServicePort {
   constructor(private readonly tokenService: ITokenService) {}
   async generateToken(payload: IPayloadToken): Promise<AuthToken> {
-    const token = await this.tokenService.generateToken(payload);
+    const token = await this.tokenService.generate({ payload });
     if (!token) {
       throw AuthDomainError.internalServerError('Failure to generate token');
     }
@@ -21,7 +21,7 @@ export class TokenServiceAdapter implements TokenServicePort {
     });
   }
   async verifyToken(token: string): Promise<VerifyTokenValueObject> {
-    const tokenVerify = await this.tokenService.verifyToken(token);
+    const tokenVerify = await this.tokenService.verify(token);
     if (!tokenVerify) {
       throw AuthDomainError.unauthorized('Invalid token');
     }

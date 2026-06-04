@@ -40,4 +40,5 @@ export interface TokenEntityType {
   refreshToken: string;
   expiresAt: Date;
   jti: string;
+  consentId?: string;
 }

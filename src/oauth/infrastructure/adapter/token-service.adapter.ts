@@ -1,5 +1,5 @@
-/* eslint-disable preserve-caught-error */
-import { ITokenService } from '../../../service/token.service';
+import { createHash } from 'node:crypto';
+import { ITokenService } from '../../../token/application/service/token.service';
 import {
   IPayloadToken,
   ITokenIntrospectResponse,
@@ -18,16 +18,10 @@ export class TokenServiceAdapter implements TokenServicePort {
     payload: IPayloadToken,
     userClientConsentId: string,
   ): Promise<OauthAccessToken> {
-    const accessToken = await this.tokenService.generateToken(
-      {
-        sub: payload.sub,
-        username: payload.username,
-        scope: payload.scope,
-        aud: payload.aud,
-        iss: payload.iss,
-      },
-      userClientConsentId,
-    );
+    const accessToken = await this.tokenService.generate({
+      payload,
+      consentId: userClientConsentId,
+    });
     if (!accessToken) {
       throw new Error('Failure to generate token');
     }
@@ -41,26 +35,16 @@ export class TokenServiceAdapter implements TokenServicePort {
     });
   }
   hashRefreshToken(refreshToken: string): string {
-    return this.tokenService.hashRefreshToken(refreshToken);
+    return createHash('sha256').update(refreshToken).digest('base64url');
   }
   async refreshToken(
     payload: IPayloadToken,
     token: string,
-    consentId?: string,
   ): Promise<OauthAccessToken> {
-    const { sub, username, scope, aud, iss } = payload;
-
-    const newAccessToken = await this.tokenService.refreshToken(
-      {
-        sub: sub,
-        username: username,
-        scope: scope,
-        aud: aud,
-        iss: iss,
-      },
-      token,
-      consentId,
-    );
+    const newAccessToken = await this.tokenService.refreshToken({
+      payload,
+      oldRefreshToken: token,
+    });
     if (!newAccessToken || typeof newAccessToken !== 'object') {
       throw new Error('Failure to generate token');
     }
@@ -99,9 +83,9 @@ export class TokenServiceAdapter implements TokenServicePort {
   }
   async revokeToken(refreshToken: string): Promise<void> {
     try {
-      await this.tokenService.revokeToken(refreshToken);
+      await this.tokenService.revoke(refreshToken);
     } catch (_error) {
-      throw new Error('Failure to revoke token');
+      throw OauthDomainError.internalServerError('Failure to revoke token');
     }
   }
   async tokenIntrospect(

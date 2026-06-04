@@ -17,7 +17,7 @@ import {
 } from '../../../src/service/auth.service.deprecated';
 import { EmailService } from '../../../src/service/email.service';
 import { RedisService } from '../../../src/service/redis.service';
-import { TokenService } from '../../../src/service/token.service';
+import { TokenService } from '../../../src/service/token.service.deprecated';
 import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
 import { mockEmailService } from '../mock/email.mock';
 import { mockAuthLogger, mockBaseLogger } from '../mock/logger.mock';
