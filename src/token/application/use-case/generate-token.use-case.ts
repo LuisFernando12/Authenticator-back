@@ -36,9 +36,8 @@ export class GenerateTokenUseCase implements BaseUseCase<IGenerateTokenPayload> 
     );
     const expiresAt = new Date(expiresAtInMilliseconds * 1000);
     const jti = this.generateJtiPort.generate();
-    payload['jti'] = jti;
     const token = await this.jwtServicePort.signAsync(
-      payload,
+      { ...payload, jti },
       this.configServicePort.accessTokenExpiresIn,
     );
 

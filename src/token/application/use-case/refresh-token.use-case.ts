@@ -41,9 +41,8 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenPayload> {
       ),
     );
     const expiresAt = new Date(expiresAtInMilliseconds * 1000);
-    payload['jti'] = jti;
     const newAccessToken = await this.jwtServicePort.signAsync(
-      payload,
+      { ...payload, jti },
       this.configServicePort.accessTokenExpiresIn,
     );
     refreshTokenDB.refreshTokenUpdate(refreshTokenHashed, jti, expiresAt);

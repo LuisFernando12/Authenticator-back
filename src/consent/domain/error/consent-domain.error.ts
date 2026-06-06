@@ -12,10 +12,10 @@ enum HttpStatus {
 export class ConsentDomainError extends Error {
   readonly status: HttpStatus;
   readonly error: string;
-  constructor(erroPayload: IDomainError, status: HttpStatus) {
-    super(erroPayload.message);
+  constructor(errorPayload: IDomainError, status: HttpStatus) {
+    super(errorPayload.message);
     this.name = 'ConsentDomainError';
-    this.error = erroPayload.error;
+    this.error = errorPayload.error;
     this.status = status;
   }
   static notFound(description?: string): ConsentDomainError {
