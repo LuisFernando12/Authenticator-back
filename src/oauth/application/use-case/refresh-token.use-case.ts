@@ -1,5 +1,5 @@
 import { BaseUseCase } from '@/core/application/use-case/base.use-case';
-import { OauthError } from '../../../config/errors/oauth.error';
+import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 import { OauthRefreshTokenDTO } from '../../infrastructure/dto/oauth-authorize.dto';
 import { ConfigServicePort } from '../port/config-service.port';
 import { IPayloadToken, TokenServicePort } from '../port/token-service.port';
@@ -16,7 +16,7 @@ export class RefreshTokenUseCase implements BaseUseCase<OauthRefreshTokenDTO> {
   async execute(payload: OauthRefreshTokenDTO): Promise<any> {
     const { refreshToken, grantType } = payload;
     if (grantType !== 'refresh_token') {
-      throw OauthError.invalidGrant(
+      throw OauthDomainError.invalidGrant(
         `Invalid grant type: ${payload.grantType || ''}`,
       );
     }
