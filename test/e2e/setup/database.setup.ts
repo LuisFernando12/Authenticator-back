@@ -7,8 +7,8 @@ import { hashSync } from 'bcrypt';
 import Redis from 'ioredis';
 import { Pool } from 'pg';
 import { DataSource } from 'typeorm';
-import { ClientEntity } from '../../../src/entity/client.entity';
-import { UserEntity } from '../../../src/entity/user.entity';
+import { ClientEntity } from '../../../src/client/infrastructure/persistence/entity/client.entity';
+import { UserEntity } from '../../../src/user/infrastructure/persistence/entity/user.entity';
 
 export class DatabaseSetup {
   private _postgresService: StartedPostgreSqlContainer;

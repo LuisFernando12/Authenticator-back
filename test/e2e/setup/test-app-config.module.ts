@@ -1,11 +1,11 @@
-import { AppConfigEnvService } from '@/service/app-config-env.service';
+import { AppConfigEnvService } from '@/core/domain/service/app-config-env.service';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientEntity } from '../../../src/entity/client.entity';
-import { TokenEntity } from '../../../src/entity/token.entity';
-import { UserClientConsentEntity } from '../../../src/entity/user-client-consent.entity';
-import { UserEntity } from '../../../src/entity/user.entity';
+import { ClientEntity } from '../../../src/client/infrastructure/persistence/entity/client.entity';
+import { ConsentEntity } from '../../../src/consent/infrastructure/persistence/entity/consent.entity';
+import { TokenEntity } from '../../../src/token/infrastructure/persistence/entity/token.entity';
+import { UserEntity } from '../../../src/user/infrastructure/persistence/entity/user.entity';
 
 @Global()
 @Module({
@@ -24,12 +24,7 @@ import { UserEntity } from '../../../src/entity/user.entity';
           username: config.get('DB_USER'),
           password: config.get('DB_PASSWORD'),
           database: config.get('DB_NAME'),
-          entities: [
-            UserEntity,
-            TokenEntity,
-            ClientEntity,
-            UserClientConsentEntity,
-          ],
+          entities: [UserEntity, TokenEntity, ClientEntity, ConsentEntity],
           synchronize: true,
         };
       },

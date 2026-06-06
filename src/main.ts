@@ -1,3 +1,4 @@
+import { HttpExceptionFilter } from '@/config/filters/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -18,6 +19,7 @@ async function bootstrap() {
     }),
   );
   app.setGlobalPrefix('api/auth');
+  app.useGlobalFilters(new HttpExceptionFilter());
   const config = new DocumentBuilder()
     .setTitle('Authenticator API')
     .setDescription('API documentation for the Authenticator service')

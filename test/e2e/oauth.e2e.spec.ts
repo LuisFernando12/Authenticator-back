@@ -5,10 +5,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as crypto from 'node:crypto';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
-import { OauthAuthorizeDTO } from '../../src/dto/oauth-authorize.dto';
-import { AppConfigModule } from '../../src/module/app-config.module';
+import { AppConfigModule } from '../../src/core/infrastructure/module/app-config.module';
+import { EmailModule } from '../../src/core/infrastructure/module/email.module';
 import { AppModule } from '../../src/module/app.module';
-import { EmailModule } from '../../src/module/email.module';
+import { OauthAuthorizeDTO } from '../../src/oauth/infrastructure/dto/oauth-authorize.dto';
 import { AppConfigEnvSetup } from './setup/app-config-env.setup';
 import { DatabaseSetup } from './setup/database.setup';
 import { TestAppConfigModule } from './setup/test-app-config.module';
@@ -65,7 +65,7 @@ describe('Oauth E2E Test', () => {
 
   const clientId = 'test-client-id';
   const state = crypto.randomBytes(32).toString();
-  const scope = 'openid';
+  const scope = 'email phone';
   const clientSecret = 'test-client-secret';
   const redirectUri = 'http://localhost:4000/callback';
   const queryAuthorize: Required<Omit<OauthAuthorizeDTO, 'oauthRequestId'>> = {
@@ -114,7 +114,7 @@ describe('Oauth E2E Test', () => {
         .expect(201);
       expect(reponseToken.body).toEqual({
         access_token: expect.any(String),
-        expiresAt: expect.any(String),
+        expires_at: expect.any(String),
         refresh_token: expect.any(String),
         token_type: expect.any(String),
         scope: expect.any(String),
@@ -175,7 +175,7 @@ describe('Oauth E2E Test', () => {
         .expect(201);
       expect(reponseToken.body).toEqual({
         access_token: expect.any(String),
-        expiresAt: expect.any(String),
+        expires_at: expect.any(String),
         refresh_token: expect.any(String),
         token_type: expect.any(String),
         scope: expect.any(String),
