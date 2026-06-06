@@ -7,7 +7,6 @@ import {
 } from '@/user/infrastructure/repository/user.repository';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   EmailService,
   IEmailService,
@@ -59,7 +58,7 @@ import { UserValidateCredentialsServiceAdapter } from '../adapter/user-validate-
 import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
 
 @Module({
-  imports: [TypeOrmModule, TokenModule, UserModule, EmailModule],
+  imports: [TokenModule, UserModule, EmailModule],
   controllers: [AuthController],
   providers: [
     {
@@ -169,12 +168,12 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
       useFactory: (
         redisServicePort: RedisServicePort,
         userRepositoryPort: UserRepositoryPort,
-        UserValidateCredentialsServicePort: UserValidateCredentialsServicePort,
+        userValidateCredentialsServicePort: UserValidateCredentialsServicePort,
       ) =>
         new NewPasswordUseCase(
           redisServicePort,
           userRepositoryPort,
-          UserValidateCredentialsServicePort,
+          userValidateCredentialsServicePort,
         ),
       inject: [
         REDIS_SERVICE_PORT,
