@@ -1,5 +1,5 @@
+import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
 import * as bcrypt from 'bcrypt';
-import { IUserRepository } from '../../../repository/user.repository';
 import {
   IValidanteCredentialsPayload,
   UserServicePort,

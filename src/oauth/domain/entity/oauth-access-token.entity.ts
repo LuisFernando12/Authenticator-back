@@ -22,4 +22,13 @@ export class OauthAccessToken {
   get scope(): string {
     return this.oauthToken.scope;
   }
+  toJSON() {
+    return {
+      token_type: this.tokenType,
+      access_token: this.accessToken,
+      refresh_token: this.refreshToken,
+      expires_at: this.expireAt,
+      scope: this.scope,
+    };
+  }
 }

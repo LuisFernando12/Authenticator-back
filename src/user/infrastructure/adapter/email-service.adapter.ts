@@ -1,4 +1,4 @@
-import { EmailService } from '../../../service/email.service';
+import { EmailService } from '../../../core/application/service/email.service';
 import {
   EmailServicePort,
   ISendActivationEmailPayload,

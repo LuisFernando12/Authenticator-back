@@ -1,16 +1,16 @@
 import { BaseUseCase } from '@/core/application/use-case/base.use-case';
 import { OauthError } from '../../../config/errors/oauth.error';
-import { OauthRefreshTokenDTO } from '../../../dto/oauth-authorize.dto';
+import { OauthRefreshTokenDTO } from '../../infrastructure/dto/oauth-authorize.dto';
 import { ConfigServicePort } from '../port/config-service.port';
 import { IPayloadToken, TokenServicePort } from '../port/token-service.port';
-import { UserClientConsentServicePort } from '../port/user-client-consent-service.port';
+import { ConsentServicePort } from '../port/user-client-consent-service.port';
 import { UserServicePort } from '../port/user-service.port';
 
 export class RefreshTokenUseCase implements BaseUseCase<OauthRefreshTokenDTO> {
   constructor(
     private readonly tokenServicePort: TokenServicePort,
     private readonly userServicePort: UserServicePort,
-    private readonly userClientConsentServicePort: UserClientConsentServicePort,
+    private readonly userClientConsentServicePort: ConsentServicePort,
     private readonly configServicePort: ConfigServicePort,
   ) {}
   async execute(payload: OauthRefreshTokenDTO): Promise<any> {

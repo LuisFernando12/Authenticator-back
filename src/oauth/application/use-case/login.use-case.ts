@@ -1,7 +1,7 @@
 import { MountUrlValueObject } from '../../domain/value-object/mount-url.value-object';
 import { GenerateIdServicePort } from '../port/generate-id-service.port';
 import { RedisServicePort } from '../port/redis-service-port';
-import { UserClientConsentServicePort } from '../port/user-client-consent-service.port';
+import { ConsentServicePort } from '../port/user-client-consent-service.port';
 import { UserServicePort } from '../port/user-service.port';
 
 export interface IQueryOauthLogin {
@@ -19,7 +19,7 @@ export class LoginUseCase {
   constructor(
     private readonly redisServicePort: RedisServicePort,
     private readonly userServicePort: UserServicePort,
-    private readonly userClientConsentServicePort: UserClientConsentServicePort,
+    private readonly consentServicePort: ConsentServicePort,
     private readonly generateIdServicePort: GenerateIdServicePort,
   ) {}
   async execute(
@@ -42,7 +42,7 @@ export class LoginUseCase {
     const code = this.generateIdServicePort.generateOauthAuthorizationCode();
     await this.redisServicePort.saveOauthAuthorizationCode(code, oauthRequest);
 
-    await this.userClientConsentServicePort.findOrCreateConsent(
+    await this.consentServicePort.findOrCreateConsent(
       userDB.id,
       clientId,
       scope,

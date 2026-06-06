@@ -1,7 +1,6 @@
-import { LoginDTO } from '@/dto/login.dto';
-import { NewPasswordDTO } from '@/dto/new-password.dto';
-import { NewTokenToActiveEmailDTO } from '@/dto/new-token.dto';
-import { ResetPasswordDTO } from '@/dto/reset-password.dto';
+import { NewPasswordDTO } from '@/auth/infrastructure/dto/new-password.dto';
+import { NewTokenToActiveEmailDTO } from '@/auth/infrastructure/dto/new-token.dto';
+import { ResetPasswordDTO } from '@/auth/infrastructure/dto/reset-password.dto';
 import {
   Body,
   Controller,
@@ -17,6 +16,7 @@ import { ActiveAccountUseCase } from '../../application/use-case/active-account.
 import { LoginUseCase } from '../../application/use-case/login.user-case';
 import { NewPasswordUseCase } from '../../application/use-case/new-password.use-case';
 import { ResetPasswordUseCase } from '../../application/use-case/reset-password.use-case';
+import { LoginDTO } from '../dto/login.dto';
 import { SendNewTokenToEmailActiveUseCase } from './../../application/use-case/send-new-token-to-email-active.use-case';
 
 export interface IAuthController {

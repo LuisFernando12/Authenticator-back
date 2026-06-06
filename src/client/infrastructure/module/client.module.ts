@@ -1,9 +1,9 @@
-import { AppConfigEnvService } from '@/core/domain/service/app-config-env.service';
-import { ClientEntity } from '@/entity/client.entity';
+import { ClientEntity } from '@/client/infrastructure/persistence/entity/client.entity';
 import {
   ClientRepository,
   IClientRepository,
-} from '@/repository/client.repository';
+} from '@/client/infrastructure/repository/client.repository';
+import { AppConfigEnvService } from '@/core/domain/service/app-config-env.service';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';

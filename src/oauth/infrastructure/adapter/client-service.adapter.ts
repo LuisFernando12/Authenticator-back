@@ -1,4 +1,4 @@
-import { IClientRepository } from '../../../repository/client.repository';
+import { IClientRepository } from '../../../client/infrastructure/repository/client.repository';
 import { ClientServicePort } from '../../application/port/client-service.port';
 import { OauthClient } from '../../domain/entity/oauth-client.entity';
 

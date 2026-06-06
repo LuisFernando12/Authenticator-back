@@ -1,5 +1,6 @@
 import { ClientModule } from '@/client/infrastructure/module/client.module';
 import { RedisService } from '@/core/domain/service/redis.service';
+import { AppConfigModule } from '@/core/infrastructure/module/app-config.module';
 import { OauthController } from '@/oauth/infrastructure/controller/oauth.controller';
 import { TokenModule } from '@/token/infrastructure/module/token.module';
 import { UserModule } from '@/user/infrastructure/module/user.module';
@@ -7,12 +8,6 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
-import { AppConfigModule } from '../../../module/app-config.module';
-import { UserClientConsentModule } from '../../../module/user-client-consent.module';
-import {
-  IUserClientConsentService,
-  UserClientConsentService,
-} from '../../../service/user-client-consent.service';
 import {
   CLIENT_SERVICE_PORT,
   ClientServicePort,
@@ -34,8 +29,8 @@ import {
   TokenServicePort,
 } from '../../application/port/token-service.port';
 import {
+  ConsentServicePort,
   USER_CLIENT_CONSENT_SERVICE_PORT,
-  UserClientConsentServicePort,
 } from '../../application/port/user-client-consent-service.port';
 import {
   USER_SERVICE_PORT,
@@ -49,13 +44,15 @@ import { RevokeTokenUseCase } from '../../application/use-case/revoke-token.use-
 import { TokenIntrospectUseCase } from '../../application/use-case/token-introspect.use-case';
 
 import {
-  ClientRepository,
-  IClientRepository,
-} from '../../../repository/client.repository';
-import {
   IUserRepository,
   UserRepository,
-} from '../../../repository/user.repository';
+} from '@/user/infrastructure/repository/user.repository';
+import {
+  ClientRepository,
+  IClientRepository,
+} from '../../../client/infrastructure/repository/client.repository';
+import { ConsentService } from '../../../consent/application/service/consent.service';
+import { ConsentModule } from '../../../consent/infrastructure/module/consent.module';
 import { ITokenService } from '../../../token/application/service/token.service';
 import {
   GENERATE_ID_SERVICE_PORT,
@@ -63,11 +60,11 @@ import {
 } from '../../application/port/generate-id-service.port';
 import { ClientServiceAdapter } from '../adapter/client-service.adapter';
 import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
+import { ConsentServiceAdapter } from '../adapter/consent-service.adapter';
 import { GenerateIdServiceAdapter } from '../adapter/generate-id-service.adapter';
 import { HashedClientSecretServiceAdapter } from '../adapter/hashed-client-secret-service.adapter';
 import { RedisServiceAdapter } from '../adapter/redis-service.adapter';
 import { TokenServiceAdapter } from '../adapter/token-service.adapter';
-import { UserClientConsentServiceAdapter } from '../adapter/user-client-consent-service.adapter';
 import { UserServiceAdapter } from '../adapter/user-service.adapter';
 
 @Module({
@@ -75,7 +72,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
     ClientModule,
     UserModule,
     TokenModule,
-    UserClientConsentModule,
+    ConsentModule,
     AppConfigModule,
   ],
   controllers: [OauthController],
@@ -100,9 +97,9 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
     },
     {
       provide: USER_CLIENT_CONSENT_SERVICE_PORT,
-      useFactory: (userClientConsentService: IUserClientConsentService) =>
-        new UserClientConsentServiceAdapter(userClientConsentService),
-      inject: [UserClientConsentService],
+      useFactory: (userClientConsentService: ConsentService) =>
+        new ConsentServiceAdapter(userClientConsentService),
+      inject: [ConsentService],
     },
     {
       provide: TOKEN_SERVICE_PORT,
@@ -167,7 +164,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         redisServicePort: RedisServicePort,
         hashedClientSecretServicePort: HashedClientSecretServicePort,
         userServicePort: UserServicePort,
-        userClientConsentServicePort: UserClientConsentServicePort,
+        userClientConsentServicePort: ConsentServicePort,
         configService: ConfigServicePort,
       ) => {
         return new ExchangeOauthCodeUseCase(
@@ -195,7 +192,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
       useFactory: (
         redisServicePort: RedisServicePort,
         userServicePort: UserServicePort,
-        userClientConsentServicePort: UserClientConsentServicePort,
+        userClientConsentServicePort: ConsentServicePort,
         generateIdServicePort: GenerateIdServicePort,
       ) => {
         return new LoginUseCase(
@@ -217,7 +214,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
       useFactory: (
         tokenServicePort: TokenServicePort,
         userServicePort: UserServicePort,
-        userClientConsentServicePort: UserClientConsentServicePort,
+        userClientConsentServicePort: ConsentServicePort,
         configServicePort: ConfigServicePort,
       ) =>
         new RefreshTokenUseCase(

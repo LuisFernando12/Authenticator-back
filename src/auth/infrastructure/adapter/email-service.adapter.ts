@@ -1,4 +1,4 @@
-import { IEmailService } from '../../../service/email.service';
+import { IEmailService } from '../../../core/application/service/email.service';
 import {
   EmailServicePort,
   IResetPasswordPayload,

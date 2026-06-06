@@ -1,4 +1,4 @@
-import { IUserRepository } from '../../../repository/user.repository';
+import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
 import { UserRepositoryPort } from '../../application/port/user-repository.port';
 import { AuthUser } from '../../domain/entity/auth-user.entity';
 import { AuthDomainError } from '../../domain/error/auth-domain.error';

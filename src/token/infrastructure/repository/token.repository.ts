@@ -1,4 +1,7 @@
-import { TokenEntity, TokenEntityType } from '@/entity/token.entity';
+import {
+  TokenEntity,
+  TokenEntityType,
+} from '@/token/infrastructure/persistence/entity/token.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { DeleteResult, Repository } from 'typeorm';

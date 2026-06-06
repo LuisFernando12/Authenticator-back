@@ -10,19 +10,19 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, OmitType } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { LoginDTO } from '../../../dto/login.dto';
-import {
-  OauthAuthorizeDTO,
-  OauthRefreshTokenDTO,
-  OauthTokenDTO,
-} from '../../../dto/oauth-authorize.dto';
-import { RevokeTokenDTO, TokenIntrospectDTO } from '../../../dto/token.dto';
 import { AuthorizeUseCase } from '../../application/use-case/authorize.use-case';
 import { ExchangeOauthCodeUseCase } from '../../application/use-case/exchange-auth-code.use-case';
 import { LoginUseCase } from '../../application/use-case/login.use-case';
 import { RefreshTokenUseCase } from '../../application/use-case/refresh-token.use-case';
 import { RevokeTokenUseCase } from '../../application/use-case/revoke-token.use-case';
 import { TokenIntrospectUseCase } from '../../application/use-case/token-introspect.use-case';
+import { LoginDTO } from '../dto/login.dto';
+import {
+  OauthAuthorizeDTO,
+  OauthRefreshTokenDTO,
+  OauthTokenDTO,
+} from '../dto/oauth-authorize.dto';
+import { RevokeTokenDTO, TokenIntrospectDTO } from '../dto/token.dto';
 
 export interface IOauthController {
   authorize(

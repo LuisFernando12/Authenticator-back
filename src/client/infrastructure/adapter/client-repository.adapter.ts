@@ -1,6 +1,6 @@
 import { ClientRepositoryPort } from '@/client/application/port/client-repository.port';
 import { Client } from '@/client/domain/entity/client.entity';
-import { IClientRepository } from '@/repository/client.repository';
+import { IClientRepository } from '@/client/infrastructure/repository/client.repository';
 import { ClientDomainError } from '../../domain/error/client-domain.error';
 
 export class ClientRepositoryAdapter implements ClientRepositoryPort {

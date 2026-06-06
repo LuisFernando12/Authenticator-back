@@ -1,14 +1,14 @@
 import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
-import { OauthTokenDTO } from '../../../dto/oauth-authorize.dto';
 import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
 import { PkceChallengeValueObject } from '../../domain/value-object/pkce-challenge.value-object';
 import { RedirectUriValueObject } from '../../domain/value-object/redirectUri.value-object';
+import { OauthTokenDTO } from '../../infrastructure/dto/oauth-authorize.dto';
 import { ClientServicePort } from '../port/client-service.port';
 import { ConfigServicePort } from '../port/config-service.port';
 import { HashedClientSecretServicePort } from '../port/hashed-client-secret.port';
 import { RedisServicePort } from '../port/redis-service-port';
 import { TokenServicePort } from '../port/token-service.port';
-import { UserClientConsentServicePort } from '../port/user-client-consent-service.port';
+import { ConsentServicePort } from '../port/user-client-consent-service.port';
 import { UserServicePort } from '../port/user-service.port';
 
 export interface IExchangeOauthCodeUseCaseResponse {
@@ -33,7 +33,7 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
     private readonly redisServicePort: RedisServicePort,
     private readonly hashedClientSecretServicePort: HashedClientSecretServicePort,
     private readonly userServicePort: UserServicePort,
-    private readonly userClientConsentServicePort: UserClientConsentServicePort,
+    private readonly ConsentServicePort: ConsentServicePort,
     private readonly configService: ConfigServicePort,
   ) {}
   async execute(payload: IEXchangeOauthCodeToToken): Promise<OauthAccessToken> {
@@ -72,12 +72,12 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
     );
     const userDB = await this.userServicePort.findByEmail(codeRedis.userEmail);
     const userClientConsentDB =
-      await this.userClientConsentServicePort.findConsentByUserIdAndClientId(
+      await this.ConsentServicePort.findConsentByUserIdAndClientId(
         userDB.id,
         clientId,
       );
 
-    return await this.tokenServicePort.generateToken(
+    const token = await this.tokenServicePort.generateToken(
       {
         sub: userDB.id,
         username: userDB.email,
@@ -87,5 +87,6 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
       },
       userClientConsentDB.id,
     );
+    return token;
   }
 }

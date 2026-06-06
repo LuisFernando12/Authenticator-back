@@ -1,5 +1,4 @@
-import { IUserRepository } from '../../../src/repository/user.repository';
-import { IUserService } from '../../../src/service/user.service.deprected';
+import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
 
 export const mockUserRepository: IUserRepository = {
   create: jest.fn(),
@@ -7,8 +6,4 @@ export const mockUserRepository: IUserRepository = {
   existsUser: jest.fn(),
   activeAccount: jest.fn(),
   updatePassword: jest.fn(),
-};
-export const mockUserService: IUserService = {
-  register: jest.fn(),
-  findByEmail: jest.fn(),
 };

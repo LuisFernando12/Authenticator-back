@@ -1,4 +1,3 @@
-import { UserEntity } from '@/entity/user.entity';
 import { TokenModule } from '@/token/infrastructure/module/token.module';
 import {
   EMAIL_SERVICE_PORT,
@@ -18,17 +17,19 @@ import {
 } from '@/user/application/port/user-repository.port';
 import { EncryptServiceAdapter } from '@/user/infrastructure/adapter/encrypt-service.adapter';
 import { UserController } from '@/user/infrastructure/controller/user.controller';
+import { UserEntity } from '@/user/infrastructure/persistence/entity/user.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EmailModule } from '../../../module/email.module';
-import { UserRepository } from '../../../repository/user.repository';
-import { EmailService } from '../../../service/email.service';
+import { EmailService } from '../../../core/application/service/email.service';
+import { EmailModule } from '../../../core/infrastructure/module/email.module';
+
 import { ITokenService } from '../../../token/application/service/token.service';
 import { FindUserByEmailUseCase } from '../../application/use-case/find-user-by-email.use-case';
 import { RegisterUserUseCase } from '../../application/use-case/register-user.use-case';
 import { EmailServiceAdapter } from '../adapter/email-service.adapter';
 import { TokenServiceAdapter } from '../adapter/token-service.adapter';
 import { UserRepositoryAdapter } from '../adapter/user-repository.adapter';
+import { UserRepository } from '../repository/user.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]), TokenModule, EmailModule],

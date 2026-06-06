@@ -1,18 +1,21 @@
 import { AuthController } from '@/auth/infrastructure/controller/auth.controller';
 import { TokenModule } from '@/token/infrastructure/module/token.module';
 import { UserModule } from '@/user/infrastructure/module/user.module';
-import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
-import { RedisService } from '../../../core/domain/service/redis.service';
-import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
-import { EmailModule } from '../../../module/email.module';
 import {
   IUserRepository,
   UserRepository,
-} from '../../../repository/user.repository';
-import { EmailService, IEmailService } from '../../../service/email.service';
+} from '@/user/infrastructure/repository/user.repository';
+import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import {
+  EmailService,
+  IEmailService,
+} from '../../../core/application/service/email.service';
+import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
+import { RedisService } from '../../../core/domain/service/redis.service';
+import { EmailModule } from '../../../core/infrastructure/module/email.module';
+import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
 import { ITokenService } from '../../../token/application/service/token.service';
 import {
   CONFIG_SERVICE_PORT,
