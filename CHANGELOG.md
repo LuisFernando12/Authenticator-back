@@ -1,3 +1,10 @@
+# [2.0.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-06-09)
+
+
+### Bug Fixes
+
+* **docs:** correct spelling of 'refresh-token' in API documentation ([4e4bcc8](https://github.com/LuisFernando12/Authenticator/commit/4e4bcc8bcc1621fa67ae6709834882e5e28cd915))
+
 # [2.0.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.5.0...v2.0.0-beta.1) (2026-06-06)
 
 
