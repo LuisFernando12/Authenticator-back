@@ -1,3 +1,10 @@
+# [2.0.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-06-10)
+
+
+### Bug Fixes
+
+* **tests:** correct typos in variable names and improve response handling in Oauth E2E tests ([ca4de04](https://github.com/LuisFernando12/Authenticator/commit/ca4de04c33e782f649b18412a13551938003841d))
+
 # [2.0.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-06-09)
 
 
