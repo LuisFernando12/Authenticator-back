@@ -1,7 +1,7 @@
 import { OauthClient } from './oauth-client.entity';
 import { OauthUser } from './user.entity';
 
-export interface IOauthUserClientConsentProps {
+export interface IOauthConsentProps {
   id: string;
   userId: string;
   clientId: string;
@@ -11,29 +11,27 @@ export interface IOauthUserClientConsentProps {
   revokeAt: Date | null;
 }
 
-export class OauthUserClientConsent {
-  constructor(
-    private readonly oauthUserClientConsentProps: IOauthUserClientConsentProps,
-  ) {}
+export class OauthConsent {
+  constructor(private readonly oauthConsentProps: IOauthConsentProps) {}
   get id(): string {
-    return this.oauthUserClientConsentProps.id;
+    return this.oauthConsentProps.id;
   }
   get userId(): string {
-    return this.oauthUserClientConsentProps.userId;
+    return this.oauthConsentProps.userId;
   }
   get clientId(): string {
-    return this.oauthUserClientConsentProps.clientId;
+    return this.oauthConsentProps.clientId;
   }
   get user(): OauthUser {
-    return this.oauthUserClientConsentProps.user;
+    return this.oauthConsentProps.user;
   }
   get client(): OauthClient {
-    return this.oauthUserClientConsentProps.client;
+    return this.oauthConsentProps.client;
   }
   get grantedAt(): Date {
-    return this.oauthUserClientConsentProps.grantedAt;
+    return this.oauthConsentProps.grantedAt;
   }
   get revokeAt(): Date | null {
-    return this.oauthUserClientConsentProps.revokeAt;
+    return this.oauthConsentProps.revokeAt;
   }
 }

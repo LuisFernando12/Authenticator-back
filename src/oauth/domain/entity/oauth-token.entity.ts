@@ -1,11 +1,11 @@
 import { OauthDomainError } from '../error/oauth-domain.error';
-import { OauthUserClientConsent } from './oauth-user-client-consent';
+import { OauthConsent } from './oauth-user-client-consent';
 import { OauthUser } from './user.entity';
 
 interface IOauthTokenProps {
   id: string;
   user: OauthUser;
-  userClientConsent: OauthUserClientConsent;
+  consent: OauthConsent;
   jti: string;
   consentId?: string;
   refreshToken: string;
@@ -19,8 +19,8 @@ export class OauthToken {
   get user(): OauthUser {
     return this.tokenProps.user;
   }
-  get userClientConsent(): OauthUserClientConsent {
-    return this.tokenProps.userClientConsent;
+  get consent(): OauthConsent {
+    return this.tokenProps.consent;
   }
   get jti(): string {
     return this.tokenProps.jti;
@@ -31,7 +31,7 @@ export class OauthToken {
   get refreshToken(): string {
     return this.tokenProps.refreshToken;
   }
-  get expireAt(): Date {
+  get expiresAt(): Date {
     return this.tokenProps.expiresAt;
   }
   validateRefreshTokenIsValid() {

@@ -33,7 +33,7 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
     private readonly redisServicePort: RedisServicePort,
     private readonly hashedClientSecretServicePort: HashedClientSecretServicePort,
     private readonly userServicePort: UserServicePort,
-    private readonly ConsentServicePort: ConsentServicePort,
+    private readonly consentServicePort: ConsentServicePort,
     private readonly configService: ConfigServicePort,
   ) {}
   async execute(payload: IEXchangeOauthCodeToToken): Promise<OauthAccessToken> {
@@ -46,7 +46,7 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
       codeVerifier,
     } = payload;
     if (grantType !== 'authorization_code') {
-      throw new Error(`Unsupported grant type ${grantType || ''}`);
+      throw new Error(`Unsupported grant type ${grantType}`);
     }
 
     const isPKCE = !!codeVerifier;
@@ -62,7 +62,6 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
       clientSecretPepper: this.configService.clientSecretPepper,
     });
     const codeRedis = await this.redisServicePort.consumeOauthCode(code);
-
     clientDB.validPkceChallenge(
       PkceChallengeValueObject.create(
         codeRedis.codeChallenge,
@@ -71,8 +70,8 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
       codeVerifier,
     );
     const userDB = await this.userServicePort.findByEmail(codeRedis.userEmail);
-    const userClientConsentDB =
-      await this.ConsentServicePort.findConsentByUserIdAndClientId(
+    const consentDB =
+      await this.consentServicePort.findConsentByUserIdAndClientId(
         userDB.id,
         clientId,
       );
@@ -85,7 +84,7 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
         aud: clientId,
         iss: this.configService.serviceURL,
       },
-      userClientConsentDB.id,
+      consentDB.id,
     );
     return token;
   }

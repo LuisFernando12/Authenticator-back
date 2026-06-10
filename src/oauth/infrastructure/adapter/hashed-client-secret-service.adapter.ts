@@ -3,6 +3,7 @@ import {
   ICompareHashClientSecret,
 } from '@/oauth/application/port/hashed-client-secret.port';
 import * as bcrypt from 'bcrypt';
+import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 export class HashedClientSecretServiceAdapter implements HashedClientSecretServicePort {
   compareHashClientSecret({
     clientSecret,
@@ -10,9 +11,9 @@ export class HashedClientSecretServiceAdapter implements HashedClientSecretServi
     clientSecretPepper,
   }: ICompareHashClientSecret): void {
     if (
-      !bcrypt.compareSync(clientSecret + clientSecretPepper, clientSecretHashed)
+      !bcrypt.compare(clientSecret + clientSecretPepper, clientSecretHashed)
     ) {
-      throw new Error('Invalid client secret !');
+      throw OauthDomainError.invalidClient('Invalid client secret !');
     }
   }
 }

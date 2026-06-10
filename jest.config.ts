@@ -9,6 +9,7 @@ const config: Config = {
   },
   modulePathIgnorePatterns: ['<rootDir>/dist', '<rootDir>/node_modules'],
   coveragePathIgnorePatterns: [
+    '/infrastructure/',
     '<rootDir>/src/entity',
     '<rootDir>/src/config',
     '<rootDir>/src/module',

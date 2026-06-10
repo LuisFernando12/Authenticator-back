@@ -8,7 +8,7 @@ import {
 import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
 import { OauthClient } from '../../domain/entity/oauth-client.entity';
 import { OauthToken } from '../../domain/entity/oauth-token.entity';
-import { OauthUserClientConsent } from '../../domain/entity/oauth-user-client-consent';
+import { OauthConsent } from '../../domain/entity/oauth-user-client-consent';
 import { OauthUser } from '../../domain/entity/user.entity';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 
@@ -66,7 +66,7 @@ export class TokenServiceAdapter implements TokenServicePort {
     return new OauthToken({
       id,
       user: new OauthUser(user),
-      userClientConsent: new OauthUserClientConsent({
+      consent: new OauthConsent({
         id: userClientConsent.id,
         userId: userClientConsent.userId,
         clientId: userClientConsent.clientId,

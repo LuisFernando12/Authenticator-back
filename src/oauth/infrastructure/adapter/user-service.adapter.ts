@@ -12,7 +12,7 @@ export class UserServiceAdapter implements UserServicePort {
   async findByEmail(email: string): Promise<OauthUser> {
     const userDB = await this.userRepository.findByEmail(email);
     if (!userDB) {
-      throw new Error('Invalid credentials');
+      throw OauthDomainError.unauthorizedClient('Invalid credentials');
     }
     return new OauthUser(userDB);
   }

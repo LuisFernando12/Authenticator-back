@@ -1,4 +1,5 @@
 import { OauthRequest } from '../../domain/entity/oauth-request.entity';
+import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 import { MountUrlValueObject } from '../../domain/value-object/mount-url.value-object';
 import { PkceChallengeValueObject } from '../../domain/value-object/pkce-challenge.value-object';
 import { ClientServicePort } from '../port/client-service.port';
@@ -27,6 +28,7 @@ export class AuthorizeUseCase {
   ) {}
   async execute(payload: IAuthorizeUseCaseDTO): Promise<URL> {
     const {
+      responseType,
       clientId,
       redirectUri,
       codeChallenge,
@@ -34,6 +36,11 @@ export class AuthorizeUseCase {
       state,
       scope,
     } = payload;
+    if (responseType !== 'code') {
+      throw OauthDomainError.invalidGrant(
+        `Unsupported response type ${responseType}`,
+      );
+    }
 
     const pkceChallenge = PkceChallengeValueObject.create(
       codeChallenge,

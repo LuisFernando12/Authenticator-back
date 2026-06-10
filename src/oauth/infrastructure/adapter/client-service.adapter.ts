@@ -1,6 +1,7 @@
 import { IClientRepository } from '../../../client/infrastructure/repository/client.repository';
 import { ClientServicePort } from '../../application/port/client-service.port';
 import { OauthClient } from '../../domain/entity/oauth-client.entity';
+import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 
 export abstract class IClientService {
   abstract create(): Promise<OauthClient>;
@@ -11,7 +12,7 @@ export class ClientServiceAdapter implements ClientServicePort {
   async findByClientId(clientId: string) {
     const clientDB = await this.clientRepository.findByClientId(clientId);
     if (!clientDB) {
-      throw new Error('ClientID not found');
+      throw OauthDomainError.invalidClient('Client not found');
     }
     return new OauthClient(clientDB);
   }
