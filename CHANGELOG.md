@@ -1,3 +1,42 @@
+# [2.0.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-06-10)
+
+
+### Bug Fixes
+
+* **tests:** correct typos in variable names and improve response handling in Oauth E2E tests ([ca4de04](https://github.com/LuisFernando12/Authenticator/commit/ca4de04c33e782f649b18412a13551938003841d))
+
+# [2.0.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-06-09)
+
+
+### Bug Fixes
+
+* **docs:** correct spelling of 'refresh-token' in API documentation ([4e4bcc8](https://github.com/LuisFernando12/Authenticator/commit/4e4bcc8bcc1621fa67ae6709834882e5e28cd915))
+
+# [2.0.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.5.0...v2.0.0-beta.1) (2026-06-06)
+
+
+### Bug Fixes
+
+* add escape to status in OauthDomainError ([42fb754](https://github.com/LuisFernando12/Authenticator/commit/42fb754ea0c67b14abec5e57dfd0ad5c7143a8f2))
+* **controller:** fix import UserDTO to true path ([8223aeb](https://github.com/LuisFernando12/Authenticator/commit/8223aeb5ac3d0c770ba645bc420ce664fefe947a))
+* some adjuts ([77460f5](https://github.com/LuisFernando12/Authenticator/commit/77460f5074fec17be159f9e81feb5b954d4798a8))
+* **user:** fixed throw erro on entity ([f3f7d41](https://github.com/LuisFernando12/Authenticator/commit/f3f7d41e382f7019de4e8bbea293cc40122c6ff8))
+
+
+### Code Refactoring
+
+* **oauth:** adopt domain-driven design architecture ([206884b](https://github.com/LuisFernando12/Authenticator/commit/206884bf9363fafbed6318d33a63a68d08a54f41))
+
+
+### Features
+
+* **token:** implement token management features ([4cdffb8](https://github.com/LuisFernando12/Authenticator/commit/4cdffb8b1abcd228e86ae4cf648fe0dd2144cc54))
+
+
+### BREAKING CHANGES
+
+* **oauth:** OauthService is deprecated; migrate to use cases.
+
 # [1.5.0](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0...v1.5.0) (2026-05-08)
 
 

@@ -177,7 +177,7 @@ All endpoints are prefixed with `/api/auth`.
 | `GET`  | `/authorize`        | Starts OAuth2 flow, returns redirect with `oauthRequestId`                                                  | —          |
 | `POST` | `/login`            | OAuth2 login — validates authRequest and generates `code`                                                   | 5 req/min  |
 | `POST` | `/token`            | Exchanges `code` for `access_token` (PKCE and clientSecret supported)                                       | 5 req/min  |
-| `POST` | `/refrash-token`    | Refreshes `access_token` and `refresh_token` passing a valid `refreshToken` on payload                      | 5 req/min  |
+| `POST` | `/refresh-token`    | Refreshes `access_token` and `refresh_token` passing a valid `refreshToken` on payload                      | 5 req/min  |
 | `POST` | `/revoke-token`     | Revokes `access_token` and `refresh_token` passing `refreshToken` or `accessToken` like token on payload    | 5 req/min  |
 | `POST` | `/token-introspect` | Introspects `access_token` or `refresh_token` passing `refreshToken` or `accessToken` like token on payload | 5 req/min  |
 

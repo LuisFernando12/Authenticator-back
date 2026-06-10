@@ -1,20 +1,16 @@
-import { TokenEntity } from '@/entity/token.entity';
-import { UserEntity } from '@/entity/user.entity';
+import { AuthModule } from '@/auth/infrastructure/module/auth.module';
+import { ClientModule } from '@/client/infrastructure/module/client.module';
+import { TokenModule } from '@/token/infrastructure/module/token.module';
+import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientEntity } from '../entity/client.entity';
-import { UserClientConsentEntity } from '../entity/user-client-consent.entity';
-import { AppConfigModule } from './app-config.module';
-import { AuthModule } from './auth.module';
-import { ClientModule } from './client.module';
-import { EmailModule } from './email.module';
-import { HealthModule } from './health.module';
-import { OauthModule } from './oauth.module';
-import { TokenModule } from './token.module';
-import { UserModule } from './user.module';
+import { AppConfigModule } from '../core/infrastructure/module/app-config.module';
+import { EmailModule } from '../core/infrastructure/module/email.module';
+import { HealthModule } from '../core/infrastructure/module/health.module';
+import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
 
 @Module({
   imports: [
@@ -29,15 +25,13 @@ import { UserModule } from './user.module';
           username: config.get('DB_USER'),
           password: config.get('DB_PASSWORD'),
           database: config.get('DB_NAME'),
-          entities: [
-            UserEntity,
-            TokenEntity,
-            ClientEntity,
-            UserClientConsentEntity,
-          ],
           synchronize: false,
           autoLoadEntities: true,
           migrationsRun: true,
+          invalidWhereValuesBehavior: {
+            null: 'throw',
+            undefined: 'throw',
+          },
         };
       },
     }),

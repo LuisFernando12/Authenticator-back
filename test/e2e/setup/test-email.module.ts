@@ -1,5 +1,5 @@
 import { handlebarsSplitCharsHelper } from '@/config/helper/handlebars-split-chars.healper';
-import { EmailService } from '@/service/email.service';
+import { EmailService } from '@/core/application/service/email.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { Module } from '@nestjs/common';
