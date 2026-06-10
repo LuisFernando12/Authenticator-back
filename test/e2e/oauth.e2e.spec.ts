@@ -57,9 +57,9 @@ describe('Oauth E2E Test', () => {
     if (databaseSetup) await databaseSetup.teardown();
   }, 30000);
   const codeVerifier = crypto.randomBytes(16).toString();
-  const codeChallangeMethod = 'sha256';
-  const codeChallange = crypto
-    .createHash(codeChallangeMethod)
+  const codeChallengeMethod = 'sha256';
+  const codeChallenge = crypto
+    .createHash(codeChallengeMethod)
     .update(codeVerifier)
     .digest('base64url');
 
@@ -74,8 +74,8 @@ describe('Oauth E2E Test', () => {
     redirectUri: redirectUri,
     state: state,
     scope: scope,
-    codeChallenge: codeChallange as unknown as string,
-    codeChallengeMethod: codeChallangeMethod,
+    codeChallenge: codeChallenge as unknown as string,
+    codeChallengeMethod: codeChallengeMethod,
   };
   describe('PKCE Flow', () => {
     it('should successfully PKCE Flow ', async () => {
@@ -100,7 +100,7 @@ describe('Oauth E2E Test', () => {
         const url = new URL(responseLogin.headers.location);
         code = url.searchParams.get('code');
       }
-      const reponseToken = await request
+      const responseToken = await request
         .agent(app.getHttpServer())
         .post('/api/auth/oauth/token')
         .send({
@@ -112,7 +112,7 @@ describe('Oauth E2E Test', () => {
           clientSecret: clientSecret,
         })
         .expect(201);
-      expect(reponseToken.body).toEqual({
+      expect(responseToken.body).toEqual({
         access_token: expect.any(String),
         expires_at: expect.any(String),
         refresh_token: expect.any(String),
@@ -134,11 +134,6 @@ describe('Oauth E2E Test', () => {
         .agent(app.getHttpServer())
         .get('/api/auth/oauth/authorize')
         .query(queryAuthorize)
-        .expect((res) => {
-          if (res.status !== 302) {
-            console.log('Error: ', JSON.stringify(res.body, null, 2));
-          }
-        })
         .expect(302);
       let oauthRequestId: string;
       if (responseAuthorize.headers.location) {
@@ -162,7 +157,7 @@ describe('Oauth E2E Test', () => {
         const url = new URL(responseLogin.headers.location);
         code = url.searchParams.get('code');
       }
-      const reponseToken = await request
+      const responseToken = await request
         .agent(app.getHttpServer())
         .post('/api/auth/oauth/token')
         .send({
@@ -173,7 +168,7 @@ describe('Oauth E2E Test', () => {
           clientSecret,
         })
         .expect(201);
-      expect(reponseToken.body).toEqual({
+      expect(responseToken.body).toEqual({
         access_token: expect.any(String),
         expires_at: expect.any(String),
         refresh_token: expect.any(String),
