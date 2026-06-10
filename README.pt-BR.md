@@ -256,7 +256,7 @@ Copie `.env.template` para `.env` e preencha os valores:
 
 ```env
 # PostgreSQL
-USER_DB=
+DB_USER=
 DB_PASSWORD=
 DB_NAME=
 DB_PORT=5432
@@ -304,7 +304,7 @@ pnpm test:watch
 pnpm test:e2e
 ```
 
-Os testes unitários cobrem todos os services com mocks isolados. O padrão adotado é `expect(fn()).rejects.toThrow()` para cenários de erro, garantindo que os casos sejam realmente exercitados.
+Os testes unitários cobrem os principais use cases com fakes isolados. O padrão adotado é `expect(fn()).rejects.toThrow()` para cenários de erro, garantindo que os casos sejam realmente exercitados.
 
 ---
 
@@ -312,43 +312,96 @@ Os testes unitários cobrem todos os services com mocks isolados. O padrão adot
 
 ```
 src/
+├── auth/                           # Domínio de autenticação
+│   ├── application/
+│   │   ├── port/                   # Contratos da aplicação
+│   │   └── use-case/               # Fluxos de login, ativação e senha
+│   ├── domain/
+│   │   ├── entity/
+│   │   ├── enum/
+│   │   ├── error/
+│   │   └── value-object/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── controller/
+│       ├── dto/
+│       └── module/
+├── client/                         # Gestão de clients OAuth2
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── controller/
+│       ├── dto/
+│       ├── module/
+│       ├── persistence/
+│       └── repository/
 ├── config/
-│   ├── errors/
-│   │   └── oauth.error.ts          # Erros OAuth2 tipados (RFC 6749)
-│   └── logger/
-│       ├── auth-logger.config.ts   # Logger com métodos log/error/warn/debug
-│       └── base-logger.ts          # Extends ConsoleLogger do NestJS
-├── controller/                     # Camada HTTP
-│   ├── auth.controller.ts
-│   ├── client.controller.ts
-│   ├── health.controller.ts
-│   ├── oauth.controller.ts
-│   └── user.controller.ts
-├── dto/                            # Data Transfer Objects (validação)
-├── entity/                         # Entidades TypeORM
-│   ├── client.entity.ts
-│   ├── token.entity.ts
-│   ├── user-client-consent.entity.ts
-│   └── user.entity.ts
-├── module/                         # Módulos NestJS
-├── repository/                     # Camada de acesso a dados
-├── service/                        # Lógica de negócio
-│   ├── auth.service.ts
-│   ├── client.service.ts
-│   ├── email.service.ts
-│   ├── oauth.service.ts
-│   ├── redis.service.ts
-│   ├── token.service.ts
-│   └── user.service.ts
-└── templates/                      # Templates Handlebars para emails
-    ├── activeAccount.hbs
-    └── resetPassword.hbs
+│   ├── database/                   # Data source TypeORM e migrations
+│   ├── filters/                    # Filtros globais de exceção
+│   ├── helper/
+│   ├── logger/
+│   └── templates/                  # Templates Handlebars para emails
+├── consent/                        # Domínio de consentimento OAuth2
+│   ├── application/
+│   │   ├── port/
+│   │   ├── service/
+│   │   └── use-case/
+│   ├── domain/
+│   └── infrastructure/
+├── core/                           # Serviços e módulos compartilhados
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+├── module/
+│   └── app.module.ts               # Módulo raiz NestJS
+├── oauth/                          # Fluxo de authorization server OAuth2
+│   ├── application/
+│   │   ├── port/
+│   │   └── use-case/
+│   ├── domain/
+│   │   ├── entity/
+│   │   ├── error/
+│   │   └── value-object/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── controller/
+│       ├── dto/
+│       └── module/
+├── token/                          # Geração, refresh, revogação e introspecção de tokens
+│   ├── application/
+│   │   ├── interface/
+│   │   ├── port/
+│   │   ├── service/
+│   │   ├── type/
+│   │   └── use-case/
+│   ├── domain/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── module/
+│       ├── persistence/
+│       └── repository/
+└── user/                           # Registro e busca de usuários
+    ├── application/
+    │   ├── port/
+    │   └── use-case/
+    ├── domain/
+    └── infrastructure/
+        ├── adapter/
+        ├── controller/
+        ├── dto/
+        ├── module/
+        ├── persistence/
+        └── repository/
 
 test/
 └── unit/
-    └── service/
-        ├── mock/                   # Mocks reutilizáveis por service
-        └── *.spec.ts               # Testes unitários por service
+    └── use-case/
+        ├── auth/
+        ├── consent/
+        ├── oauth/
+        ├── token/
+        └── user/
 ```
 
 ---
