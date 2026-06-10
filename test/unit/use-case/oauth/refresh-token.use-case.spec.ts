@@ -1,10 +1,12 @@
 import { RefreshTokenUseCase } from '@/oauth/application/use-case/refresh-token.use-case';
 import { OauthDomainError } from '../../../../src/oauth/domain/error/oauth-domain.error';
-import { oauthMock } from './mock/index.mock';
+import { oauthMocked, OauthMockedType } from './mock/index.mock';
 
 describe('RefreshTokenUseCase', () => {
   let refreshTokenUseCase: RefreshTokenUseCase;
-  beforeAll(() => {
+  let oauthMock: OauthMockedType;
+  beforeEach(() => {
+    oauthMock = oauthMocked();
     jest.clearAllMocks();
     jest.resetAllMocks();
     refreshTokenUseCase = new RefreshTokenUseCase(

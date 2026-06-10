@@ -1,5 +1,6 @@
 import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
 import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
+import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 import { PkceChallengeValueObject } from '../../domain/value-object/pkce-challenge.value-object';
 import { RedirectUriValueObject } from '../../domain/value-object/redirectUri.value-object';
 import { OauthTokenDTO } from '../../infrastructure/dto/oauth-authorize.dto';
@@ -46,7 +47,9 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
       codeVerifier,
     } = payload;
     if (grantType !== 'authorization_code') {
-      throw new Error(`Unsupported grant type ${grantType}`);
+      throw OauthDomainError.invalidGrant(
+        `Unsupported grant type ${grantType}`,
+      );
     }
 
     const isPKCE = !!codeVerifier;
@@ -54,13 +57,18 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
     const clientDB = await this.clientServicePort.findByClientId(clientId);
     clientDB.isValidRedirectUri(RedirectUriValueObject.create(redirectUri));
 
-    clientDB.startAuthorizationCodeFlow(isPKCE);
+    if (clientDB.isConfidential && !clientSecret) {
+      throw OauthDomainError.invalidClient('Client secret is required');
+    }
 
-    this.hashedClientSecretServicePort.compareHashClientSecret({
-      clientSecret,
-      clientSecretHashed: clientDB.clientSecret,
-      clientSecretPepper: this.configService.clientSecretPepper,
-    });
+    clientDB.startAuthorizationCodeFlow(isPKCE);
+    if (clientDB.isConfidential) {
+      await this.hashedClientSecretServicePort.compareHashClientSecret({
+        clientSecret,
+        clientSecretHashed: clientDB.clientSecret,
+        clientSecretPepper: this.configService.clientSecretPepper,
+      });
+    }
     const codeRedis = await this.redisServicePort.consumeOauthCode(code);
     clientDB.validPkceChallenge(
       PkceChallengeValueObject.create(

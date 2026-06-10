@@ -3,11 +3,13 @@ import {
   LoginUseCase,
 } from '@/oauth/application/use-case/login.use-case';
 import { OauthDomainError } from '../../../../src/oauth/domain/error/oauth-domain.error';
-import { oauthMock } from './mock/index.mock';
+import { oauthMocked, OauthMockedType } from './mock/index.mock';
 
 describe('LoginUseCase', () => {
   let loginUseCase: LoginUseCase;
-  beforeAll(() => {
+  let oauthMock: OauthMockedType;
+  beforeEach(() => {
+    oauthMock = oauthMocked();
     loginUseCase = new LoginUseCase(
       oauthMock.redisServiceFake,
       oauthMock.userServiceFake,
@@ -16,7 +18,7 @@ describe('LoginUseCase', () => {
     );
   });
   const payload = {
-    email: 'test-user-email',
+    email: 'john.doe@example.com',
     password: 'test-user-password',
   };
   const queryOauthLogin: IQueryOauthLogin = {

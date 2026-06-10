@@ -28,6 +28,10 @@ import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
           synchronize: false,
           autoLoadEntities: true,
           migrationsRun: true,
+          invalidWhereValuesBehavior: {
+            null: 'throw',
+            undefined: 'throw',
+          },
         };
       },
     }),

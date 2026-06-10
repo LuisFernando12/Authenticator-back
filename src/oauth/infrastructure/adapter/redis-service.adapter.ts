@@ -1,5 +1,8 @@
 import { RedisService } from '../../../core/domain/service/redis.service';
-import { RedisServicePort } from '../../application/port/redis-service-port';
+import {
+  IOauthRequestCodePayload,
+  RedisServicePort,
+} from '../../application/port/redis-service-port';
 import { OauthRequest } from '../../domain/entity/oauth-request.entity';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 
@@ -38,11 +41,11 @@ export class RedisServiceAdapter implements RedisServicePort {
   }
   async saveOauthAuthorizationCode(
     code: string,
-    payloadOauthCodeRedis: OauthRequest,
+    payloadOauthCodeRedis: IOauthRequestCodePayload,
   ): Promise<string> {
     const saveCodeRedis = await this.redisService.setOnRedis(
       `oauth-code-${code}`,
-      payloadOauthCodeRedis.stringfy(),
+      JSON.stringify(payloadOauthCodeRedis),
       300,
     );
     if (!saveCodeRedis) {

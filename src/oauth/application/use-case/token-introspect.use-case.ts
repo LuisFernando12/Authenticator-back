@@ -15,6 +15,9 @@ export class TokenIntrospectUseCase implements BaseUseCase<string> {
     token: string,
   ): Promise<ITokenIntrospectResponse | { active: boolean }> {
     const tokenIntrospect = await this.tokenServicePort.tokenIntrospect(token);
+    if (!tokenIntrospect.active) {
+      return tokenIntrospect;
+    }
     const { jti } = tokenIntrospect as ITokenIntrospectResponse;
     const hasJtiOnBlockList =
       await this.redisServicePort.consultHasJtiTokenOnBlockList(jti);

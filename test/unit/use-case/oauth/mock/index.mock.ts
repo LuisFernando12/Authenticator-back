@@ -9,7 +9,7 @@ import { RedisServiceFake } from './redis-service-fake';
 import { TokenServiceFake } from './token-service-fake';
 import { UserServiceFake } from './user-service-fake';
 
-export const oauthMock = {
+export const oauthMocked = () => ({
   client: new ClientServiceFake(),
   generateIdServiceFake: new GenerateIdServiceFake(),
   redisServiceFake: new RedisServiceFake(),
@@ -20,4 +20,5 @@ export const oauthMock = {
   hashedClientSecretServiceFake: new HashedClientSecretFake(),
   mockOauthClient: (oauthClient: OauthClient) => new OauthClient(oauthClient),
   mockOauthToken: (oauthToken: OauthToken) => new OauthToken(oauthToken),
-};
+});
+export type OauthMockedType = ReturnType<typeof oauthMocked>;

@@ -5,13 +5,16 @@ import {
 import * as bcrypt from 'bcrypt';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 export class HashedClientSecretServiceAdapter implements HashedClientSecretServicePort {
-  compareHashClientSecret({
+  async compareHashClientSecret({
     clientSecret,
     clientSecretHashed,
     clientSecretPepper,
-  }: ICompareHashClientSecret): void {
+  }: ICompareHashClientSecret): Promise<void> {
     if (
-      !bcrypt.compare(clientSecret + clientSecretPepper, clientSecretHashed)
+      !(await bcrypt.compare(
+        clientSecret + clientSecretPepper,
+        clientSecretHashed,
+      ))
     ) {
       throw OauthDomainError.invalidClient('Invalid client secret !');
     }

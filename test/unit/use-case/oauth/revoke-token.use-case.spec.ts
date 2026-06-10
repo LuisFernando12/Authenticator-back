@@ -1,9 +1,12 @@
 import { RevokeTokenUseCase } from '@/oauth/application/use-case/revoke-token.use-case';
-import { oauthMock } from './mock/index.mock';
+import { oauthMocked, OauthMockedType } from './mock/index.mock';
 
 describe('RevokeTokenUseCase', () => {
   let revokeTokenUseCase: RevokeTokenUseCase;
-  beforeAll(() => {
+  let oauthMock: OauthMockedType;
+  beforeEach(() => {
+    oauthMock = oauthMocked();
+    jest.clearAllMocks();
     revokeTokenUseCase = new RevokeTokenUseCase(
       oauthMock.tokenServiceFake,
       oauthMock.redisServiceFake,
@@ -26,7 +29,7 @@ describe('RevokeTokenUseCase', () => {
           consent: oauthMock.tokenServiceFake.consent,
           refreshToken: 'test-refresh-token',
           jti: 'test-jti',
-          expiresAt: new Date('2026-06-07T22:41:44.401Z'),
+          expiresAt: new Date(Date.now() - 24 * (3600 * 1000)),
           consentId: 'test-consent-id',
         } as any),
       );

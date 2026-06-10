@@ -1,11 +1,13 @@
 import { AuthorizeUseCase } from '../../../../src/oauth/application/use-case/authorize.use-case';
 import { OauthClient } from '../../../../src/oauth/domain/entity/oauth-client.entity';
 import { OauthDomainError } from '../../../../src/oauth/domain/error/oauth-domain.error';
-import { oauthMock } from './mock/index.mock';
+import { oauthMocked, OauthMockedType } from './mock/index.mock';
 
 describe('AuthorizeUseCase', () => {
   let authorizeUseCase: AuthorizeUseCase;
+  let oauthMock: OauthMockedType;
   beforeEach(() => {
+    oauthMock = oauthMocked();
     jest.clearAllMocks();
     authorizeUseCase = new AuthorizeUseCase(
       oauthMock.client,

@@ -35,7 +35,6 @@ export class UserRepository implements IUserRepository {
   async existsUser(email: string): Promise<boolean> {
     return await this.userRepository.existsBy({ email });
   }
-
   async create(
     data: UserDTO,
   ): Promise<
@@ -46,7 +45,7 @@ export class UserRepository implements IUserRepository {
   }
   async findByEmail(email: string): Promise<any> {
     const user = await this.userRepository.findOne({
-      where: { email },
+      where: { email: email },
     });
     return user;
   }

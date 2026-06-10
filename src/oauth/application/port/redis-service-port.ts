@@ -1,4 +1,10 @@
 import { OauthRequest } from '../../domain/entity/oauth-request.entity';
+export interface IOauthRequestCodePayload {
+  userEmail: string;
+  codeChallenge: string | null;
+  codeChallengeMethod: string | null;
+  scope: string;
+}
 export const REDIS_SERVICE_PORT = Symbol('REDIS_SERVICE_PORT');
 export abstract class RedisServicePort {
   abstract saveAuthRequest(authRequest: OauthRequest): Promise<string>;
@@ -6,7 +12,7 @@ export abstract class RedisServicePort {
   abstract consumeOauthCode(key: string): Promise<any>;
   abstract saveOauthAuthorizationCode(
     key: string,
-    payloadOauthCodeRedis: OauthRequest,
+    payloadOauthCodeRedis: IOauthRequestCodePayload,
   ): Promise<string>;
   abstract addJtiTokenOnBlockList(jti: string): Promise<string>;
   abstract consultHasJtiTokenOnBlockList(key: string): Promise<boolean>;

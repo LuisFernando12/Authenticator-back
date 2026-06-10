@@ -12,5 +12,5 @@ export abstract class HashedClientSecretServicePort {
     clientSecret,
     clientSecretHashed,
     clientSecretPepper,
-  }: ICompareHashClientSecret): void;
+  }: ICompareHashClientSecret): Promise<void>;
 }

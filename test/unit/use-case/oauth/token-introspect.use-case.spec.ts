@@ -1,9 +1,11 @@
 import { TokenIntrospectUseCase } from '@/oauth/application/use-case/token-introspect.use-case';
-import { oauthMock } from './mock/index.mock';
+import { oauthMocked, OauthMockedType } from './mock/index.mock';
 
 describe('TokenIntrospectUseCase', () => {
   let tokenIntrospectUseCase: TokenIntrospectUseCase;
-  beforeAll(() => {
+  let oauthMock: OauthMockedType;
+  beforeEach(() => {
+    oauthMock = oauthMocked();
     tokenIntrospectUseCase = new TokenIntrospectUseCase(
       oauthMock.tokenServiceFake,
       oauthMock.redisServiceFake,

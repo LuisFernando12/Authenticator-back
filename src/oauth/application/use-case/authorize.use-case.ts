@@ -65,10 +65,9 @@ export class AuthorizeUseCase {
     });
     await this.redisServicePort.saveAuthRequest(payloadOauthResquest);
 
-    payload['oauthRequestId'] = oauthRequestId;
     return MountUrlValueObject.mount<MountUrlParamType>(
       this.configServicePort.oauthLoginURL,
-      payload as MountUrlParamType,
+      { ...payload, oauthRequestId },
     );
   }
 }

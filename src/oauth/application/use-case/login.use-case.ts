@@ -40,7 +40,16 @@ export class LoginUseCase {
     });
 
     const code = this.generateIdServicePort.generateOauthAuthorizationCode();
-    await this.redisServicePort.saveOauthAuthorizationCode(code, oauthRequest);
+    const payloadOauthCodeRedis = {
+      userEmail: email,
+      codeChallenge: oauthRequest.codeChallenge,
+      codeChallengeMethod: oauthRequest.codeChallengeMethod,
+      scope: oauthRequest.scope,
+    };
+    await this.redisServicePort.saveOauthAuthorizationCode(
+      code,
+      payloadOauthCodeRedis,
+    );
 
     await this.consentServicePort.findOrCreateConsent(
       userDB.id,

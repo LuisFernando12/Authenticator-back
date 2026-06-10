@@ -32,7 +32,7 @@ interface IConsentProps {
 export class ConsentServiceFake implements ConsentServicePort {
   private user: IUser = jest.fn().mockResolvedValue({
     id: 'test-user-id',
-    email: 'test-user-email',
+    email: 'john.doe@example.com',
     password: 'test-user-password',
     name: 'test-user-name',
     isVerified: true,

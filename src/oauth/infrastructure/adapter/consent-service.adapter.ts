@@ -45,7 +45,7 @@ export class ConsentServiceAdapter implements ConsentServicePort {
     userId: string,
     clientId: string,
     scopes: string,
-  ): Promise<OauthConsent> {
+  ): Promise<void | OauthConsent> {
     const consentDB = await this.consentService.findByUserIdAndClientId({
       userId,
       clientId,
@@ -56,6 +56,7 @@ export class ConsentServiceAdapter implements ConsentServicePort {
         userId: userId,
         clientId: clientId,
       });
+      return;
     }
     return new OauthConsent({
       id: consentDB.id,

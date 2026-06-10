@@ -1,4 +1,7 @@
-import { RedisServicePort } from '@/oauth/application/port/redis-service-port';
+import {
+  IOauthRequestCodePayload,
+  RedisServicePort,
+} from '@/oauth/application/port/redis-service-port';
 import { OauthRequest } from '../../../../../src/oauth/domain/entity/oauth-request.entity';
 
 export class RedisServiceFake implements RedisServicePort {
@@ -26,11 +29,12 @@ export class RedisServiceFake implements RedisServicePort {
       scope: 'read write',
       clientId: 'test-client-id',
       redirectUri: 'https://example.com/callback',
+      userEmail: 'john.doe@example.com',
     });
   }
   async saveOauthAuthorizationCode(
     _key: string,
-    _payloadOauthCodeRedis: OauthRequest,
+    _payloadOauthCodeRedis: IOauthRequestCodePayload,
   ): Promise<string> {
     return Promise.resolve('OK');
   }

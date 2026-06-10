@@ -5,15 +5,18 @@ import {
 import { OauthUser } from '../../../../../src/oauth/domain/entity/user.entity';
 
 export class UserServiceFake implements UserServicePort {
-  private user: OauthUser = jest.fn().mockResolvedValue({
+  private user: OauthUser = new OauthUser({
     id: 'test-user-id',
-    email: 'test-user-email',
+    email: 'john.doe@example.com',
     password: 'test-user-password',
     name: 'test-user-name',
     isVerified: true,
     createdAt: new Date(),
   }) as any;
-  async findByEmail(_email: string): Promise<OauthUser> {
+  async findByEmail(email: string): Promise<OauthUser> {
+    if (email !== this.user.email) {
+      throw new Error('Invalid email');
+    }
     return this.user;
   }
   async validateUserCredentials(

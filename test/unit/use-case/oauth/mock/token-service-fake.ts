@@ -9,28 +9,26 @@ import { OauthToken } from '../../../../../src/oauth/domain/entity/oauth-token.e
 import { OauthConsent } from '../../../../../src/oauth/domain/entity/oauth-user-client-consent';
 import { OauthUser } from '../../../../../src/oauth/domain/entity/user.entity';
 export class TokenServiceFake implements TokenServicePort {
-  private _user: OauthUser = jest.fn().mockResolvedValue({
+  private _user: OauthUser = new OauthUser({
     id: 'test-user-id',
-    email: 'test-user-email',
+    email: 'john.doe@example.com',
     password: 'test-user-password',
     name: 'test-user-name',
     isVerified: true,
     createdAt: new Date(),
-  }) as any;
+  });
 
-  private _client: OauthClient = jest.fn().mockResolvedValue({
-    id: 'test-client-id',
+  private _client: OauthClient = new OauthClient({
+    clientId: 'test-client-id',
     name: 'Test Client',
     redirectUris: ['http://localhost/callback'],
-    isValidRedirectUri: jest.fn().mockReturnValue(true),
-    startAuthorizationCodeFlow: jest.fn(),
     scopes: ['read', 'write'],
     isActive: true,
     clientSecret: 'test-client-secret',
     isConfidential: true,
-  }) as any;
+  });
 
-  private _consent: OauthConsent = jest.fn().mockResolvedValue({
+  private _consent: OauthConsent = new OauthConsent({
     id: 'test-consent-id',
     userId: 'test-user-id',
     clientId: 'test-client-id',
@@ -38,7 +36,7 @@ export class TokenServiceFake implements TokenServicePort {
     client: this._client,
     grantedAt: new Date(),
     revokeAt: null,
-  }) as any;
+  });
   get user() {
     return this._user;
   }
@@ -82,8 +80,8 @@ export class TokenServiceFake implements TokenServicePort {
     if (refreshToken === 'hashed-test-refresh-token') {
       const token = new OauthToken({
         id: 'test-token-id',
-        user: this._user,
-        consent: this._consent,
+        user: this.user,
+        consent: this.consent,
         refreshToken: 'test-refresh-token',
         jti: 'test-jti',
         expiresAt: new Date(Date.now() + 3600 * 1000),
