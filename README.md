@@ -256,7 +256,7 @@ Copy `.env.template` to `.env` and fill in your values:
 
 ```env
 # PostgreSQL
-USER_DB=
+DB_USER=
 DB_PASSWORD=
 DB_NAME=
 DB_PORT=5432
@@ -304,7 +304,7 @@ pnpm test:watch
 pnpm test:e2e
 ```
 
-Unit tests cover all services with isolated mocks. The adopted pattern is `expect(fn()).rejects.toThrow()` for error scenarios, ensuring every case is actually exercised.
+Unit tests cover the main use cases with isolated fakes. The adopted pattern is `expect(fn()).rejects.toThrow()` for error scenarios, ensuring every case is actually exercised.
 
 ---
 
@@ -312,43 +312,96 @@ Unit tests cover all services with isolated mocks. The adopted pattern is `expec
 
 ```
 src/
+├── auth/                           # Authentication domain
+│   ├── application/
+│   │   ├── port/                   # Application contracts
+│   │   └── use-case/               # Login, activation and password flows
+│   ├── domain/
+│   │   ├── entity/
+│   │   ├── enum/
+│   │   ├── error/
+│   │   └── value-object/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── controller/
+│       ├── dto/
+│       └── module/
+├── client/                         # OAuth2 client management
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── controller/
+│       ├── dto/
+│       ├── module/
+│       ├── persistence/
+│       └── repository/
 ├── config/
-│   ├── errors/
-│   │   └── oauth.error.ts          # Typed OAuth2 errors (RFC 6749)
-│   └── logger/
-│       ├── auth-logger.config.ts   # Logger with log/error/warn/debug methods
-│       └── base-logger.ts          # Extends NestJS ConsoleLogger
-├── controller/                     # HTTP layer
-│   ├── auth.controller.ts
-│   ├── client.controller.ts
-│   ├── health.controller.ts
-│   ├── oauth.controller.ts
-│   └── user.controller.ts
-├── dto/                            # Data Transfer Objects (validation)
-├── entity/                         # TypeORM entities
-│   ├── client.entity.ts
-│   ├── token.entity.ts
-│   ├── user-client-consent.entity.ts
-│   └── user.entity.ts
-├── module/                         # NestJS modules
-├── repository/                     # Data access layer
-├── service/                        # Business logic
-│   ├── auth.service.ts
-│   ├── client.service.ts
-│   ├── email.service.ts
-│   ├── oauth.service.ts
-│   ├── redis.service.ts
-│   ├── token.service.ts
-│   └── user.service.ts
-└── templates/                      # Handlebars email templates
-    ├── activeAccount.hbs
-    └── resetPassword.hbs
+│   ├── database/                   # TypeORM data source and migrations
+│   ├── filters/                    # Global exception filters
+│   ├── helper/
+│   ├── logger/
+│   └── templates/                  # Handlebars email templates
+├── consent/                        # OAuth2 consent domain
+│   ├── application/
+│   │   ├── port/
+│   │   ├── service/
+│   │   └── use-case/
+│   ├── domain/
+│   └── infrastructure/
+├── core/                           # Shared app services and modules
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+├── module/
+│   └── app.module.ts               # Root NestJS module
+├── oauth/                          # OAuth2 authorization server flow
+│   ├── application/
+│   │   ├── port/
+│   │   └── use-case/
+│   ├── domain/
+│   │   ├── entity/
+│   │   ├── error/
+│   │   └── value-object/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── controller/
+│       ├── dto/
+│       └── module/
+├── token/                          # Token generation, refresh, revoke and introspection
+│   ├── application/
+│   │   ├── interface/
+│   │   ├── port/
+│   │   ├── service/
+│   │   ├── type/
+│   │   └── use-case/
+│   ├── domain/
+│   └── infrastructure/
+│       ├── adapter/
+│       ├── module/
+│       ├── persistence/
+│       └── repository/
+└── user/                           # User registration and lookup
+    ├── application/
+    │   ├── port/
+    │   └── use-case/
+    ├── domain/
+    └── infrastructure/
+        ├── adapter/
+        ├── controller/
+        ├── dto/
+        ├── module/
+        ├── persistence/
+        └── repository/
 
 test/
 └── unit/
-    └── service/
-        ├── mock/                   # Reusable mocks per service
-        └── *.spec.ts               # Unit tests per service
+    └── use-case/
+        ├── auth/
+        ├── consent/
+        ├── oauth/
+        ├── token/
+        └── user/
 ```
 
 ---
