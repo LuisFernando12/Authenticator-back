@@ -7,7 +7,9 @@ services:
     ports: ["3000:3000"]
     env_file: .env
     restart: unless-stopped
-    depends_on: [pg-authenticator, redis-authenticator]
+    depends_on: 
+      - pg-authenticator
+      - redis-authenticator
     networks:
       - net-authenticator
   pg-authenticator:

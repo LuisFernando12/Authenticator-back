@@ -21,7 +21,11 @@ import { handlebarsSplitCharsHelper } from '../../../config/helper/handlebars-sp
           },
         },
         template: {
-          dir: join(process.cwd(), '/src/config/templates'),
+          dir: join(
+            process.cwd(),
+            (config.get<string>('NODE_ENV') !== 'dev' ? 'dist/' : '') +
+              'src/config/templates',
+          ),
           adapter: new HandlebarsAdapter(handlebarsSplitCharsHelper),
           options: {
             strict: true,
