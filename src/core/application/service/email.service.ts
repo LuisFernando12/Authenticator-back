@@ -37,6 +37,7 @@ export class EmailService implements IEmailService {
       }
       return 'OK';
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException('Failure to send email', {
         cause: error,
       });
