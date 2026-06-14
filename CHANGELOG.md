@@ -1,3 +1,10 @@
+# [2.0.0-beta.5](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.4...v2.0.0-beta.5) (2026-06-14)
+
+
+### Bug Fixes
+
+* **email:** add error logging in sendActivationEmail method ([0677dfd](https://github.com/LuisFernando12/Authenticator/commit/0677dfd86f154ea6805301ae996f754a0329e44c))
+
 # [2.0.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.3...v2.0.0-beta.4) (2026-06-13)
 
 
