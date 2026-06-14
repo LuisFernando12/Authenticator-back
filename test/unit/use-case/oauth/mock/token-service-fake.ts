@@ -33,6 +33,7 @@ export class TokenServiceFake implements TokenServicePort {
     userId: 'test-user-id',
     clientId: 'test-client-id',
     user: this._user,
+    scopes: ['read', 'write'],
     client: this._client,
     grantedAt: new Date(),
     revokeAt: null,

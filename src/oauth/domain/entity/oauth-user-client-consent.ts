@@ -6,6 +6,7 @@ export interface IOauthConsentProps {
   userId: string;
   clientId: string;
   user: OauthUser;
+  scopes: Array<string>;
   client: OauthClient;
   grantedAt: Date;
   revokeAt: Date | null;
@@ -27,6 +28,9 @@ export class OauthConsent {
   }
   get client(): OauthClient {
     return this.oauthConsentProps.client;
+  }
+  get scopes(): Array<string> {
+    return this.oauthConsentProps.scopes;
   }
   get grantedAt(): Date {
     return this.oauthConsentProps.grantedAt;

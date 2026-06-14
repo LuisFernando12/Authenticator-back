@@ -71,6 +71,7 @@ export class TokenServiceAdapter implements TokenServicePort {
         userId: userClientConsent.userId,
         clientId: userClientConsent.clientId,
         user: new OauthUser(userClientConsent.user),
+        scopes: userClientConsent.scopes,
         client: new OauthClient(userClientConsent.client),
         grantedAt: userClientConsent.grantedAt,
         revokeAt: userClientConsent.revokeAt,
