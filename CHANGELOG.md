@@ -1,3 +1,10 @@
+# [2.0.0-beta.6](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.5...v2.0.0-beta.6) (2026-06-14)
+
+
+### Features
+
+* **consent:** add scopes property to OauthConsent and related services ([bd93c53](https://github.com/LuisFernando12/Authenticator/commit/bd93c53a2315410ba9831ce113ed93140ff63260))
+
 # [2.0.0-beta.5](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.4...v2.0.0-beta.5) (2026-06-14)
 
 
