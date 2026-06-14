@@ -1,3 +1,10 @@
+# [2.0.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.3...v2.0.0-beta.4) (2026-06-13)
+
+
+### Bug Fixes
+
+* **config:** update docker-compose service dependencies and template path ([078f9ce](https://github.com/LuisFernando12/Authenticator/commit/078f9ce3e96c14e97f752bc97bf556c5869e1ab9))
+
 # [2.0.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-06-10)
 
 
