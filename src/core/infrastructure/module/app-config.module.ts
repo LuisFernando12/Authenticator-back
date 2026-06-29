@@ -9,6 +9,7 @@ import * as j from 'joi';
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: j.object({
+        DB_HOST: j.string().required(),
         DB_USER: j.string().required(),
         DB_PASSWORD: j.string().required(),
         DB_NAME: j.string().required(),

@@ -43,4 +43,5 @@ export abstract class TokenServicePort {
   abstract tokenIntrospect(
     token: string,
   ): Promise<ITokenIntrospectResponse | { active: boolean }>;
+  abstract deleteByTokenFamilyId(tokenFamilyId: string): Promise<void>;
 }

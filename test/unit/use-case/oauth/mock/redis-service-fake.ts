@@ -1,5 +1,6 @@
 import {
   IOauthRequestCodePayload,
+  ITokenFamilyRevoked,
   RedisServicePort,
 } from '@/oauth/application/port/redis-service-port';
 import { OauthRequest } from '../../../../../src/oauth/domain/entity/oauth-request.entity';
@@ -41,7 +42,27 @@ export class RedisServiceFake implements RedisServicePort {
   async addJtiTokenOnBlockList(jti: string): Promise<string> {
     return Promise.resolve(jti);
   }
+  async addTokenFamilyToReuseDetection(
+    payloadTokenFamily: ITokenFamilyRevoked,
+  ): Promise<string> {
+    if (
+      payloadTokenFamily.tokenFamilyId === 'test-token-family-id' &&
+      payloadTokenFamily.refreshToken === 'test-refresh-token'
+    ) {
+      return Promise.resolve('OK');
+    }
+  }
   async consultHasJtiTokenOnBlockList(_key: string): Promise<boolean> {
     return Promise.resolve(false);
+  }
+  async consultHasTokenFamilyOnReuseDetection(
+    refreshToken: string,
+  ): Promise<ITokenFamilyRevoked> {
+    return Promise.resolve({
+      jti: 'test-jti',
+      refreshToken: refreshToken,
+      tokenFamilyId: 'test-token-family-id',
+      expiresAt: new Date(Date.now() + 3600 * 1000),
+    });
   }
 }

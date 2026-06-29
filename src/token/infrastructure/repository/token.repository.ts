@@ -1,24 +1,21 @@
-import {
-  TokenEntity,
-  TokenEntityType,
-} from '@/token/infrastructure/persistence/entity/token.entity';
+import { TokenEntity } from '@/token/infrastructure/persistence/entity/token.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { DeleteResult, Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 import { Token } from '../../domain/entity/token.entity';
 import { TokenDomainError } from '../../domain/error/token-domain.error';
 export interface ITokenRepository {
-  create(data: TokenEntityType): any;
-  findByUserId(userId: string): Promise<TokenEntity[]>;
-  update({ id, expiresAt, refreshToken, jti }: ITokenUpdate): any;
-  findByRefreshToken(token: string): Promise<TokenEntity>;
-  deleteToken(token: string): Promise<DeleteResult>;
+  create(data: Token): any;
+  findByUserId(userId: string): Promise<Token[]>;
+  findByRefreshToken(token: string): Promise<Token>;
+  findByTokenFamilyId(tokenFamilyId: string): Promise<Token[]>;
+  update({ id, token }: ITokenUpdate): Promise<void>;
+  deleteByTokenFamilyId(tokenFamilyId: string): Promise<void>;
+  deleteToken(token: string): Promise<void>;
 }
 interface ITokenUpdate {
-  expiresAt: Date;
   id: string;
-  refreshToken?: string;
-  jti: string;
+  token: Token;
 }
 @Injectable()
 export class TokenRepository implements ITokenRepository {
@@ -26,55 +23,90 @@ export class TokenRepository implements ITokenRepository {
     @InjectRepository(TokenEntity)
     private tokenRepository: Repository<TokenEntity>,
   ) {}
-  async create(data: Token) {
+  async create(data: Token): Promise<Token> {
     try {
-      return await this.tokenRepository.save(data.toJSON());
+      const token = await this.tokenRepository.save(data.toJSON());
+      return new Token(token);
     } catch (error: any) {
       throw TokenDomainError.internalServerError(error.message);
     }
   }
-  async findByUserId(userId: string): Promise<TokenEntity[]> {
+  async findByUserId(userId: string): Promise<Token[]> {
     try {
-      return await this.tokenRepository.find({
+      const tokenDB = await this.tokenRepository.find({
         where: {
           user: {
             id: userId,
           },
         },
       });
+      return tokenDB.map((token) => new Token(token)) || [];
     } catch (error: any) {
       throw TokenDomainError.internalServerError(error.message);
     }
   }
-  async update({ id, expiresAt, refreshToken, jti }: ITokenUpdate) {
+  async update({
+    id,
+    token: { expiresAt, refreshToken, jti },
+  }: ITokenUpdate): Promise<void> {
     try {
-      return await this.tokenRepository.update(
-        { id },
+      const token = await this.tokenRepository.update(
+        { id: id },
         { expiresAt, refreshToken, jti },
       );
+      if (token.affected === 0) {
+        throw TokenDomainError.unauthorized('Unauthorized token');
+      }
+      return;
     } catch (error: any) {
+      if (error.status === 401) throw error;
       throw TokenDomainError.internalServerError(error.message);
     }
   }
-  async findByRefreshToken(token: string): Promise<TokenEntity> {
+  async findByRefreshToken(token: string): Promise<Token> {
     try {
-      return await this.tokenRepository.findOne({
+      const tokenDB = await this.tokenRepository.findOne({
         where: {
           refreshToken: token,
         },
         relations: {
           user: true,
-          userClientConsent: true,
+          consent: true,
         },
       });
+      return new Token(tokenDB);
     } catch (error: any) {
       throw TokenDomainError.internalServerError(error.message);
     }
   }
-  async deleteToken(refreshToken: string): Promise<DeleteResult> {
+  async findByTokenFamilyId(tokenFamilyId: string): Promise<Token[]> {
     try {
-      return await this.tokenRepository.delete({
+      const tokenDB = await this.tokenRepository.find({
+        where: {
+          tokenFamilyId: tokenFamilyId,
+        },
+      });
+      return tokenDB.map((token) => new Token(token)) || [];
+    } catch (error: any) {
+      throw TokenDomainError.internalServerError(error.message);
+    }
+  }
+  async deleteToken(refreshToken: string): Promise<void> {
+    try {
+      const tokenDelete = await this.tokenRepository.delete({
         refreshToken: refreshToken,
+      });
+      if (tokenDelete.affected === 0) {
+        throw TokenDomainError.unauthorized('Unauthorized token');
+      }
+    } catch (error: any) {
+      throw TokenDomainError.internalServerError(error.message);
+    }
+  }
+  async deleteByTokenFamilyId(tokenFamilyId: string): Promise<void> {
+    try {
+      await this.tokenRepository.softDelete({
+        tokenFamilyId: tokenFamilyId,
       });
     } catch (error: any) {
       throw TokenDomainError.internalServerError(error.message);

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ITokenService } from '../../../token/application/service/token.service';
+import { TokenService } from '../../../token/application/service/token.service';
 import {
   IPayloadToken,
   ITokenIntrospectResponse,
@@ -13,7 +13,7 @@ import { OauthUser } from '../../domain/entity/user.entity';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 
 export class TokenServiceAdapter implements TokenServicePort {
-  constructor(private readonly tokenService: ITokenService) {}
+  constructor(private readonly tokenService: TokenService) {}
   async generateToken(
     payload: IPayloadToken,
     userClientConsentId: string,
@@ -57,30 +57,36 @@ export class TokenServiceAdapter implements TokenServicePort {
     });
   }
   async findByRefreshToken(refreshToken: string): Promise<OauthToken> {
-    const oauthToken = await this.tokenService.findByRefreshToken(refreshToken);
-    if (!oauthToken) {
-      throw OauthDomainError.invalidClient();
+    try {
+      const oauthToken =
+        await this.tokenService.findByRefreshToken(refreshToken);
+      if (!oauthToken) {
+        throw OauthDomainError.invalidClient();
+      }
+      const { id, user, consent, jti, consentId, expiresAt, tokenFamilyId } =
+        oauthToken;
+      return new OauthToken({
+        id,
+        user: new OauthUser(user),
+        consent: new OauthConsent({
+          id: consent.id,
+          userId: consent.userId,
+          clientId: consent.clientId,
+          user: new OauthUser(consent.user),
+          scopes: consent.scopes,
+          client: new OauthClient(consent.client),
+          grantedAt: consent.grantedAt,
+          revokeAt: consent.revokeAt,
+        }),
+        tokenFamilyId: tokenFamilyId,
+        jti: jti,
+        consentId: consentId,
+        refreshToken: refreshToken,
+        expiresAt: expiresAt,
+      });
+    } catch (_error) {
+      throw OauthDomainError.internalServerError('Failure to find token');
     }
-    const { id, user, userClientConsent, jti, consentId, expiresAt } =
-      oauthToken;
-    return new OauthToken({
-      id,
-      user: new OauthUser(user),
-      consent: new OauthConsent({
-        id: userClientConsent.id,
-        userId: userClientConsent.userId,
-        clientId: userClientConsent.clientId,
-        user: new OauthUser(userClientConsent.user),
-        scopes: userClientConsent.scopes,
-        client: new OauthClient(userClientConsent.client),
-        grantedAt: userClientConsent.grantedAt,
-        revokeAt: userClientConsent.revokeAt,
-      }),
-      jti,
-      consentId,
-      refreshToken,
-      expiresAt,
-    });
   }
   async revokeToken(refreshToken: string): Promise<void> {
     try {
@@ -93,5 +99,12 @@ export class TokenServiceAdapter implements TokenServicePort {
     token: string,
   ): Promise<ITokenIntrospectResponse | { active: boolean }> {
     return await this.tokenService.tokenIntrospect(token);
+  }
+  async deleteByTokenFamilyId(tokenFamilyId: string): Promise<void> {
+    try {
+      await this.tokenService.deleteByTokenFamilyId(tokenFamilyId);
+    } catch (_error) {
+      throw OauthDomainError.internalServerError('Failure to delete token');
+    }
   }
 }

@@ -15,7 +15,7 @@ import { AppConfigEnvService } from '../../../core/domain/service/app-config-env
 import { RedisService } from '../../../core/domain/service/redis.service';
 import { EmailModule } from '../../../core/infrastructure/module/email.module';
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
-import { ITokenService } from '../../../token/application/service/token.service';
+import { TokenService } from '../../../token/application/service/token.service';
 import {
   CONFIG_SERVICE_PORT,
   ConfigServicePort,
@@ -87,9 +87,9 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
     },
     {
       provide: TOKEN_SERVICE_PORT,
-      useFactory: (tokenService: ITokenService): TokenServicePort =>
+      useFactory: (tokenService: TokenService): TokenServicePort =>
         new TokenServiceAdapter(tokenService),
-      inject: [ITokenService],
+      inject: [TokenService],
     },
     {
       provide: USER_REPOSITORY_PORT,

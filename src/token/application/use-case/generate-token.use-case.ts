@@ -3,10 +3,11 @@ import { Token } from '../../domain/entity/token.entity';
 import { TokenValueObject } from '../../domain/value-object/token.value-object';
 import { IGenerateToken } from '../interface/generate-token.interface';
 import { ConfigServicePort } from '../port/config-service.port';
-import { GenerateJtiPort } from '../port/generate-jti.port';
+import { GenerateUUIDPort } from '../port/generate-uuid.port';
 import { JwtServicePort } from '../port/jwt-service.port';
 import { RefreshTokenServicePort } from '../port/refresh-token-service.port';
 import { TokenRepositoryPort } from '../port/token-repository.port';
+import { TransactionPort } from '../port/transaction.port';
 
 export interface IGenerateTokenPayload {
   payload: IGenerateToken;
@@ -23,21 +24,33 @@ export class GenerateTokenUseCase implements BaseUseCase<IGenerateTokenPayload> 
     private readonly configServicePort: ConfigServicePort,
     private readonly jwtServicePort: JwtServicePort,
     private readonly refreshTokenServicePort: RefreshTokenServicePort,
-    private readonly generateJtiPort: GenerateJtiPort,
+    private readonly generateUUIDPort: GenerateUUIDPort,
+    private readonly transactionPort: TransactionPort,
   ) {}
   async execute({
     payload,
     consentId,
   }: IGenerateTokenPayload): Promise<IResponseGenerateToken> {
+    const tokenDB = await this.tokenRepositoryPort.findByUserId(payload.sub);
     const expiresAtInMilliseconds = TokenValueObject.generateExpireAt(
       TokenValueObject.getSecondsByDays(
         this.configServicePort.refreshTokenExpiresDays,
       ),
     );
     const expiresAt = new Date(expiresAtInMilliseconds * 1000);
-    const jti = this.generateJtiPort.generate();
+    const jti = this.generateUUIDPort.generate();
+
+    let tokenFamilyId;
+
+    if (consentId) {
+      tokenFamilyId =
+        tokenDB.find((token) => token.consentId === consentId)?.tokenFamilyId ??
+        this.generateUUIDPort.generate();
+    } else {
+      tokenFamilyId = this.generateUUIDPort.generate();
+    }
     const token = await this.jwtServicePort.signAsync(
-      { ...payload, jti },
+      { ...payload, jti, tokenFamilyId },
       this.configServicePort.accessTokenExpiresIn,
     );
 
@@ -48,10 +61,19 @@ export class GenerateTokenUseCase implements BaseUseCase<IGenerateTokenPayload> 
       user: { id: payload.sub },
       expiresAt: expiresAt,
       consentId: consentId || null,
+      tokenFamilyId,
       jti,
     });
-
-    await this.tokenRepositoryPort.create(tokenEntity);
+    await this.transactionPort.executeTransaction(async (manager) => ({
+      token: await manager.token.create(tokenEntity),
+      session: await manager.session.create({
+        consentId: consentId || null,
+        userId: payload.sub,
+        expiresAt: expiresAt,
+        tokenFamilyId: tokenFamilyId,
+        jti: jti,
+      }),
+    }));
     return {
       access_token: token,
       refresh_token: refreshToken,

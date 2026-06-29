@@ -3,10 +3,11 @@ import { TokenDomainError } from '../../domain/error/token-domain.error';
 import { TokenValueObject } from '../../domain/value-object/token.value-object';
 import { IGenerateToken } from '../interface/generate-token.interface';
 import { ConfigServicePort } from '../port/config-service.port';
-import { GenerateJtiPort } from '../port/generate-jti.port';
+import { GenerateUUIDPort } from '../port/generate-uuid.port';
 import { JwtServicePort } from '../port/jwt-service.port';
 import { RefreshTokenServicePort } from '../port/refresh-token-service.port';
 import { TokenRepositoryPort } from '../port/token-repository.port';
+import { TransactionPort } from '../port/transaction.port';
 
 export interface IRefreshTokenPayload {
   payload: Omit<IGenerateToken, 'type'>;
@@ -18,7 +19,8 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenPayload> {
     private readonly configServicePort: ConfigServicePort,
     private readonly jwtServicePort: JwtServicePort,
     private readonly refreshTokenServicePort: RefreshTokenServicePort,
-    private readonly generateJtiPort: GenerateJtiPort,
+    private readonly generateJtiPort: GenerateUUIDPort,
+    private readonly transactionPort: TransactionPort,
   ) {}
   async execute({
     payload,
@@ -35,6 +37,7 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenPayload> {
     const refreshTokenHashed =
       this.refreshTokenServicePort.hashRefreshToken(refreshToken);
     const jti = this.generateJtiPort.generate();
+    const tokenFamilyId = refreshTokenDB.tokenFamilyId;
     const expiresAtInMilliseconds = TokenValueObject.generateExpireAt(
       TokenValueObject.getSecondsByDays(
         this.configServicePort.refreshTokenExpiresDays,
@@ -42,15 +45,26 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenPayload> {
     );
     const expiresAt = new Date(expiresAtInMilliseconds * 1000);
     const newAccessToken = await this.jwtServicePort.signAsync(
-      { ...payload, jti },
+      { ...payload, jti, tokenFamilyId },
       this.configServicePort.accessTokenExpiresIn,
     );
+    const oldJti = refreshTokenDB.jti;
     refreshTokenDB.refreshTokenUpdate(refreshTokenHashed, jti, expiresAt);
-    await this.tokenRepositoryPort.update({
-      id: refreshTokenDB.id,
-      token: refreshTokenDB,
-    });
-
+    await this.transactionPort.executeTransaction(
+      async (transactionManager) => {
+        await transactionManager.token.update({
+          id: refreshTokenDB.id,
+          token: refreshTokenDB,
+        });
+        await transactionManager.session.update(
+          {
+            newJTI: jti,
+            expiresAt: expiresAt,
+          },
+          oldJti,
+        );
+      },
+    );
     return {
       access_token: newAccessToken,
       refresh_token: refreshToken,

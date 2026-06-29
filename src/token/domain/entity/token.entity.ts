@@ -4,8 +4,9 @@ export interface ITokenProps {
   id?: string;
   user: { id: string };
   jti: string;
+  tokenFamilyId: string;
   consentId?: string;
-  userClientConsent?: any;
+  consent?: any;
   refreshToken: string;
   expiresAt: Date;
 }
@@ -20,11 +21,14 @@ export class Token {
   get jti(): string {
     return this.tokenProps.jti;
   }
+  get tokenFamilyId(): string {
+    return this.tokenProps.tokenFamilyId;
+  }
   get consentId(): string {
     return this.tokenProps.consentId;
   }
-  get userClientConsent(): any {
-    return this.tokenProps.userClientConsent;
+  get consent(): any {
+    return this.tokenProps.consent;
   }
   get refreshToken(): string {
     return this.tokenProps.refreshToken;
@@ -32,21 +36,31 @@ export class Token {
   get expiresAt(): Date {
     return this.tokenProps.expiresAt;
   }
+  private set expiresAt(expiresAt: Date) {
+    this.tokenProps.expiresAt = expiresAt;
+  }
+  private set refreshToken(refreshToken: string) {
+    this.tokenProps.refreshToken = refreshToken;
+  }
+  private set jti(jti: string) {
+    this.tokenProps.jti = jti;
+  }
   refreshTokenUpdate(refreshToken: string, jti: string, expiresAt: Date) {
     if (new Date(this.tokenProps.expiresAt) < new Date()) {
       throw TokenDomainError.unauthorized('Token expired');
     }
-    this.tokenProps.jti = jti;
-    this.tokenProps.refreshToken = refreshToken;
-    this.tokenProps.expiresAt = expiresAt;
+    this.refreshToken = refreshToken;
+    this.jti = jti;
+    this.expiresAt = expiresAt;
   }
   toJSON() {
     return {
       id: this.id,
       user: this.user,
       jti: this.jti,
+      tokenFamilyId: this.tokenFamilyId,
       consentId: this.consentId,
-      userClientConsent: this.userClientConsent,
+      consent: this.consent,
       refreshToken: this.refreshToken,
       expiresAt: this.expiresAt,
     };

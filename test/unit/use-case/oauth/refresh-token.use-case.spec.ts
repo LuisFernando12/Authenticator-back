@@ -14,12 +14,19 @@ describe('RefreshTokenUseCase', () => {
       oauthMock.userServiceFake,
       oauthMock.consentServiceFake,
       oauthMock.configServiceFake,
+      oauthMock.redisServiceFake,
     );
   });
   it('should be defined', () => {
     expect(refreshTokenUseCase).toBeDefined();
   });
   it('should return a new token', async () => {
+    jest
+      .spyOn(
+        oauthMock.redisServiceFake,
+        'consultHasTokenFamilyOnReuseDetection',
+      )
+      .mockResolvedValue(null);
     const result = await refreshTokenUseCase.execute({
       grantType: 'refresh_token',
       refreshToken: 'test-refresh-token',
@@ -35,6 +42,12 @@ describe('RefreshTokenUseCase', () => {
   });
   it('should throw an error if refresh token is invalid', async () => {
     jest
+      .spyOn(
+        oauthMock.redisServiceFake,
+        'consultHasTokenFamilyOnReuseDetection',
+      )
+      .mockResolvedValue(null);
+    jest
       .spyOn(oauthMock.tokenServiceFake, 'findByRefreshToken')
       .mockRejectedValue(
         OauthDomainError.invalidClient('Invalid refresh token'),
@@ -46,11 +59,13 @@ describe('RefreshTokenUseCase', () => {
     await expect(promise).rejects.toThrow('Invalid refresh token');
   });
   it('should throw an error if refresh token is expired', async () => {
-    // jest
-    //   .spyOn(oauthMock.tokenServiceFake, 'findByRefreshToken')
-    //   .mockRejectedValue(
-    //     OauthDomainError.invalidClient('Expired refresh token'),
-    //   );
+    jest
+      .spyOn(
+        oauthMock.redisServiceFake,
+        'consultHasTokenFamilyOnReuseDetection',
+      )
+      .mockResolvedValue(null);
+
     jest
       .spyOn(oauthMock.tokenServiceFake, 'findByRefreshToken')
       .mockResolvedValue(
@@ -69,5 +84,25 @@ describe('RefreshTokenUseCase', () => {
       refreshToken: 'expired-refresh-token',
     });
     await expect(promise).rejects.toThrow('Refresh token expired');
+  });
+  it('should throw an error if reuse detection', async () => {
+    jest
+      .spyOn(
+        oauthMock.redisServiceFake,
+        'consultHasTokenFamilyOnReuseDetection',
+      )
+      .mockResolvedValueOnce({
+        tokenFamilyId: 'test-token-family-id',
+        jti: 'test-jti',
+        refreshToken: 'hashed-old-refresh-token',
+        expiresAt: new Date(Date.now() + 3600 * 1000),
+      });
+    const promise = refreshTokenUseCase.execute({
+      grantType: 'refresh_token',
+      refreshToken: 'expired-refresh-token',
+    });
+    await expect(promise).rejects.toThrow(
+      'Token family reused, token has already been used!',
+    );
   });
 });

@@ -1,4 +1,4 @@
-import { ITokenService } from '../../../token/application/service/token.service';
+import { TokenService } from '../../../token/application/service/token.service';
 import {
   IGenerateEmailVerificationToken,
   TokenServicePort,
@@ -6,7 +6,7 @@ import {
 import { UserDomainError } from '../../domain/error/user-domain.error';
 
 export class TokenServiceAdapter implements TokenServicePort {
-  constructor(private readonly tokenService: ITokenService) {}
+  constructor(private readonly tokenService: TokenService) {}
   async generateEmailVerificationToken(
     payload: IGenerateEmailVerificationToken,
   ): Promise<string> {

@@ -10,7 +10,7 @@ export const AppDataSourceOptions: DataSourceOptions = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: ['src/entity/*.entity.{ts,js}'],
+  entities: ['src/*/infrastructure/persistence/entity/*.entity.{ts,js}'],
   migrations: ['src/config/database/migrations/*{.ts,.js}'],
   synchronize: process.env.NODE_ENV !== 'production',
   migrationsRun: false,

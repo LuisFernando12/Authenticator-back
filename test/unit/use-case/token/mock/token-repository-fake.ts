@@ -7,6 +7,7 @@ export class TokenRepositoryFake implements TokenRepositoryPort {
     user: { id: 'test-user-id' },
     jti: 'test-jti',
     consentId: 'test-consent-id',
+    tokenFamilyId: 'test-token-family-id',
     refreshToken: 'hashed-old-refresh-token',
     expiresAt: new Date(Date.now() + 3600 * 1000),
   });
@@ -28,14 +29,29 @@ export class TokenRepositoryFake implements TokenRepositoryPort {
   }
 
   async findByRefreshToken(refreshToken: string): Promise<Token> {
-    if (refreshToken !== this.token.refreshToken) {
+    const refreshTokenExists = [
+      this.token.refreshToken,
+      'hashed-refresh-token',
+    ].includes(refreshToken);
+
+    if (!refreshTokenExists) {
       throw new Error('Token not found');
     }
 
     return this.token;
   }
+  async findByTokenFamilyId(tokenFamilyId: string): Promise<Token[]> {
+    if (tokenFamilyId !== this.token.tokenFamilyId) {
+      return [];
+    }
+
+    return [this.token];
+  }
 
   async deleteToken(_token: string): Promise<void> {
     return;
+  }
+  async deleteByTokenFamilyId(_tokenFamilyId: string): Promise<void> {
+    return Promise.resolve();
   }
 }

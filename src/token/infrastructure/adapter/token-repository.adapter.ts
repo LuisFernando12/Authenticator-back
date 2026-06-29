@@ -12,24 +12,14 @@ export class TokenRepositoryAdapter implements TokenRepositoryPort {
     }
     return new Token(tokenDB);
   }
-  async update({ token, id }: { token: Token; id: string }): Promise<void> {
-    const tokenDB = await this.tokenRepository.update({
-      id,
-      expiresAt: token.expiresAt,
-      refreshToken: token.refreshToken,
-      jti: token.jti,
-    });
-    if (!tokenDB || tokenDB.affected === 0) {
-      throw TokenDomainError.internalServerError('Error to update token');
-    }
-    return;
+  async findByTokenFamilyId(tokenFamilyId: string): Promise<Token[]> {
+    const tokenDB =
+      await this.tokenRepository.findByTokenFamilyId(tokenFamilyId);
+    return tokenDB.map((item) => new Token(item)) || [];
   }
   async findByUserId(userId: string): Promise<Token[]> {
     const tokenDB = await this.tokenRepository.findByUserId(userId);
-    if (!tokenDB || tokenDB.length === 0) {
-      throw TokenDomainError.notFound('Token not found');
-    }
-    return tokenDB.map((item) => new Token(item));
+    return tokenDB.map((item) => new Token(item)) || [];
   }
   async findByRefreshToken(refreshToken: string): Promise<Token> {
     const tokenDB = await this.tokenRepository.findByRefreshToken(refreshToken);
@@ -38,11 +28,21 @@ export class TokenRepositoryAdapter implements TokenRepositoryPort {
     }
     return new Token(tokenDB);
   }
+  async update({ token, id }: { token: Token; id: string }): Promise<void> {
+    await this.tokenRepository.update({
+      id,
+      token,
+    });
+    return;
+  }
   async deleteToken(token: string): Promise<void> {
-    const tokenDB = await this.tokenRepository.deleteToken(token);
-    if (tokenDB.affected === 0) {
-      throw TokenDomainError.internalServerError('Error to delete token');
-    }
+    await this.tokenRepository.deleteToken(token);
+
+    return;
+  }
+  async deleteByTokenFamilyId(tokenFamilyId: string): Promise<void> {
+    await this.tokenRepository.deleteByTokenFamilyId(tokenFamilyId);
+
     return;
   }
 }

@@ -51,7 +51,6 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
         `Unsupported grant type ${grantType}`,
       );
     }
-
     const isPKCE = !!codeVerifier;
 
     const clientDB = await this.clientServicePort.findByClientId(clientId);

@@ -1,6 +1,7 @@
 import { RedisService } from '../../../core/domain/service/redis.service';
 import {
   IOauthRequestCodePayload,
+  ITokenFamilyRevoked,
   RedisServicePort,
 } from '../../application/port/redis-service-port';
 import { OauthRequest } from '../../domain/entity/oauth-request.entity';
@@ -62,7 +63,9 @@ export class RedisServiceAdapter implements RedisServicePort {
       900,
     );
     if (revokeTokenBlocklist !== 'OK') {
-      throw new Error('Failure to save token like blocked on redis !');
+      throw OauthDomainError.internalServerError(
+        'Failure to save token like blocked on redis !',
+      );
     }
     return revokeTokenBlocklist;
   }
@@ -71,5 +74,28 @@ export class RedisServiceAdapter implements RedisServicePort {
       `revoke-token-blocklist:${jti}`,
     );
     return !!tokenIsBolecked;
+  }
+  async addTokenFamilyToReuseDetection(
+    payloadTokenFamily: ITokenFamilyRevoked,
+  ): Promise<string> {
+    const usedRefreshTokenList = await this.redisService.setOnRedis(
+      `token-family-used:${payloadTokenFamily.refreshToken}`,
+      JSON.stringify(payloadTokenFamily),
+      Math.floor((payloadTokenFamily.expiresAt.getTime() - Date.now()) / 1000),
+    );
+    if (usedRefreshTokenList !== 'OK') {
+      throw OauthDomainError.internalServerError(
+        'Failure to save token like blocked on redis !',
+      );
+    }
+    return usedRefreshTokenList;
+  }
+  async consultHasTokenFamilyOnReuseDetection(
+    refreshToken: string,
+  ): Promise<ITokenFamilyRevoked> {
+    const tokenIsBolecked = await this.redisService.getOnRedis(
+      `token-family-used:${refreshToken}`,
+    );
+    return JSON.parse(tokenIsBolecked) || false;
   }
 }

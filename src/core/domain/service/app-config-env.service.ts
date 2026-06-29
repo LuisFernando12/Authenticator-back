@@ -5,6 +5,9 @@ import { ConfigService } from '@nestjs/config';
 export class AppConfigEnvService {
   constructor(private readonly config: ConfigService) {}
 
+  get hostDB(): string {
+    return this.config.get<string>('DB_HOST');
+  }
   get userDB(): string {
     return this.config.get<string>('DB_USER');
   }
