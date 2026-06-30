@@ -1,0 +1,17 @@
+{
+  "version": "0.2",
+  "language": "en",
+  // cspell disable to this word list
+  "words": [
+    "ativação",
+    "Impls",
+    "jwt",
+    "nestjs",
+    "Oauth",
+    "PKCE",
+    "Recuperação",
+    "redis",
+    "senha",
+    "typeorm"
+  ]
+}
