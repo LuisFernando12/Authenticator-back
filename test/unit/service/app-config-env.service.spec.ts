@@ -135,12 +135,5 @@ describe('AppConfigEnvService', () => {
       const result = appConfigEnvService.emailVerificationTokenExpires;
       expect(result).toBe('EMAIL_VERIFICATION_TOKEN_EXPIRES');
     });
-    it('should get PASSWORD_RESET_TOKEN_EXPIRES', () => {
-      mockConfigService.getOrThrow = jest
-        .fn()
-        .mockReturnValue('PASSWORD_RESET_TOKEN_EXPIRES');
-      const result = appConfigEnvService.passwordResetTokenExpires;
-      expect(result).toBe('PASSWORD_RESET_TOKEN_EXPIRES');
-    });
   });
 });

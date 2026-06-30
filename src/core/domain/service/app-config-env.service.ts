@@ -65,7 +65,4 @@ export class AppConfigEnvService {
   get emailVerificationTokenExpires(): string {
     return this.config.getOrThrow<string>('EMAIL_VERIFICATION_TOKEN_EXPIRES');
   }
-  get passwordResetTokenExpires(): string {
-    return this.config.getOrThrow<string>('PASSWORD_RESET_TOKEN_EXPIRES');
-  }
 }
