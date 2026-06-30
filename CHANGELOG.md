@@ -1,3 +1,10 @@
+# [2.1.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.1...v2.1.0-beta.2) (2026-06-30)
+
+
+### Bug Fixes
+
+* correct typos and naming inconsistencies across codebase ([c72ff87](https://github.com/LuisFernando12/Authenticator/commit/c72ff878c69e661d4f7b07be660b136ccfa2034a))
+
 # [2.1.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0...v2.1.0-beta.1) (2026-06-30)
 
 
