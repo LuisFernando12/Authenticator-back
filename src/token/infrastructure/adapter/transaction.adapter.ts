@@ -21,45 +21,4 @@ export class TransactionAdapter implements TransactionPort {
       });
     });
   }
-  // async saveTokenAndSessionTransaction(
-  //   transactionData: ITokenSessionTransaction,
-  // ): Promise<void> {
-  //   const { token, session } = transactionData;
-  //   await this.dataSource.transaction(async (manager) => {
-  //     try {
-  //       await manager.getRepository(SessionEntity).save(session);
-  //       await manager.getRepository(TokenEntity).save({
-  //         userId: token.user.id,
-  //         consentId: token.consentId || null,
-  //         tokenFamilyId: token.tokenFamilyId,
-  //         jti: token.jti,
-  //         refreshToken: token.refreshToken,
-  //         expiresAt: token.expiresAt,
-  //       });
-  //     } catch (_error) {
-  //       throw TokenDomainError.internalServerError(
-  //         'Error to create session or token',
-  //       );
-  //     }
-  //   });
-  // }
-  // async deleteAllFamilyTokenAndSessionsTransaction(transactionData: {
-  //   tokenFamilyId: string;
-  // }): Promise<void> {
-  //   const { tokenFamilyId } = transactionData;
-  //   await this.dataSource.transaction(async (manager) => {
-  //     try {
-  //       await manager
-  //         .getRepository(SessionEntity)
-  //         .delete({ tokenFamilyId: tokenFamilyId });
-  //       await manager
-  //         .getRepository(TokenEntity)
-  //         .delete({ tokenFamilyId: tokenFamilyId });
-  //     } catch (_error) {
-  //       throw TokenDomainError.internalServerError(
-  //         'Error to create session or token',
-  //       );
-  //     }
-  //   });
-  // }
 }
