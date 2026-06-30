@@ -12,7 +12,7 @@ export class RedisServiceAdapter implements RedisServicePort {
   async saveAuthRequest(authRequest: OauthRequest): Promise<string> {
     const saveAuthRequestOnRedis = await this.redisService.setOnRedis(
       `oauth:authorize:request:${authRequest.oauthRequestId}`,
-      authRequest.stringfy(),
+      authRequest.stringify(),
       300,
     );
     if (!saveAuthRequestOnRedis) {
@@ -22,7 +22,7 @@ export class RedisServiceAdapter implements RedisServicePort {
     }
     return saveAuthRequestOnRedis;
   }
-  async consumeOuthRequest(oauthRequestId: string): Promise<OauthRequest> {
+  async consumeOauthRequest(oauthRequestId: string): Promise<OauthRequest> {
     const payloadAuthRequest = await this.redisService.getAndDeleteOnRedis(
       `oauth:authorize:request:${oauthRequestId}`,
     );
@@ -70,10 +70,10 @@ export class RedisServiceAdapter implements RedisServicePort {
     return revokeTokenBlocklist;
   }
   async consultHasJtiTokenOnBlockList(jti: string): Promise<boolean> {
-    const tokenIsBolecked = await this.redisService.getOnRedis(
+    const tokenIsBlocked = await this.redisService.getOnRedis(
       `revoke-token-blocklist:${jti}`,
     );
-    return !!tokenIsBolecked;
+    return !!tokenIsBlocked;
   }
   async addTokenFamilyToReuseDetection(
     payloadTokenFamily: ITokenFamilyRevoked,
@@ -93,9 +93,9 @@ export class RedisServiceAdapter implements RedisServicePort {
   async consultHasTokenFamilyOnReuseDetection(
     refreshToken: string,
   ): Promise<ITokenFamilyRevoked> {
-    const tokenIsBolecked = await this.redisService.getOnRedis(
+    const tokenIsBlocked = await this.redisService.getOnRedis(
       `token-family-used:${refreshToken}`,
     );
-    return JSON.parse(tokenIsBolecked) || false;
+    return JSON.parse(tokenIsBlocked) || false;
   }
 }

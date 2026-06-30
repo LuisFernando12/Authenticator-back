@@ -1,9 +1,9 @@
-import { handlebarsSplitCharsHelper } from '@/config/helper/handlebars-split-chars.healper';
+import { handlebarsSplitCharsHelper } from '@/config/helper/handlebars-split-chars.helper';
 import { EmailService } from '@/core/application/service/email.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { Module } from '@nestjs/common';
-import { join } from 'path';
+import { join } from 'node:path';
 
 @Module({
   imports: [

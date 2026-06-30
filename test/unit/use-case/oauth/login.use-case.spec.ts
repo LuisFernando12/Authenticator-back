@@ -43,7 +43,7 @@ describe('LoginUseCase', () => {
   });
   it('should throw an error if the oauth request is not found', async () => {
     jest
-      .spyOn(oauthMock.redisServiceFake, 'consumeOuthRequest')
+      .spyOn(oauthMock.redisServiceFake, 'consumeOauthRequest')
       .mockRejectedValueOnce(
         OauthDomainError.invalidGrant('Oauth Request ID not found'),
       );

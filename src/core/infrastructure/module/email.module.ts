@@ -6,7 +6,7 @@ import { AppConfigEnvService } from '@/core/domain/service/app-config-env.servic
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
-import { handlebarsSplitCharsHelper } from '../../../config/helper/handlebars-split-chars.healper';
+import { handlebarsSplitCharsHelper } from '../../../config/helper/handlebars-split-chars.helper';
 @Module({
   imports: [
     MailerModule.forRootAsync({

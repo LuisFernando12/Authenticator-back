@@ -14,7 +14,7 @@ export interface ITokenFamilyRevoked {
 export const REDIS_SERVICE_PORT = Symbol('REDIS_SERVICE_PORT');
 export abstract class RedisServicePort {
   abstract saveAuthRequest(authRequest: OauthRequest): Promise<string>;
-  abstract consumeOuthRequest(oauthRequestId: string): Promise<OauthRequest>;
+  abstract consumeOauthRequest(oauthRequestId: string): Promise<OauthRequest>;
   abstract consumeOauthCode(key: string): Promise<any>;
   abstract saveOauthAuthorizationCode(
     key: string,

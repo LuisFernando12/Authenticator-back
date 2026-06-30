@@ -8,6 +8,5 @@ export class DeleteByTokenFamilyIdUseCase implements BaseUseCase<string> {
       await manager.token.deleteByTokenFamilyId(tokenFamilyId);
       await manager.session.deleteByTokenFamilyId(tokenFamilyId);
     });
-    return;
   }
 }

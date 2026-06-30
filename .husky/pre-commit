@@ -1,3 +1,6 @@
 echo 'Checking for linting errors an run tests before committing'
+export NVM_DIR="$HOME/.nvm"
+. "$NVM_DIR/nvm.sh"
+nvm use 22.23.1
 pnpm lint || (echo 'Linting errors or tests failed. Please fix them before committing.' && exit 1)
 echo 'Done !'

@@ -10,22 +10,22 @@ export interface IAuthLogger {
 
 @Injectable()
 export class AuthLogger implements IAuthLogger {
-  constructor(@Inject(BaseLogger) private readonly baselogger: BaseLogger) {}
+  constructor(@Inject(BaseLogger) private readonly baseLogger: BaseLogger) {}
 
   log(message: string, options: Omit<IBaseLoggerOptions, 'logLevel'>) {
     options['logLevel'] = 'log';
-    this.baselogger.logAsJson(message, options as IBaseLoggerOptions);
+    this.baseLogger.logAsJson(message, options as IBaseLoggerOptions);
   }
   error(message: string, options: Omit<IBaseLoggerOptions, 'logLevel'>) {
     options['logLevel'] = 'error';
-    this.baselogger.logAsJson(message, options as IBaseLoggerOptions);
+    this.baseLogger.logAsJson(message, options as IBaseLoggerOptions);
   }
   warn(message: string, options: Omit<IBaseLoggerOptions, 'logLevel'>) {
     options['logLevel'] = 'warn';
-    this.baselogger.logAsJson(message, options as IBaseLoggerOptions);
+    this.baseLogger.logAsJson(message, options as IBaseLoggerOptions);
   }
   debug(message: string, options: Omit<IBaseLoggerOptions, 'logLevel'>) {
     options['logLevel'] = 'debug';
-    this.baselogger.logAsJson(message, options as IBaseLoggerOptions);
+    this.baseLogger.logAsJson(message, options as IBaseLoggerOptions);
   }
 }

@@ -5,6 +5,9 @@
   "author": "Luis Fernando",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "node":">=22.18.0"
+  },
   "scripts": {
     "build": "nest build && cp -r src/config/templates dist/src/config/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -13,7 +16,7 @@
     "start:dev": " docker-compose up -d pg-authenticator redis-authenticator --build && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix && cspell \"src/**/*.ts\"",
     "test": "jest",
     "test:clear": "jest --clearCache",
     "test:watch": "jest --watch",
@@ -73,9 +76,11 @@
     "@types/supertest": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^8.57.2",
     "@typescript-eslint/parser": "^8.57.2",
+    "cspell": "^10.0.1",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-unicorn": "^69.0.0",
     "globals": "^17.4.0",
     "husky": "^9.1.7",
     "jest": "^30.3.0",

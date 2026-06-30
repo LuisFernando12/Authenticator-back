@@ -39,7 +39,7 @@ export class OauthRequest {
   static create(oauthRequestProps: Required<IOauthRequestProps>) {
     return new OauthRequest(oauthRequestProps);
   }
-  stringfy() {
+  stringify() {
     return JSON.stringify(this.oauthRequestProps);
   }
   static parseJSON(stringObjectOauthRequest: string) {

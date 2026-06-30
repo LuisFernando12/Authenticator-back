@@ -30,7 +30,7 @@ export class LoginUseCase {
       queryOauthLogin;
     const { email, password } = payload;
     const oauthRequest =
-      await this.redisServicePort.consumeOuthRequest(oauthRequestId);
+      await this.redisServicePort.consumeOauthRequest(oauthRequestId);
 
     oauthRequest.requestMatch(queryOauthLogin);
 

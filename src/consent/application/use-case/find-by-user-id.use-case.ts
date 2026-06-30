@@ -3,8 +3,8 @@ import { Consent } from '../../domain/entity/consent.entity';
 import { ConsentRepositoryPort } from '../port/consent-repository.port';
 
 export class FindByUserIdUseCase implements BaseUseCase<string> {
-  constructor(private readonly consentRespositoryPort: ConsentRepositoryPort) {}
+  constructor(private readonly consentRepositoryPort: ConsentRepositoryPort) {}
   async execute(userId: string): Promise<Consent[]> {
-    return await this.consentRespositoryPort.findByUserId(userId);
+    return await this.consentRepositoryPort.findByUserId(userId);
   }
 }

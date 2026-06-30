@@ -19,7 +19,7 @@ export interface IExchangeOauthCodeUseCaseResponse {
   scope: string;
   expiresAt: string;
 }
-export interface IEXchangeOauthCodeToToken {
+export interface IExchangeOauthCodeToToken {
   grantType: string;
   clientId: string;
   clientSecret?: string;
@@ -37,7 +37,7 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
     private readonly consentServicePort: ConsentServicePort,
     private readonly configService: ConfigServicePort,
   ) {}
-  async execute(payload: IEXchangeOauthCodeToToken): Promise<OauthAccessToken> {
+  async execute(payload: IExchangeOauthCodeToToken): Promise<OauthAccessToken> {
     const {
       clientId,
       code,
