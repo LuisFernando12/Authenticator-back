@@ -1,3 +1,10 @@
+# [2.1.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.2...v2.1.0-beta.3) (2026-06-30)
+
+
+### Bug Fixes
+
+* update pre-commit script to use default Node version and set default port in main.ts ([94f8d4a](https://github.com/LuisFernando12/Authenticator/commit/94f8d4a420ece47231d1fbc2823b029b39a21cfb))
+
 # [2.1.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.1...v2.1.0-beta.2) (2026-06-30)
 
 
