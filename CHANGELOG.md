@@ -1,3 +1,10 @@
+# [2.1.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.3...v2.1.0-beta.4) (2026-07-08)
+
+
+### Bug Fixes
+
+* update Dockerfile to use pnpm for package management and build process ([0c3723e](https://github.com/LuisFernando12/Authenticator/commit/0c3723ecc829d53232a3b19c452f89c607cff8f5))
+
 # [2.1.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.2...v2.1.0-beta.3) (2026-06-30)
 
 
