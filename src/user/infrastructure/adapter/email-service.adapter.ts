@@ -17,7 +17,7 @@ export class EmailServiceAdapter implements EmailServicePort {
         emailPayload.token,
       );
       return emailResponse;
-    } catch (_error) {
+    } catch {
       throw UserDomainError.internalServerError('Failure to send email');
     }
   }

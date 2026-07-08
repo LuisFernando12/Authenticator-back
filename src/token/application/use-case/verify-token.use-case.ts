@@ -7,7 +7,7 @@ export class VerifyTokenUseCase implements BaseUseCase<string> {
   async execute(token: string): Promise<any> {
     try {
       return await this.jwtServicePort.verifyAsync(token);
-    } catch (_error) {
+    } catch {
       throw TokenDomainError.unauthorized('Invalid token');
     }
   }

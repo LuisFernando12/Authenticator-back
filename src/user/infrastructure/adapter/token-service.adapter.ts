@@ -22,7 +22,7 @@ export class TokenServiceAdapter implements TokenServicePort {
       }
 
       return verification_token;
-    } catch (_error) {
+    } catch {
       throw UserDomainError.internalServerError();
     }
   }

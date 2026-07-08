@@ -25,7 +25,7 @@ export class TokenIntrospectUseCase implements BaseUseCase<string> {
         exp: tokenIsValid.exp,
         iat: tokenIsValid.iat,
       };
-    } catch (_error) {
+    } catch {
       return { active: false };
     }
   }

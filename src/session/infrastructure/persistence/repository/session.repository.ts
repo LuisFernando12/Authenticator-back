@@ -31,7 +31,7 @@ export class SessionRepositoryImpl implements SessionRepository {
     try {
       const session = await this.sessionRepository.save(sessionPayload);
       return Session.create(session);
-    } catch (_error) {
+    } catch {
       throw SessionDomainError.internalServerError('Error to create session');
     }
   }
@@ -39,7 +39,7 @@ export class SessionRepositoryImpl implements SessionRepository {
     try {
       const sessions = await this.sessionRepository.find({ where: { userId } });
       return sessions.map(Session.create) || [];
-    } catch (_error) {
+    } catch {
       throw SessionDomainError.internalServerError(
         'Error to find sessions by user',
       );
@@ -55,7 +55,7 @@ export class SessionRepositoryImpl implements SessionRepository {
         consentId: consentId,
       });
       return session.map(Session.create) || [];
-    } catch (_error) {
+    } catch {
       throw SessionDomainError.internalServerError(
         'Error to find sessions by user',
       );
@@ -90,7 +90,7 @@ export class SessionRepositoryImpl implements SessionRepository {
         );
       }
       return;
-    } catch (_error) {
+    } catch {
       throw SessionDomainError.internalServerError('Error to delete session');
     }
   }
@@ -109,7 +109,7 @@ export class SessionRepositoryImpl implements SessionRepository {
         );
       }
       return;
-    } catch (_error) {
+    } catch {
       throw SessionDomainError.internalServerError('Error to delete session');
     }
   }
@@ -122,7 +122,7 @@ export class SessionRepositoryImpl implements SessionRepository {
         );
       }
       return;
-    } catch (_error) {
+    } catch {
       throw SessionDomainError.internalServerError('Error to delete session');
     }
   }
@@ -138,7 +138,7 @@ export class SessionRepositoryImpl implements SessionRepository {
         );
       }
       return;
-    } catch (_error) {
+    } catch {
       throw SessionDomainError.internalServerError('Error to delete session');
     }
   }

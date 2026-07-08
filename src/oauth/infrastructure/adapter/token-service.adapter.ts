@@ -84,14 +84,14 @@ export class TokenServiceAdapter implements TokenServicePort {
         refreshToken: refreshToken,
         expiresAt: expiresAt,
       });
-    } catch (_error) {
+    } catch {
       throw OauthDomainError.internalServerError('Failure to find token');
     }
   }
   async revokeToken(refreshToken: string): Promise<void> {
     try {
       await this.tokenService.revoke(refreshToken);
-    } catch (_error) {
+    } catch {
       throw OauthDomainError.internalServerError('Failure to revoke token');
     }
   }
@@ -103,7 +103,7 @@ export class TokenServiceAdapter implements TokenServicePort {
   async deleteByTokenFamilyId(tokenFamilyId: string): Promise<void> {
     try {
       await this.tokenService.deleteByTokenFamilyId(tokenFamilyId);
-    } catch (_error) {
+    } catch {
       throw OauthDomainError.internalServerError('Failure to delete token');
     }
   }
