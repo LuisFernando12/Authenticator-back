@@ -1,6 +1,17 @@
+export interface ICreateSessionPayload {
+  id?: string;
+  consentId: string;
+  jti: string;
+  tokenFamilyId: string;
+  expiresAt: Date;
+  userId: string;
+  deletedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 export const SESSION_REPOSITORY_PORT = Symbol('SESSION_REPOSITORY_PORT');
 export abstract class SessionRepositoryPort {
-  abstract create(sessionPayload: any): Promise<any>;
+  abstract create(sessionPayload: ICreateSessionPayload): Promise<any>;
   abstract update(
     payload: { newJTI: string; expiresAt: Date },
     oldJTI: string,

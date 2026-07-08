@@ -1,5 +1,8 @@
 import { Session } from '../../../../../src/session/domain/entity/session.entity';
-import { SessionRepositoryPort } from '../../../../../src/token/application/port/session-repository.port';
+import {
+  ICreateSessionPayload,
+  SessionRepositoryPort,
+} from '../../../../../src/token/application/port/session-repository.port';
 
 export class SessionRepositoryFake implements SessionRepositoryPort {
   private sessions: Session[] = [
@@ -15,7 +18,7 @@ export class SessionRepositoryFake implements SessionRepositoryPort {
     }),
   ];
 
-  async create(sessionPayload: any): Promise<any> {
+  async create(sessionPayload: ICreateSessionPayload): Promise<any> {
     const session = Session.create({
       id: sessionPayload.id ?? 'test-created-session-id',
       jti: sessionPayload.jti,
@@ -36,7 +39,7 @@ export class SessionRepositoryFake implements SessionRepositoryPort {
     payload: { newJTI: string; expiresAt: Date },
     oldJTI: string,
   ): Promise<void> {
-    const session = this.sessions.find((item) => item.jti === oldJTI);
+    const session = this.sessions.some((item) => item.jti === oldJTI);
 
     if (!session) {
       throw new Error('Session not found');

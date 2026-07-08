@@ -33,16 +33,11 @@ export class TokenRepositoryAdapter implements TokenRepositoryPort {
       id,
       token,
     });
-    return;
   }
   async deleteToken(token: string): Promise<void> {
     await this.tokenRepository.deleteToken(token);
-
-    return;
   }
   async deleteByTokenFamilyId(tokenFamilyId: string): Promise<void> {
     await this.tokenRepository.deleteByTokenFamilyId(tokenFamilyId);
-
-    return;
   }
 }

@@ -1,4 +1,5 @@
 import { BaseUseCase } from '@/core/application/use-case/base.use-case';
+import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 import { ConfigServicePort } from '../port/config-service.port';
 import { RedisServicePort } from '../port/redis-service-port';
@@ -9,7 +10,10 @@ interface IRefreshTokenUseCasePayload {
   grantType: string;
   refreshToken: string;
 }
-export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenUseCasePayload> {
+export class RefreshTokenUseCase implements BaseUseCase<
+  IRefreshTokenUseCasePayload,
+  OauthAccessToken
+> {
   constructor(
     private readonly tokenServicePort: TokenServicePort,
     private readonly userServicePort: UserServicePort,
@@ -17,7 +21,9 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenUseCasePayl
     private readonly configServicePort: ConfigServicePort,
     private readonly redisServicePort: RedisServicePort,
   ) {}
-  async execute(payload: IRefreshTokenUseCasePayload): Promise<any> {
+  async execute(
+    payload: IRefreshTokenUseCasePayload,
+  ): Promise<OauthAccessToken> {
     const { refreshToken, grantType } = payload;
     if (grantType !== 'refresh_token') {
       throw OauthDomainError.invalidGrant(
@@ -30,7 +36,7 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenUseCasePayl
       await this.redisServicePort.consultHasTokenFamilyOnReuseDetection(
         refreshTokenHashed,
       );
-    if (refreshTokenIsReused && refreshTokenIsReused.tokenFamilyId) {
+    if (refreshTokenIsReused?.tokenFamilyId) {
       await this.tokenServicePort.deleteByTokenFamilyId(
         refreshTokenIsReused.tokenFamilyId,
       );

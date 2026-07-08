@@ -3,7 +3,10 @@ import { IGenerateToken } from '../interface/generate-token.interface';
 import { ConfigServicePort } from '../port/config-service.port';
 import { JwtServicePort } from '../port/jwt-service.port';
 
-export class GenerateEmailVerificationTokenUseCase implements BaseUseCase<IGenerateToken> {
+export class GenerateEmailVerificationTokenUseCase implements BaseUseCase<
+  IGenerateToken,
+  string
+> {
   constructor(
     private readonly jwtServicePort: JwtServicePort,
     private readonly configServicePort: ConfigServicePort,

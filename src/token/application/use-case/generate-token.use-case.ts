@@ -13,12 +13,15 @@ export interface IGenerateTokenPayload {
   payload: IGenerateToken;
   consentId?: string;
 }
-export interface IResponseGenerateToken {
+export interface IGenerateTokenResponse {
   access_token: string;
   refresh_token: string;
   expiresAt: string;
 }
-export class GenerateTokenUseCase implements BaseUseCase<IGenerateTokenPayload> {
+export class GenerateTokenUseCase implements BaseUseCase<
+  IGenerateTokenPayload,
+  IGenerateTokenResponse
+> {
   constructor(
     private readonly tokenRepositoryPort: TokenRepositoryPort,
     private readonly configServicePort: ConfigServicePort,
@@ -30,7 +33,7 @@ export class GenerateTokenUseCase implements BaseUseCase<IGenerateTokenPayload> 
   async execute({
     payload,
     consentId,
-  }: IGenerateTokenPayload): Promise<IResponseGenerateToken> {
+  }: IGenerateTokenPayload): Promise<IGenerateTokenResponse> {
     const tokenDB = await this.tokenRepositoryPort.findByUserId(payload.sub);
     const expiresAtInMilliseconds = TokenValueObject.generateExpireAt(
       TokenValueObject.getSecondsByDays(
@@ -40,7 +43,7 @@ export class GenerateTokenUseCase implements BaseUseCase<IGenerateTokenPayload> 
     const expiresAt = new Date(expiresAtInMilliseconds * 1000);
     const jti = this.generateUUIDPort.generate();
 
-    let tokenFamilyId;
+    let tokenFamilyId: string;
 
     if (consentId) {
       tokenFamilyId =
@@ -58,7 +61,7 @@ export class GenerateTokenUseCase implements BaseUseCase<IGenerateTokenPayload> 
 
     const tokenEntity = new Token({
       refreshToken: this.refreshTokenServicePort.hashRefreshToken(refreshToken),
-      user: { id: payload.sub },
+      userId: payload.sub,
       expiresAt: expiresAt,
       consentId: consentId || null,
       tokenFamilyId,

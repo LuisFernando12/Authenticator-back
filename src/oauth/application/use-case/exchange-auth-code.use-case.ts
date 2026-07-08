@@ -27,7 +27,10 @@ export interface IExchangeOauthCodeToToken {
   code: string;
   codeVerifier?: string;
 }
-export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
+export class ExchangeOauthCodeUseCase implements BaseUseCase<
+  OauthTokenDTO,
+  OauthAccessToken
+> {
   constructor(
     private readonly clientServicePort: ClientServicePort,
     private readonly tokenServicePort: TokenServicePort,

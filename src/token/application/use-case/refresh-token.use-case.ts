@@ -13,7 +13,15 @@ export interface IRefreshTokenPayload {
   payload: Omit<IGenerateToken, 'type'>;
   oldRefreshToken: string;
 }
-export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenPayload> {
+export interface IRefreshTokenUseCaseResponse {
+  access_token: string;
+  refresh_token: string;
+  expiresAt: string;
+}
+export class RefreshTokenUseCase implements BaseUseCase<
+  IRefreshTokenPayload,
+  IRefreshTokenUseCaseResponse
+> {
   constructor(
     private readonly tokenRepositoryPort: TokenRepositoryPort,
     private readonly configServicePort: ConfigServicePort,

@@ -1,22 +1,54 @@
 import { TokenDomainError } from '../error/token-domain.error';
 
+interface IClient {
+  clientId: string;
+  clientSecret?: string;
+  isConfidential: boolean;
+  name: string;
+  redirectUris: Array<string>;
+  scopes: Array<string>;
+  isActive: boolean;
+}
+interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  isVerified: boolean;
+  createdAt: Date;
+}
+export interface IConsent {
+  id: string;
+  userId: string;
+  clientId: string;
+  user: IUser;
+  scopes: Array<string>;
+  client: IClient;
+  grantedAt: Date;
+  revokeAt: Date | null;
+}
 export interface ITokenProps {
   id?: string;
-  user: { id: string };
+  user?: IUser;
+  userId?: string;
   jti: string;
   tokenFamilyId: string;
   consentId?: string;
-  consent?: any;
+  consent?: IConsent;
   refreshToken: string;
   expiresAt: Date;
 }
+
 export class Token {
   constructor(private readonly tokenProps: ITokenProps) {}
   get id(): string {
     return this.tokenProps.id;
   }
-  get user(): any {
+  get user(): IUser {
     return this.tokenProps.user;
+  }
+  get userId(): string {
+    return this.tokenProps.userId;
   }
   get jti(): string {
     return this.tokenProps.jti;
@@ -27,7 +59,7 @@ export class Token {
   get consentId(): string {
     return this.tokenProps.consentId;
   }
-  get consent(): any {
+  get consent(): IConsent {
     return this.tokenProps.consent;
   }
   get refreshToken(): string {
@@ -57,6 +89,7 @@ export class Token {
     return {
       id: this.id,
       user: this.user,
+      userId: this.userId,
       jti: this.jti,
       tokenFamilyId: this.tokenFamilyId,
       consentId: this.consentId,

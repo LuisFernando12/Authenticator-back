@@ -9,7 +9,10 @@ export interface IResponseTokenIntrospect {
   iat: number;
   jti: string;
 }
-export class TokenIntrospectUseCase implements BaseUseCase<string> {
+export class TokenIntrospectUseCase implements BaseUseCase<
+  string,
+  IResponseTokenIntrospect | { active: boolean }
+> {
   constructor(private readonly verifyTokenUseCase: VerifyTokenUseCase) {}
   async execute(
     token: string,

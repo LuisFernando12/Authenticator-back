@@ -5,7 +5,7 @@ import type { Repository } from 'typeorm';
 import { Token } from '../../domain/entity/token.entity';
 import { TokenDomainError } from '../../domain/error/token-domain.error';
 export interface ITokenRepository {
-  create(data: Token): any;
+  create(data: Token): Promise<Token>;
   findByUserId(userId: string): Promise<Token[]>;
   findByRefreshToken(token: string): Promise<Token>;
   findByTokenFamilyId(tokenFamilyId: string): Promise<Token[]>;
@@ -21,7 +21,7 @@ interface ITokenUpdate {
 export class TokenRepository implements ITokenRepository {
   constructor(
     @InjectRepository(TokenEntity)
-    private tokenRepository: Repository<TokenEntity>,
+    private readonly tokenRepository: Repository<TokenEntity>,
   ) {}
   async create(data: Token): Promise<Token> {
     try {

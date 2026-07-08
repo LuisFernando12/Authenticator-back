@@ -7,7 +7,7 @@ import { GenerateEmailVerificationTokenUseCase } from '../use-case/generate-emai
 import {
   GenerateTokenUseCase,
   IGenerateTokenPayload,
-  IResponseGenerateToken,
+  IGenerateTokenResponse,
 } from '../use-case/generate-token.use-case';
 import {
   IRefreshTokenPayload,
@@ -23,11 +23,11 @@ export abstract class TokenService {
   abstract generate({
     payload,
     consentId,
-  }: IGenerateTokenPayload): Promise<IResponseGenerateToken>;
+  }: IGenerateTokenPayload): Promise<IGenerateTokenResponse>;
   abstract refreshToken({
     payload,
     oldRefreshToken,
-  }: IRefreshTokenPayload): Promise<IResponseGenerateToken>;
+  }: IRefreshTokenPayload): Promise<IGenerateTokenResponse>;
   abstract revoke(token: string): Promise<{ message: string }>;
   abstract tokenIntrospect(
     token: string,
@@ -55,7 +55,7 @@ export class TokenServiceImpls implements TokenService {
   async generate({
     payload,
     consentId,
-  }: IGenerateTokenPayload): Promise<IResponseGenerateToken> {
+  }: IGenerateTokenPayload): Promise<IGenerateTokenResponse> {
     return await this.generateTokenUseCase.execute({
       payload,
       consentId: consentId || null,
@@ -64,7 +64,7 @@ export class TokenServiceImpls implements TokenService {
   async refreshToken({
     payload,
     oldRefreshToken,
-  }: IRefreshTokenPayload): Promise<IResponseGenerateToken> {
+  }: IRefreshTokenPayload): Promise<IGenerateTokenResponse> {
     return await this.refreshTokenUseCase.execute({ payload, oldRefreshToken });
   }
   async revoke(token: string): Promise<{ message: string }> {

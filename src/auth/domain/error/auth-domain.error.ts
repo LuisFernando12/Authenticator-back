@@ -59,7 +59,10 @@ export class AuthDomainError extends Error {
       HttpStatus.BAD_REQUEST,
     );
   }
-  static conflict(description?: string, payload?: any): AuthDomainError {
+  static conflict(
+    description?: string,
+    payload?: Record<string, unknown>,
+  ): AuthDomainError {
     return new AuthDomainError(
       {
         error: 'conflict',

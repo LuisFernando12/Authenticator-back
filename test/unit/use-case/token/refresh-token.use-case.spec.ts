@@ -56,7 +56,14 @@ describe('RefreshTokenUseCase', () => {
       .mockResolvedValueOnce([
         tokenMock.mockToken({
           id: 'test-token-id',
-          user: { id: 'test-user-id' },
+          user: {
+            id: 'test-user-id',
+            email: 'john.doe@example.com',
+            password: 'hashed-test-password',
+            name: 'test-user-name',
+            isVerified: true,
+            createdAt: new Date(),
+          },
           jti: 'test-jti',
           tokenFamilyId: 'test-token-id',
           consentId: 'test-consent-id',
