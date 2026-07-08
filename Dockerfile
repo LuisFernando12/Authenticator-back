@@ -1,16 +1,16 @@
 FROM node:lts-alpine AS builder
-
 WORKDIR /app
 
-COPY package*.json ./
+RUN npm install -g pnpm@10
 
 ENV HUSKY=0
 
-RUN npm install --quiet --no-fund --loglevel=error
+COPY package*.json pnpm-lock.yaml  ./
+RUN pnpm install --frozen-lockfile --quiet --loglevel=error
 
 COPY . .
 
-RUN npm run build
+RUN pnpm build
 
 FROM node:lts-alpine AS runner
 
