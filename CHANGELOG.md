@@ -1,3 +1,10 @@
+# [2.1.0-beta.5](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.4...v2.1.0-beta.5) (2026-07-08)
+
+
+### Bug Fixes
+
+* remove unused error variable in catch blocks across multiple services ([3db9424](https://github.com/LuisFernando12/Authenticator/commit/3db9424969644edfa8b0abfe891c22ea7be49dc2))
+
 # [2.1.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.3...v2.1.0-beta.4) (2026-07-08)
 
 
