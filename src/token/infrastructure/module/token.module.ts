@@ -1,6 +1,6 @@
 import { AppConfigEnvService } from '@/core/domain/service/app-config-env.service';
 import { TokenEntity } from '@/token/infrastructure/persistence/entity/token.entity';
-import { TokenRepository } from '@/token/infrastructure/repository/token.repository';
+import { TokenRepository } from '@/token/infrastructure/persistence/repository/token.repository';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';

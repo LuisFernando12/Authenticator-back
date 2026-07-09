@@ -56,10 +56,10 @@ export class TokenServiceAdapter implements TokenServicePort {
       expiresAt: newAccessToken.expiresAt,
     });
   }
-  async findByRefreshToken(refreshToken: string): Promise<OauthToken> {
+  async findByRefreshToken(refreshTokenHash: string): Promise<OauthToken> {
     try {
       const oauthToken =
-        await this.tokenService.findByRefreshToken(refreshToken);
+        await this.tokenService.findByRefreshToken(refreshTokenHash);
       if (!oauthToken) {
         throw OauthDomainError.invalidClient();
       }
@@ -81,7 +81,7 @@ export class TokenServiceAdapter implements TokenServicePort {
         tokenFamilyId: tokenFamilyId,
         jti: jti,
         consentId: consentId,
-        refreshToken: refreshToken,
+        refreshToken: refreshTokenHash,
         expiresAt: expiresAt,
       });
     } catch {

@@ -4,7 +4,7 @@ import { TokenRepositoryPort } from '../port/token-repository.port';
 
 export class FindByRefreshTokenUseCase implements BaseUseCase<string, Token> {
   constructor(private readonly tokenRepositoryPort: TokenRepositoryPort) {}
-  async execute(token: string): Promise<Token> {
-    return await this.tokenRepositoryPort.findByRefreshToken(token);
+  async execute(refreshTokenHash: string): Promise<Token> {
+    return await this.tokenRepositoryPort.findByRefreshToken(refreshTokenHash);
   }
 }

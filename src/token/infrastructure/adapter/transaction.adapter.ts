@@ -5,7 +5,7 @@ import {
   ITokenSessionTransaction,
   TransactionPort,
 } from '../../application/port/transaction.port';
-import { TokenRepository } from '../repository/token.repository';
+import { TokenRepository } from '../persistence/repository/token.repository';
 
 export class TransactionAdapter implements TransactionPort {
   constructor(private readonly dataSource: DataSource) {}

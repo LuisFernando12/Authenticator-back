@@ -33,7 +33,7 @@ export abstract class TokenService {
     token: string,
   ): Promise<IResponseTokenIntrospect | { active: boolean }>;
   abstract verify(token: string): Promise<any>;
-  abstract findByRefreshToken(token: string): Promise<Token>;
+  abstract findByRefreshToken(refreshTokenHash: string): Promise<Token>;
   abstract findByTokenFamilyId(tokenFamilyId: string): Promise<Token[]>;
   abstract generateEmailVerificationToken(
     payload: IGenerateToken,
@@ -78,8 +78,8 @@ export class TokenServiceImpls implements TokenService {
   async verify(token: string): Promise<any> {
     return await this.verifyTokenUseCase.execute(token);
   }
-  async findByRefreshToken(token: string): Promise<Token> {
-    return await this.findByRefreshTokenUseCase.execute(token);
+  async findByRefreshToken(refreshTokenHash: string): Promise<Token> {
+    return await this.findByRefreshTokenUseCase.execute(refreshTokenHash);
   }
   async findByTokenFamilyId(tokenFamilyId: string): Promise<Token[]> {
     return await this.findByTokenFamilyIdUseCase.execute(tokenFamilyId);

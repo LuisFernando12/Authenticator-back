@@ -1,7 +1,7 @@
 import { TokenRepositoryPort } from '../../application/port/token-repository.port';
 import { Token } from '../../domain/entity/token.entity';
 import { TokenDomainError } from '../../domain/error/token-domain.error';
-import { TokenRepository } from '../repository/token.repository';
+import { TokenRepository } from '../persistence/repository/token.repository';
 
 export class TokenRepositoryAdapter implements TokenRepositoryPort {
   constructor(private readonly tokenRepository: TokenRepository) {}
@@ -21,8 +21,9 @@ export class TokenRepositoryAdapter implements TokenRepositoryPort {
     const tokenDB = await this.tokenRepository.findByUserId(userId);
     return tokenDB.map((item) => new Token(item)) || [];
   }
-  async findByRefreshToken(refreshToken: string): Promise<Token> {
-    const tokenDB = await this.tokenRepository.findByRefreshToken(refreshToken);
+  async findByRefreshToken(refreshTokenHash: string): Promise<Token> {
+    const tokenDB =
+      await this.tokenRepository.findByRefreshToken(refreshTokenHash);
     if (!tokenDB) {
       throw TokenDomainError.unauthorized('Unauthorized token');
     }

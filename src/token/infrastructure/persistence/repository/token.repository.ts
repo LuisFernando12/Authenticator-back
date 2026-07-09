@@ -1,9 +1,9 @@
+import { Token } from '@/token/domain/entity/token.entity';
+import { TokenDomainError } from '@/token/domain/error/token-domain.error';
 import { TokenEntity } from '@/token/infrastructure/persistence/entity/token.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
-import { Token } from '../../domain/entity/token.entity';
-import { TokenDomainError } from '../../domain/error/token-domain.error';
 export interface ITokenRepository {
   create(data: Token): Promise<Token>;
   findByUserId(userId: string): Promise<Token[]>;
