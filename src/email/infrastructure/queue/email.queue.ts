@@ -8,7 +8,11 @@ export type EmailQueuePayload = EmailProps;
 export class EmailQueue {
   constructor(@InjectQueue('send-email') private readonly emailQueue: Queue) {}
   async add(payload: EmailQueuePayload, name: EmailQueueName) {
-    await this.emailQueue.add(name, payload);
+    try {
+      await this.emailQueue.add(name, payload);
+    } catch (error) {
+      throw new Error('Failure to send email', { cause: error });
+    }
   }
   async remove(jobId: string) {
     await this.emailQueue.remove(jobId);
