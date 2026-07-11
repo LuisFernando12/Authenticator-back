@@ -28,7 +28,6 @@ import { EmailWorker } from '../../../src/email/infrastructure/worker/email.work
         const redisUriSplitted = process.env.REDIS_URI.split(':');
         const redisPort = redisUriSplitted.at(-1);
         const redisHost = redisUriSplitted[1].slice(2);
-        console.log(redisPort, redisHost);
         return {
           connection: {
             host: redisHost,
