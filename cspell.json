@@ -12,6 +12,7 @@
     "Recuperação",
     "redis",
     "senha",
-    "typeorm"
+    "typeorm",
+    "bullmq"
   ]
 }

@@ -50,10 +50,10 @@ import { EmailWorker } from '../worker/email.worker';
     }),
     BullModule.forRootAsync({
       useFactory: (config: AppConfigEnvService) => {
-        const redisUriSplit = config.redisURI.split('@');
-        const redisPassword = redisUriSplit[0].split('://:')[1];
-        const redisHost = redisUriSplit[1].split(':')[0];
-        const redisPort = redisUriSplit[1].split(':')[1];
+        const redisUriSplit = config.redisURI.split(':');
+        const redisPassword = redisUriSplit[2].split('@')[0];
+        const redisHost = redisUriSplit[1].split('@')[1];
+        const redisPort = redisUriSplit.at(-1);
         return {
           connection: {
             host: redisHost,

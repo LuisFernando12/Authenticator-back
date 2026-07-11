@@ -6,7 +6,7 @@ import * as crypto from 'node:crypto';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppConfigModule } from '../../src/core/infrastructure/module/app-config.module';
-import { EmailModule } from '../../src/core/infrastructure/module/email.module';
+import { EmailModule } from '../../src/email/infrastructure/module/email.module';
 import { AppModule } from '../../src/module/app.module';
 import { OauthAuthorizeDTO } from '../../src/oauth/infrastructure/dto/oauth-authorize.dto';
 import { AppConfigEnvSetup } from './setup/app-config-env.setup';

@@ -1,9 +1,12 @@
-import { handlebarsSplitCharsHelper } from '@/config/helper/handlebars-split-chars.helper';
-import { EmailService } from '@/core/application/service/email.service';
+import { EmailService } from '@/email/application/service/email.service';
+import { handlebarsSplitCharsHelper } from '@/email/infrastructure/helper/handlebars-split-chars.helper';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { join } from 'node:path';
+import { EmailQueue } from '../../../src/email/infrastructure/queue/email.queue';
+import { EmailWorker } from '../../../src/email/infrastructure/worker/email.worker';
 
 @Module({
   imports: [
@@ -20,16 +23,35 @@ import { join } from 'node:path';
         },
       },
     }),
+    BullModule.forRootAsync({
+      useFactory: () => {
+        const redisUriSplitted = process.env.REDIS_URI.split(':');
+        const redisPort = redisUriSplitted.at(-1);
+        const redisHost = redisUriSplitted[1].slice(2);
+        console.log(redisPort, redisHost);
+        return {
+          connection: {
+            host: redisHost,
+            port: Number(redisPort),
+          },
+        };
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'send-email',
+    }),
   ],
   providers: [
     {
       provide: EmailService,
       useValue: {
-        sendActivationEmail: jest.fn(),
-        resetPassword: jest.fn(),
+        sendActivationAccountEmail: jest.fn(),
+        sendResetPasswordEmail: jest.fn(),
       },
     },
+    EmailQueue,
+    EmailWorker,
   ],
-  exports: [EmailService],
+  exports: [EmailQueue],
 })
 export class TestEmailModule {}
