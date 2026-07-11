@@ -7,14 +7,12 @@ import {
 } from '@/user/infrastructure/repository/user.repository';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  EmailService,
-  IEmailService,
-} from '../../../core/application/service/email.service';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
 import { RedisService } from '../../../core/domain/service/redis.service';
-import { EmailModule } from '../../../core/infrastructure/module/email.module';
+
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
+import { EmailModule } from '../../../email/infrastructure/module/email.module';
+import { EmailQueue } from '../../../email/infrastructure/queue/email.queue';
 import { TokenService } from '../../../token/application/service/token.service';
 import {
   CONFIG_SERVICE_PORT,
@@ -99,9 +97,9 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
     },
     {
       provide: EMAIL_SERVICE_PORT,
-      useFactory: (emailService: IEmailService): EmailServicePort =>
-        new EmailServiceAdapter(emailService),
-      inject: [EmailService],
+      useFactory: (emailQueue: EmailQueue): EmailServicePort =>
+        new EmailServiceAdapter(emailQueue),
+      inject: [EmailQueue],
     },
     {
       provide: REDIS_SERVICE_PORT,

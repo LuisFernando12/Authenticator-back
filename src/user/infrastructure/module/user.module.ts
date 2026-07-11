@@ -20,9 +20,9 @@ import { UserController } from '@/user/infrastructure/controller/user.controller
 import { UserEntity } from '@/user/infrastructure/persistence/entity/user.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EmailService } from '../../../core/application/service/email.service';
-import { EmailModule } from '../../../core/infrastructure/module/email.module';
 
+import { EmailModule } from '../../../email/infrastructure/module/email.module';
+import { EmailQueue } from '../../../email/infrastructure/queue/email.queue';
 import { TokenService } from '../../../token/application/service/token.service';
 import { FindUserByEmailUseCase } from '../../application/use-case/find-user-by-email.use-case';
 import { RegisterUserUseCase } from '../../application/use-case/register-user.use-case';
@@ -38,9 +38,9 @@ import { UserRepository } from '../repository/user.repository';
     UserRepository,
     {
       provide: EMAIL_SERVICE_PORT,
-      useFactory: (emailService: EmailService): EmailServicePort =>
-        new EmailServiceAdapter(emailService),
-      inject: [EmailService],
+      useFactory: (emailQueue: EmailQueue): EmailServicePort =>
+        new EmailServiceAdapter(emailQueue),
+      inject: [EmailQueue],
     },
     {
       provide: ENCRYPT_SERVICE_PORT,

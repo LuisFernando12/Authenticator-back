@@ -65,4 +65,7 @@ export class AppConfigEnvService {
   get emailVerificationTokenExpires(): string {
     return this.config.getOrThrow<string>('EMAIL_VERIFICATION_TOKEN_EXPIRES');
   }
+  get nodeEnv(): string {
+    return this.config.getOrThrow<string>('NODE_ENV');
+  }
 }

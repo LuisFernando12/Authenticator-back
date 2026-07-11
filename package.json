@@ -6,7 +6,7 @@
   "private": true,
   "license": "MIT",
   "engines": {
-    "node":">=22.18.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
     "build": "nest build && cp -r src/config/templates dist/src/config/",
@@ -34,6 +34,7 @@
   "dependencies": {
     "@nestjs-modules/ioredis": "^2.2.1",
     "@nestjs-modules/mailer": "^2.3.4",
+    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.1.17",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.17",
@@ -42,6 +43,7 @@
     "@nestjs/swagger": "^11.2.6",
     "@nestjs/typeorm": "^11.0.0",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.80.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dotenv": "^17.3.1",

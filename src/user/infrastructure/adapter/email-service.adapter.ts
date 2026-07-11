@@ -1,4 +1,4 @@
-import { EmailService } from '../../../core/application/service/email.service';
+import { EmailQueue } from '../../../email/infrastructure/queue/email.queue';
 import {
   EmailServicePort,
   ISendActivationEmailPayload,
@@ -6,17 +6,21 @@ import {
 import { UserDomainError } from '../../domain/error/user-domain.error';
 
 export class EmailServiceAdapter implements EmailServicePort {
-  constructor(private readonly emailService: EmailService) {}
+  constructor(private readonly emailQueue: EmailQueue) {}
   async sendActivationEmail(
     emailPayload: ISendActivationEmailPayload,
   ): Promise<string> {
     try {
-      const emailResponse = await this.emailService.sendActivationEmail(
-        emailPayload.email,
-        emailPayload.name,
-        emailPayload.token,
+      await this.emailQueue.add(
+        {
+          email: emailPayload.email,
+          username: emailPayload.name,
+          token: emailPayload.token,
+        } as any,
+        'activation',
       );
-      return emailResponse;
+
+      return 'OK';
     } catch {
       throw UserDomainError.internalServerError('Failure to send email');
     }

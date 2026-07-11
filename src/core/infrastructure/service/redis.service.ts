@@ -5,7 +5,9 @@ import { Redis } from 'ioredis';
 export class RedisServiceImplement extends Redis implements RedisService {
   constructor(private readonly appConfigEnvService: AppConfigEnvService) {
     super(appConfigEnvService.redisURI);
-    this.onModuleInit();
+    this.onModuleInit().catch((error) => {
+      throw new Error(error);
+    });
   }
   async onModuleInit() {
     this.info('RedisService initialized');
