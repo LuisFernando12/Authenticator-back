@@ -56,7 +56,7 @@ describe('Oauth E2E Test', () => {
     if (app) await app.close();
     if (databaseSetup) await databaseSetup.teardown();
   }, 30000);
-  const codeVerifier = crypto.randomBytes(16).toString();
+  const codeVerifier = crypto.randomBytes(32).toString('hex');
   const codeChallengeMethod = 'sha256';
   const codeChallenge = crypto
     .createHash(codeChallengeMethod)
@@ -89,6 +89,7 @@ describe('Oauth E2E Test', () => {
         const url = new URL(responseAuthorize.headers.location);
         oauthRequestId = url.searchParams.get('oauthRequestId');
       }
+      expect(oauthRequestId).toEqual(expect.any(String));
       const responseLogin = await request
         .agent(app.getHttpServer())
         .post('/api/auth/oauth/login')
@@ -100,6 +101,7 @@ describe('Oauth E2E Test', () => {
         const url = new URL(responseLogin.headers.location);
         code = url.searchParams.get('code');
       }
+      expect(code).toEqual(expect.any(String));
       const responseToken = await request
         .agent(app.getHttpServer())
         .post('/api/auth/oauth/token')
@@ -140,6 +142,7 @@ describe('Oauth E2E Test', () => {
         const url = new URL(responseAuthorize.headers.location);
         oauthRequestId = url.searchParams.get('oauthRequestId');
       }
+      expect(oauthRequestId).toEqual(expect.any(String));
       const responseLogin = await request
         .agent(app.getHttpServer())
         .post('/api/auth/oauth/login')
@@ -157,6 +160,7 @@ describe('Oauth E2E Test', () => {
         const url = new URL(responseLogin.headers.location);
         code = url.searchParams.get('code');
       }
+      expect(code).toEqual(expect.any(String));
       const responseToken = await request
         .agent(app.getHttpServer())
         .post('/api/auth/oauth/token')

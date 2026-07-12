@@ -25,13 +25,19 @@ import { EmailWorker } from '../../../src/email/infrastructure/worker/email.work
     }),
     BullModule.forRootAsync({
       useFactory: () => {
-        const redisUriSplitted = process.env.REDIS_URI.split(':');
-        const redisPort = redisUriSplitted.at(-1);
-        const redisHost = redisUriSplitted[1].slice(2);
+        const redisURI = process.env.REDIS_URI;
+
+        if (!redisURI) {
+          throw new Error('REDIS_URI is required for e2e tests');
+        }
+
+        const redisURL = new URL(redisURI);
+
         return {
           connection: {
-            host: redisHost,
-            port: Number(redisPort),
+            host: redisURL.hostname,
+            port: Number(redisURL.port) || 6379,
+            password: redisURL.password || undefined,
           },
         };
       },

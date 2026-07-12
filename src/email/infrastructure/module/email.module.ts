@@ -50,10 +50,14 @@ import { EmailWorker } from '../worker/email.worker';
     }),
     BullModule.forRootAsync({
       useFactory: (config: AppConfigEnvService) => {
-        const redisUriSplit = config.redisURI.split(':');
-        const redisPassword = redisUriSplit[2].split('@')[0];
-        const redisHost = redisUriSplit[1].split('@')[1];
-        const redisPort = redisUriSplit.at(-1);
+        const redisURI = config.redisURI;
+        if (!redisURI) {
+          throw new Error('REDIS_URI is required for bullmq');
+        }
+        const redisUrl = new URL(redisURI);
+        const redisHost = redisUrl.hostname;
+        const redisPort = redisUrl.port;
+        const redisPassword = redisUrl.password;
         return {
           connection: {
             host: redisHost,

@@ -79,9 +79,15 @@ export class DatabaseSetup {
   }
 
   async teardown(): Promise<void> {
-    await this._redisService.quit();
-    await this._redisContainer.stop();
-    await this._postgresService.stop();
+    if (this._redisService) {
+      await this._redisService.quit();
+    }
+    if (this._redisContainer) {
+      await this._redisContainer.stop();
+    }
+    if (this._postgresService) {
+      await this._postgresService.stop();
+    }
   }
   async seed(dataSource: DataSource) {
     const clientRepository = dataSource.getRepository(ClientEntity);
@@ -89,7 +95,7 @@ export class DatabaseSetup {
     const user = await userRepository.save({
       name: 'John Doe',
       email: 'john.doe@gmail.com',
-      password: 'password-123',
+      password: hashSync('test1234', 10),
       isVerified: true,
     });
     const client = await clientRepository.save({
