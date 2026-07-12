@@ -16,13 +16,23 @@ export class EmailWorker extends WorkerHost {
     if (job.name === 'activation') {
       await this.emailService.sendActivationAccountEmail(job.data);
     }
-    job.isFailed().then((isFailed) => {
-      if (isFailed) {
-        job.log(`Failed processing job with jobId: ${job.id}`);
-        return;
-      }
-      job.log('Completed processing job');
-      job.updateProgress(Number(job.progress) + 1);
-    });
+    job
+      .isFailed()
+      .then((isFailed) => {
+        if (isFailed) {
+          console.log(`Failed processing job with jobId: ${job.id}`);
+          job.log(`Failed processing job with jobId: ${job.id}`);
+          return;
+        }
+        job.log('Completed processing job');
+        job.updateProgress(Number(job.progress) + 1);
+      })
+      .catch((error) => {
+        console.log(
+          `Failed processing job with jobId: ${job.id} with error: ${error}`,
+        );
+
+        throw error;
+      });
   }
 }

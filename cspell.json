@@ -4,15 +4,16 @@
   // cspell disable to this word list
   "words": [
     "ativação",
+    "bullmq",
     "Impls",
     "jwt",
+    "loglevel",
     "nestjs",
     "Oauth",
     "PKCE",
     "Recuperação",
     "redis",
     "senha",
-    "typeorm",
-    "bullmq"
+    "typeorm"
   ]
 }
