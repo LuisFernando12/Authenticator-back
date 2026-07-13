@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { EmailLoggerPort } from '../../application/port/email-logger.port';
 import { EmailService } from '../../application/service/email.service';
@@ -30,7 +30,6 @@ export class EmailWorker extends WorkerHost {
           throw new Error('Email type not found');
       }
 
-      job.updateProgress(Number(job.progress) + 1);
       this.logger.log(`Completed processing job with jobId: ${job.id}`, {});
     } catch (error: any) {
       this.logger.error(`Failed processing job with jobId: ${job.id}`, {
@@ -42,5 +41,19 @@ export class EmailWorker extends WorkerHost {
       });
       throw error;
     }
+  }
+  @OnWorkerEvent('completed')
+  onCompleted(job: Job<Email>): void {
+    this.logger.log(`Completed job with jobId: ${job.id}`, {});
+  }
+  @OnWorkerEvent('failed')
+  onFailed(job: Job<Email> | undefined, error: Error): void {
+    this.logger.error(`Failed job with jobId: ${job.id}`, {
+      errorStack: {
+        message: error?.message,
+        stack: error?.stack,
+        cause: error?.cause,
+      },
+    });
   }
 }
