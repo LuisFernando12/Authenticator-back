@@ -9,7 +9,7 @@
     "node": ">=22.18.0"
   },
   "scripts": {
-    "build": "nest build && cp -r src/email/infrastructure/templates dist/src/email/infrastructure/",
+    "build": "nest build && cp -r src/email/infrastructure/templates dist/src/email/infrastructure/templates",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:docker": " docker compose up -d  --build ",

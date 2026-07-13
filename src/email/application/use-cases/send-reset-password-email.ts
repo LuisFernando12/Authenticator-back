@@ -29,7 +29,9 @@ export class SendResetPasswordEmailUseCase implements BaseUseCase<Email, void> {
       this.emailLoggerPort.error('Error to send email', {
         errorStack: { cause: error },
       });
-      throw EmailDomainError.internalServerError('Failure to send email');
+      throw EmailDomainError.internalServerError(
+        'Failure to send reset password email',
+      );
     }
   }
 }

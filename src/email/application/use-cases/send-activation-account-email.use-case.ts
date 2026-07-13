@@ -30,7 +30,9 @@ export class SendActivationAccountEmailUseCase implements BaseUseCase<
       this.emailLoggerPort.error('Error to send email', {
         errorStack: { cause: error },
       });
-      throw EmailDomainError.internalServerError('Failure to send email');
+      throw EmailDomainError.internalServerError(
+        'Failure to send email for activation account ',
+      );
     }
   }
 }

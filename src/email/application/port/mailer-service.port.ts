@@ -11,5 +11,5 @@ export interface ISendEmailPayload {
   };
 }
 export abstract class MailerServicePort {
-  abstract sendMail(payload: ISendEmailPayload): Promise<string>;
+  abstract sendMail(payload: ISendEmailPayload): Promise<void>;
 }
