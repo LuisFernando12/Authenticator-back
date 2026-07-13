@@ -152,7 +152,12 @@ import { EmailWorker } from '../worker/email.worker';
         SendResetPasswordEmailUseCase,
       ],
     },
-    EmailWorker,
+    {
+      provide: EmailWorker,
+      useFactory: (emailService: EmailService, logger: EmailLoggerPort) =>
+        new EmailWorker(emailService, logger),
+      inject: [EmailService, EMAIL_LOGGER_PORT],
+    },
     EmailQueue,
   ],
   exports: [EmailQueue],
