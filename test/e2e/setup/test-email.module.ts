@@ -5,6 +5,10 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.ad
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { join } from 'node:path';
+import {
+  EMAIL_LOGGER_PORT,
+  EmailLoggerPort,
+} from '../../../src/email/application/port/email-logger.port';
 import { EmailQueue } from '../../../src/email/infrastructure/queue/email.queue';
 import { EmailWorker } from '../../../src/email/infrastructure/worker/email.worker';
 
@@ -54,8 +58,21 @@ import { EmailWorker } from '../../../src/email/infrastructure/worker/email.work
         sendResetPasswordEmail: jest.fn(),
       },
     },
+    {
+      provide: EMAIL_LOGGER_PORT,
+      useValue: {
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+      },
+    },
     EmailQueue,
-    EmailWorker,
+    {
+      provide: EmailWorker,
+      useFactory: (emailService: EmailService, logger: EmailLoggerPort) =>
+        new EmailWorker(emailService, logger),
+      inject: [EmailService, EMAIL_LOGGER_PORT],
+    },
   ],
   exports: [EmailQueue],
 })
