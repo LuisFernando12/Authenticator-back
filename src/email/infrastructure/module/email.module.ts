@@ -6,10 +6,16 @@ import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'node:path';
+import { AuthenticatorLogger } from '../../../config/logger/auth-logger.config';
+import { AuthenticatorLoggerModule } from '../../../core/infrastructure/module/auth-logger.module';
 import {
   CONFIG_SERVICE_PORT,
   ConfigServicePort,
 } from '../../application/port/config-service.port';
+import {
+  EMAIL_LOGGER_PORT,
+  EmailLoggerPort,
+} from '../../application/port/email-logger.port';
 import {
   MAILER_SERVICE_PORT,
   MailerServicePort,
@@ -20,11 +26,13 @@ import {
 } from '../../application/service/email.service';
 import { SendActivationAccountEmailUseCase } from '../../application/use-cases/send-activation-account-email.use-case';
 import { SendResetPasswordEmailUseCase } from '../../application/use-cases/send-reset-password-email';
+import { EmailLoggerAdapter } from '../adapter/email-logger.adapter';
 import { MailerServiceAdapter } from '../adapter/mailer-service.adapter';
 import { EmailQueue } from '../queue/email.queue';
 import { EmailWorker } from '../worker/email.worker';
 @Module({
   imports: [
+    AuthenticatorLoggerModule,
     MailerModule.forRootAsync({
       inject: [AppConfigEnvService],
       useFactory: (config: AppConfigEnvService) => ({
@@ -39,7 +47,8 @@ import { EmailWorker } from '../worker/email.worker';
         template: {
           dir: join(
             process.cwd(),
-            (config.nodeEnv !== 'dev' ? 'dist/' : '') + 'src/config/templates',
+            (config.nodeEnv !== 'dev' ? 'dist/' : '') +
+              'src/email/infrastructure/templates',
           ),
           adapter: new HandlebarsAdapter(handlebarsSplitCharsHelper),
           options: {
@@ -95,20 +104,38 @@ import { EmailWorker } from '../worker/email.worker';
       inject: [ConfigService],
     },
     {
+      provide: EMAIL_LOGGER_PORT,
+      useFactory: (logger: AuthenticatorLogger): EmailLoggerPort =>
+        new EmailLoggerAdapter(logger),
+      inject: [AuthenticatorLogger],
+    },
+    {
       provide: SendActivationAccountEmailUseCase,
       useFactory: (
         mailerServicePort: MailerServicePort,
         configEnv: ConfigServicePort,
-      ) => new SendActivationAccountEmailUseCase(mailerServicePort, configEnv),
-      inject: [MAILER_SERVICE_PORT, CONFIG_SERVICE_PORT],
+        emailLoggerPort: EmailLoggerPort,
+      ) =>
+        new SendActivationAccountEmailUseCase(
+          mailerServicePort,
+          configEnv,
+          emailLoggerPort,
+        ),
+      inject: [MAILER_SERVICE_PORT, CONFIG_SERVICE_PORT, EMAIL_LOGGER_PORT],
     },
     {
       provide: SendResetPasswordEmailUseCase,
       useFactory: (
         mailerServicePort: MailerServicePort,
         configEnv: ConfigServicePort,
-      ) => new SendResetPasswordEmailUseCase(mailerServicePort, configEnv),
-      inject: [MAILER_SERVICE_PORT, CONFIG_SERVICE_PORT],
+        emailLoggerPort: EmailLoggerPort,
+      ) =>
+        new SendResetPasswordEmailUseCase(
+          mailerServicePort,
+          configEnv,
+          emailLoggerPort,
+        ),
+      inject: [MAILER_SERVICE_PORT, CONFIG_SERVICE_PORT, EMAIL_LOGGER_PORT],
     },
     {
       provide: EmailService,

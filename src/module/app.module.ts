@@ -8,6 +8,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigEnvService } from '../core/domain/service/app-config-env.service';
 import { AppConfigModule } from '../core/infrastructure/module/app-config.module';
+import { AuthenticatorLoggerModule } from '../core/infrastructure/module/auth-logger.module';
 import { HealthModule } from '../core/infrastructure/module/health.module';
 import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
 
@@ -51,6 +52,7 @@ import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
     ClientModule,
     OauthModule,
     HealthModule,
+    AuthenticatorLoggerModule,
   ],
   providers: [
     {

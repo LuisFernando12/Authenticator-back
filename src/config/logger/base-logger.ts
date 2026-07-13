@@ -1,7 +1,7 @@
 import { ConsoleLogger, Injectable } from '@nestjs/common';
 export interface IBaseLoggerOptions {
-  context: string;
-  logLevel: 'log' | 'error' | 'warn' | 'debug';
+  context?: string;
+  logLevel?: 'log' | 'error' | 'warn' | 'debug';
   writeStreamType?: 'stdout' | 'stderr';
   errorStack?: unknown;
 }
@@ -17,10 +17,11 @@ export class BaseLogger extends ConsoleLogger implements IBaseLogger {
       logLevels: ['log', 'error', 'warn', 'debug'],
     });
   }
+
   logAsJson(message: string, payload: IBaseLoggerOptions) {
     if (!payload.writeStreamType) {
       payload['writeStreamType'] = 'stdout';
     }
-    this.printAsJson(message, payload);
+    this.printAsJson(message, payload as Required<IBaseLoggerOptions>);
   }
 }
