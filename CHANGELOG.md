@@ -1,3 +1,16 @@
+# [2.1.0-beta.6](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.5...v2.1.0-beta.6) (2026-07-13)
+
+
+### Bug Fixes
+
+* add SMTP connection check in EmailWorker constructor ro debug in hml ([a98fa54](https://github.com/LuisFernando12/Authenticator/commit/a98fa543bc3b0eab3fa258245bb57fda785cc665))
+
+
+### Features
+
+* add EmailLoggerPort provider to TestEmailModule for enhanced logging capabilities ([4ad680b](https://github.com/LuisFernando12/Authenticator/commit/4ad680bfd6d2420675d0827f842ce19968091dc0))
+* add SMTP address to configuration and update email sending methods ([70dfb92](https://github.com/LuisFernando12/Authenticator/commit/70dfb9213c71689b730bb82f8f4cc7dc6b08e8d2))
+
 # [2.1.0-beta.5](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.4...v2.1.0-beta.5) (2026-07-08)
 
 
