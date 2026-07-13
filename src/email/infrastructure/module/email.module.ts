@@ -39,10 +39,13 @@ import { EmailWorker } from '../worker/email.worker';
         transport: {
           host: config.serverSMTP,
           port: config.smtpPORT,
+          secure: true,
           auth: {
             user: config.serverSMTPUserName,
             pass: config.serverSMTPPassword,
           },
+          logger: true,
+          debug: true,
         },
         template: {
           dir: join(
