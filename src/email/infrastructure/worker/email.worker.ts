@@ -16,7 +16,7 @@ export class EmailWorker extends WorkerHost {
     // Check if the SMTP server is reachable, important remove after
     const socket = net.createConnection({
       host: 'smtp.gmail.com',
-      port: 465,
+      port: 587,
     });
 
     socket.on('connect', () => {
