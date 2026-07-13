@@ -38,7 +38,7 @@ import { EmailWorker } from '../worker/email.worker';
       useFactory: (config: AppConfigEnvService) => ({
         transport: {
           host: config.serverSMTP,
-          port: config.smtpPORT,
+          port: Number(config.smtpPORT),
           secure: true,
           auth: {
             user: config.serverSMTPUserName,
