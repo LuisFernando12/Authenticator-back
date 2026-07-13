@@ -14,9 +14,6 @@ export class AuthenticatorLogger implements IAuthenticatorLogger {
     this.baseLogger.setContext('Authenticator');
   }
 
-  // setContext(context: string) {
-  //   this.context = context;
-  // }
   log(message: string, options: IBaseLoggerOptions) {
     options.logLevel = 'log';
     this.baseLogger.logAsJson(message, options as IBaseLoggerOptions);
