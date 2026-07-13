@@ -9,8 +9,9 @@ export class MailerServiceAdapter implements MailerServicePort {
   constructor(private readonly mailerService: MailerService) {}
   async sendMail(payload: ISendEmailPayload): Promise<void> {
     try {
-      const { to, subject, template, context } = payload;
+      const { to, subject, template, context, from } = payload;
       await this.mailerService.sendMail({
+        from: from,
         to: to,
         subject: subject,
         template: template,

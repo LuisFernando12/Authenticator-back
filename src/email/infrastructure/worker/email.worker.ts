@@ -1,6 +1,5 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import * as net from 'node:net';
 import { EmailLoggerPort } from '../../application/port/email-logger.port';
 import { EmailService } from '../../application/service/email.service';
 import { Email } from '../../domain/entity/email.entity';
@@ -13,20 +12,6 @@ export class EmailWorker extends WorkerHost {
   ) {
     super();
     this.logger.log('EmailWorker created', { context: 'EmailWorker' });
-    // Check if the SMTP server is reachable, important remove after
-    const socket = net.createConnection({
-      host: 'smtp.gmail.com',
-      port: 587,
-    });
-
-    socket.on('connect', () => {
-      console.log('SMTP successfully reachable');
-      socket.destroy();
-    });
-
-    socket.on('error', (err) => {
-      console.error('SMTP connection failed', err);
-    });
   }
   async process(job: Job<Email>): Promise<void> {
     try {

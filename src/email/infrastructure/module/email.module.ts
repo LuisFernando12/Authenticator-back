@@ -39,13 +39,11 @@ import { EmailWorker } from '../worker/email.worker';
         transport: {
           host: config.serverSMTP,
           port: Number(config.smtpPORT),
-          secure: true,
+          secure: false,
           auth: {
             user: config.serverSMTPUserName,
             pass: config.serverSMTPPassword,
           },
-          logger: true,
-          debug: true,
         },
         template: {
           dir: join(
@@ -102,6 +100,7 @@ import { EmailWorker } from '../worker/email.worker';
           serviceResetPasswordUrl: config.getOrThrow<string>(
             'SERVICE_RESET_PASSWORD_URL',
           ),
+          smtpAddress: config.getOrThrow<string>('SMTP_ADDRESS'),
         };
       },
       inject: [ConfigService],
