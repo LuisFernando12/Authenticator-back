@@ -1,11 +1,7 @@
 import { AppConfigEnvService } from '@/core/domain/service/app-config-env.service';
-import { handlebarsSplitCharsHelper } from '@/email/infrastructure/helper/handlebars-split-chars.helper';
-import { MailerModule, MailerService } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { join } from 'node:path';
 import { AuthenticatorLogger } from '../../../config/logger/auth-logger.config';
 import { AuthenticatorLoggerModule } from '../../../core/infrastructure/module/auth-logger.module';
 import {
@@ -28,36 +24,17 @@ import { SendActivationAccountEmailUseCase } from '../../application/use-cases/s
 import { SendResetPasswordEmailUseCase } from '../../application/use-cases/send-reset-password-email';
 import { EmailLoggerAdapter } from '../adapter/email-logger.adapter';
 import { MailerServiceAdapter } from '../adapter/mailer-service.adapter';
+import { EMAIL_PROVIDE, EmailProvide } from '../email-provide/email.provide';
+import { GmailProvide } from '../email-provide/gmail.provide';
 import { EmailQueue } from '../queue/email.queue';
+import {
+  HANDLEBARS_RENDER,
+  HandlebarsRender,
+} from '../templates/handlebars.render';
 import { EmailWorker } from '../worker/email.worker';
 @Module({
   imports: [
     AuthenticatorLoggerModule,
-    MailerModule.forRootAsync({
-      inject: [AppConfigEnvService],
-      useFactory: (config: AppConfigEnvService) => ({
-        transport: {
-          host: config.serverSMTP,
-          port: Number(config.smtpPORT),
-          secure: false,
-          auth: {
-            user: config.serverSMTPUserName,
-            pass: config.serverSMTPPassword,
-          },
-        },
-        template: {
-          dir: join(
-            process.cwd(),
-            (config.nodeEnv !== 'dev' ? 'dist/' : '') +
-              'src/email/infrastructure/templates',
-          ),
-          adapter: new HandlebarsAdapter(handlebarsSplitCharsHelper),
-          options: {
-            strict: true,
-          },
-        },
-      }),
-    }),
     BullModule.forRootAsync({
       useFactory: (config: AppConfigEnvService) => {
         const redisURI = config.redisURI;
@@ -84,11 +61,29 @@ import { EmailWorker } from '../worker/email.worker';
   ],
   providers: [
     {
-      provide: MAILER_SERVICE_PORT,
-      useFactory: (mailerService: MailerService): MailerServicePort => {
-        return new MailerServiceAdapter(mailerService);
+      provide: EMAIL_PROVIDE,
+      useFactory: (configService: AppConfigEnvService): EmailProvide => {
+        return new GmailProvide(configService);
       },
-      inject: [MailerService],
+      inject: [AppConfigEnvService],
+    },
+    {
+      provide: HANDLEBARS_RENDER,
+      useFactory: (configService: ConfigService): HandlebarsRender =>
+        new HandlebarsRender({
+          nodeEnv: configService.getOrThrow<string>('NODE_ENV'),
+        }),
+      inject: [ConfigService],
+    },
+    {
+      provide: MAILER_SERVICE_PORT,
+      useFactory: (
+        mailerProvide: EmailProvide,
+        handlebarsRender: HandlebarsRender,
+      ): MailerServicePort => {
+        return new MailerServiceAdapter(mailerProvide, handlebarsRender);
+      },
+      inject: [EMAIL_PROVIDE, HANDLEBARS_RENDER],
     },
     {
       provide: CONFIG_SERVICE_PORT,
@@ -100,7 +95,6 @@ import { EmailWorker } from '../worker/email.worker';
           serviceResetPasswordUrl: config.getOrThrow<string>(
             'SERVICE_RESET_PASSWORD_URL',
           ),
-          smtpAddress: config.getOrThrow<string>('SMTP_ADDRESS'),
         };
       },
       inject: [ConfigService],

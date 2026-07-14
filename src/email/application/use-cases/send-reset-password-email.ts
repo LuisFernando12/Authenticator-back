@@ -15,10 +15,6 @@ export class SendResetPasswordEmailUseCase implements BaseUseCase<Email, void> {
     this.emailLoggerPort.log('Start SendResetPasswordEmailUseCase', {});
     try {
       await this.mailerServicePort.sendMail({
-        from: {
-          name: 'Authenticator',
-          address: this.configEnv.smtpAddress,
-        },
         to: payload.email,
         subject: 'Recuperação de senha',
         template: './resetPassword',

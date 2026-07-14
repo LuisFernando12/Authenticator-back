@@ -17,10 +17,6 @@ export class SendActivationAccountEmailUseCase implements BaseUseCase<
     this.emailLoggerPort.log('SendActivationAccountEmailUseCase', {});
     try {
       await this.mailerServicePort.sendMail({
-        from: {
-          name: 'Authenticator',
-          address: this.configEnv.smtpAddress,
-        },
         to: payload.email,
         subject: 'Email de ativação',
         template: './activeAccount',
