@@ -1,6 +1,10 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
+import { Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { EmailLoggerPort } from '../../application/port/email-logger.port';
+import {
+  EMAIL_LOGGER_PORT,
+  EmailLoggerPort,
+} from '../../application/port/email-logger.port';
 import { EmailService } from '../../application/service/email.service';
 import { Email } from '../../domain/entity/email.entity';
 
@@ -8,7 +12,7 @@ import { Email } from '../../domain/entity/email.entity';
 export class EmailWorker extends WorkerHost {
   constructor(
     private readonly emailService: EmailService,
-    private readonly logger: EmailLoggerPort,
+    @Inject(EMAIL_LOGGER_PORT) private readonly logger: EmailLoggerPort,
   ) {
     super();
     this.logger.log('EmailWorker created', { context: 'EmailWorker' });

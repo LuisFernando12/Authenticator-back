@@ -1,10 +1,6 @@
 import { EmailService } from '@/email/application/service/email.service';
-import { handlebarsSplitCharsHelper } from '@/email/infrastructure/helper/handlebars-split-chars.helper';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { join } from 'node:path';
 import {
   EMAIL_LOGGER_PORT,
   EmailLoggerPort,
@@ -14,19 +10,6 @@ import { EmailWorker } from '../../../src/email/infrastructure/worker/email.work
 
 @Module({
   imports: [
-    MailerModule.forRoot({
-      transport: {
-        host: 'localhost',
-        port: 1025,
-      },
-      template: {
-        dir: join(process.cwd(), '/src/templates'),
-        adapter: new HandlebarsAdapter(handlebarsSplitCharsHelper),
-        options: {
-          strict: true,
-        },
-      },
-    }),
     BullModule.forRootAsync({
       useFactory: () => {
         const redisURI = process.env.REDIS_URI;

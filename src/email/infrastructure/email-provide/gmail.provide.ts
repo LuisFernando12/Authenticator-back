@@ -1,11 +1,13 @@
+import { OnModuleInit } from '@nestjs/common';
 import { google } from 'googleapis';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
 import { EmailDomainError } from '../../domain/error/email-domain.error';
 import { EmailProvide, ISendEmail } from './email.provide';
 
-export class GmailProvide implements EmailProvide {
-  private readonly oauth2Client;
-  constructor(private readonly configService: AppConfigEnvService) {
+export class GmailProvide implements EmailProvide, OnModuleInit {
+  private oauth2Client;
+  constructor(private readonly configService: AppConfigEnvService) {}
+  onModuleInit() {
     this.oauth2Client = new google.auth.OAuth2(
       this.configService.gmailClientId,
       this.configService.gmailClientSecret,
