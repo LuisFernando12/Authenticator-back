@@ -1,3 +1,11 @@
+# [2.1.0-beta.7](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.6...v2.1.0-beta.7) (2026-07-15)
+
+
+### Features
+
+* **email:** refactor GmailProvide to implement OnModuleInit for OAuth2 client initialization ([5412a4b](https://github.com/LuisFernando12/Authenticator/commit/5412a4b29f97c1518873d8d7969190f307ee72bc))
+* migrate from SMTP to Gmail API for email sending ([25c4668](https://github.com/LuisFernando12/Authenticator/commit/25c4668439952a569f67fbadfbc6e0fe034b7252))
+
 # [2.1.0-beta.6](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.5...v2.1.0-beta.6) (2026-07-13)
 
 
