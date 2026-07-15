@@ -1,3 +1,10 @@
+# [2.1.0-beta.8](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.7...v2.1.0-beta.8) (2026-07-15)
+
+
+### Bug Fixes
+
+* **email:** add inline style for button color in active account email template ([197f9c8](https://github.com/LuisFernando12/Authenticator/commit/197f9c83c06c1a5a9be8e0ac0b36b506c1e1ca28))
+
 # [2.1.0-beta.7](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.6...v2.1.0-beta.7) (2026-07-15)
 
 
