@@ -1,3 +1,28 @@
+# [2.1.0](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0...v2.1.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* add SMTP connection check in EmailWorker constructor ro debug in hml ([a98fa54](https://github.com/LuisFernando12/Authenticator/commit/a98fa543bc3b0eab3fa258245bb57fda785cc665))
+* **config:** update docker-compose service dependencies and template path ([078f9ce](https://github.com/LuisFernando12/Authenticator/commit/078f9ce3e96c14e97f752bc97bf556c5869e1ab9))
+* correct typos and naming inconsistencies across codebase ([c72ff87](https://github.com/LuisFernando12/Authenticator/commit/c72ff878c69e661d4f7b07be660b136ccfa2034a))
+* **email:** add error logging in sendActivationEmail method ([0677dfd](https://github.com/LuisFernando12/Authenticator/commit/0677dfd86f154ea6805301ae996f754a0329e44c))
+* **email:** add inline style for button color in active account email template ([197f9c8](https://github.com/LuisFernando12/Authenticator/commit/197f9c83c06c1a5a9be8e0ac0b36b506c1e1ca28))
+* remove unused error variable in catch blocks across multiple services ([3db9424](https://github.com/LuisFernando12/Authenticator/commit/3db9424969644edfa8b0abfe891c22ea7be49dc2))
+* update Dockerfile to use pnpm for package management and build process ([0c3723e](https://github.com/LuisFernando12/Authenticator/commit/0c3723ecc829d53232a3b19c452f89c607cff8f5))
+* update pre-commit script to use default Node version and set default port in main.ts ([94f8d4a](https://github.com/LuisFernando12/Authenticator/commit/94f8d4a420ece47231d1fbc2823b029b39a21cfb))
+
+
+### Features
+
+* add EmailLoggerPort provider to TestEmailModule for enhanced logging capabilities ([4ad680b](https://github.com/LuisFernando12/Authenticator/commit/4ad680bfd6d2420675d0827f842ce19968091dc0))
+* add SMTP address to configuration and update email sending methods ([70dfb92](https://github.com/LuisFernando12/Authenticator/commit/70dfb9213c71689b730bb82f8f4cc7dc6b08e8d2))
+* **consent:** add scopes property to OauthConsent and related services ([bd93c53](https://github.com/LuisFernando12/Authenticator/commit/bd93c53a2315410ba9831ce113ed93140ff63260))
+* **email:** refactor GmailProvide to implement OnModuleInit for OAuth2 client initialization ([5412a4b](https://github.com/LuisFernando12/Authenticator/commit/5412a4b29f97c1518873d8d7969190f307ee72bc))
+* **env:** add PORT variable and update database host configuration ([6ed1ce8](https://github.com/LuisFernando12/Authenticator/commit/6ed1ce80be2eeba63037d6b67ce76d9cf5bbc456))
+* migrate from SMTP to Gmail API for email sending ([25c4668](https://github.com/LuisFernando12/Authenticator/commit/25c4668439952a569f67fbadfbc6e0fe034b7252))
+* **token and session:** enhance token entity and repository for token family management ([9de698b](https://github.com/LuisFernando12/Authenticator/commit/9de698b88e87f73e453b8f80f7e23b6a369a46a4))
+
 # [2.1.0-beta.8](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.7...v2.1.0-beta.8) (2026-07-15)
 
 
