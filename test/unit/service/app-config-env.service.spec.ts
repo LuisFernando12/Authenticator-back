@@ -73,34 +73,47 @@ describe('AppConfigEnvService', () => {
       const result = appConfigEnvService.secret;
       expect(result).toBe('SECRET');
     });
-    it('should get SERVER_SMTP', () => {
-      mockConfigService.get = jest.fn().mockReturnValue('SERVER_SMTP');
-      const result = appConfigEnvService.serverSMTP;
-      expect(result).toBe('SERVER_SMTP');
-    });
-    it('should get SMTP_PORT', () => {
-      mockConfigService.get = jest.fn().mockReturnValue('SMTP_PORT');
-      const result = appConfigEnvService.smtpPORT;
-      expect(result).toBe('SMTP_PORT');
-    });
-    it('should get SERVER_SMTP_USER_NAME', () => {
-      mockConfigService.get = jest
-        .fn()
-        .mockReturnValue('SERVER_SMTP_USER_NAME');
-      const result = appConfigEnvService.serverSMTPUserName;
-      expect(result).toBe('SERVER_SMTP_USER_NAME');
-    });
-    it('should get SERVER_SMTP_PASSWORD', () => {
-      mockConfigService.get = jest.fn().mockReturnValue('SERVER_SMTP_PASSWORD');
-      const result = appConfigEnvService.serverSMTPPassword;
-      expect(result).toBe('SERVER_SMTP_PASSWORD');
-    });
     it('should get OAUTH_LOGIN_URL', () => {
       mockConfigService.getOrThrow = jest
         .fn()
         .mockReturnValue('OAUTH_LOGIN_URL');
       const result = appConfigEnvService.oauthLoginURL;
       expect(result).toBe('OAUTH_LOGIN_URL');
+    });
+    it('should get GMAIL_CLIENT_ID', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('GMAIL_CLIENT_ID');
+      const result = appConfigEnvService.gmailClientId;
+      expect(result).toBe('GMAIL_CLIENT_ID');
+    });
+    it('should get GMAIL_CLIENT_SECRET', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('GMAIL_CLIENT_SECRET');
+      const result = appConfigEnvService.gmailClientSecret;
+      expect(result).toBe('GMAIL_CLIENT_SECRET');
+    });
+    it('should get GMAIL_REDIRECT_URI', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('GMAIL_REDIRECT_URI');
+      const result = appConfigEnvService.gmailRedirectURI;
+      expect(result).toBe('GMAIL_REDIRECT_URI');
+    });
+    it('should get GMAIL_REFRESH_TOKEN', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('GMAIL_REFRESH_TOKEN');
+      const result = appConfigEnvService.gmailRefreshToken;
+      expect(result).toBe('GMAIL_REFRESH_TOKEN');
+    });
+    it('should get GMAIL_SENDER_EMAIL', () => {
+      mockConfigService.getOrThrow = jest
+        .fn()
+        .mockReturnValue('GMAIL_SENDER_EMAIL');
+      const result = appConfigEnvService.gmailSenderEmail;
+      expect(result).toBe('GMAIL_SENDER_EMAIL');
     });
     it('should get REDIS_URI', () => {
       mockConfigService.getOrThrow = jest.fn().mockReturnValue('REDIS_URI');
@@ -134,13 +147,6 @@ describe('AppConfigEnvService', () => {
         .mockReturnValue('EMAIL_VERIFICATION_TOKEN_EXPIRES');
       const result = appConfigEnvService.emailVerificationTokenExpires;
       expect(result).toBe('EMAIL_VERIFICATION_TOKEN_EXPIRES');
-    });
-    it('should get PASSWORD_RESET_TOKEN_EXPIRES', () => {
-      mockConfigService.getOrThrow = jest
-        .fn()
-        .mockReturnValue('PASSWORD_RESET_TOKEN_EXPIRES');
-      const result = appConfigEnvService.passwordResetTokenExpires;
-      expect(result).toBe('PASSWORD_RESET_TOKEN_EXPIRES');
     });
   });
 });

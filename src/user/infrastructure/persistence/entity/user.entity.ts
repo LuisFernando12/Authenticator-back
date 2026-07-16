@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 
 import { ConsentEntity } from '../../../../consent/infrastructure/persistence/entity/consent.entity';
+import { SessionEntity } from '../../../../session/infrastructure/persistence/entity/session.entity';
 import { TokenEntity } from '../../../../token/infrastructure/persistence/entity/token.entity';
 
 @Entity('user')
@@ -30,6 +31,8 @@ export class UserEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
+  @OneToMany(() => SessionEntity, (session) => session.user)
+  sessions: SessionEntity[];
 }
 
 export interface UserEntityType {

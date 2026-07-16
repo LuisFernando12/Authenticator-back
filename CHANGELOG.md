@@ -1,112 +1,162 @@
-# [2.0.0](https://github.com/LuisFernando12/Authenticator/compare/v1.5.0...v2.0.0) (2026-06-10)
+# [2.1.0-beta.8](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.7...v2.1.0-beta.8) (2026-07-15)
 
 
 ### Bug Fixes
 
-* add escape to status in OauthDomainError ([42fb754](https://github.com/LuisFernando12/Authenticator/commit/42fb754ea0c67b14abec5e57dfd0ad5c7143a8f2))
-* **controller:** fix import UserDTO to true path ([8223aeb](https://github.com/LuisFernando12/Authenticator/commit/8223aeb5ac3d0c770ba645bc420ce664fefe947a))
-* **docs:** correct spelling of 'refresh-token' in API documentation ([4e4bcc8](https://github.com/LuisFernando12/Authenticator/commit/4e4bcc8bcc1621fa67ae6709834882e5e28cd915))
-* some adjuts ([77460f5](https://github.com/LuisFernando12/Authenticator/commit/77460f5074fec17be159f9e81feb5b954d4798a8))
-* **tests:** correct typos in variable names and improve response handling in Oauth E2E tests ([ca4de04](https://github.com/LuisFernando12/Authenticator/commit/ca4de04c33e782f649b18412a13551938003841d))
-* **user:** fixed throw erro on entity ([f3f7d41](https://github.com/LuisFernando12/Authenticator/commit/f3f7d41e382f7019de4e8bbea293cc40122c6ff8))
+* **email:** add inline style for button color in active account email template ([197f9c8](https://github.com/LuisFernando12/Authenticator/commit/197f9c83c06c1a5a9be8e0ac0b36b506c1e1ca28))
 
-
-### Code Refactoring
-
-* **oauth:** adopt domain-driven design architecture ([206884b](https://github.com/LuisFernando12/Authenticator/commit/206884bf9363fafbed6318d33a63a68d08a54f41))
+# [2.1.0-beta.7](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.6...v2.1.0-beta.7) (2026-07-15)
 
 
 ### Features
 
-* **token:** implement token management features ([4cdffb8](https://github.com/LuisFernando12/Authenticator/commit/4cdffb8b1abcd228e86ae4cf648fe0dd2144cc54))
+* **email:** refactor GmailProvide to implement OnModuleInit for OAuth2 client initialization ([5412a4b](https://github.com/LuisFernando12/Authenticator/commit/5412a4b29f97c1518873d8d7969190f307ee72bc))
+* migrate from SMTP to Gmail API for email sending ([25c4668](https://github.com/LuisFernando12/Authenticator/commit/25c4668439952a569f67fbadfbc6e0fe034b7252))
+
+# [2.1.0-beta.6](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.5...v2.1.0-beta.6) (2026-07-13)
 
 
-### BREAKING CHANGES
+### Bug Fixes
 
-* **oauth:** OauthService is deprecated; migrate to use cases.
+* add SMTP connection check in EmailWorker constructor ro debug in hml ([a98fa54](https://github.com/LuisFernando12/Authenticator/commit/a98fa543bc3b0eab3fa258245bb57fda785cc665))
+
+
+### Features
+
+* add EmailLoggerPort provider to TestEmailModule for enhanced logging capabilities ([4ad680b](https://github.com/LuisFernando12/Authenticator/commit/4ad680bfd6d2420675d0827f842ce19968091dc0))
+* add SMTP address to configuration and update email sending methods ([70dfb92](https://github.com/LuisFernando12/Authenticator/commit/70dfb9213c71689b730bb82f8f4cc7dc6b08e8d2))
+
+# [2.1.0-beta.5](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.4...v2.1.0-beta.5) (2026-07-08)
+
+
+### Bug Fixes
+
+* remove unused error variable in catch blocks across multiple services ([3db9424](https://github.com/LuisFernando12/Authenticator/commit/3db9424969644edfa8b0abfe891c22ea7be49dc2))
+
+# [2.1.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.3...v2.1.0-beta.4) (2026-07-08)
+
+
+### Bug Fixes
+
+* update Dockerfile to use pnpm for package management and build process ([0c3723e](https://github.com/LuisFernando12/Authenticator/commit/0c3723ecc829d53232a3b19c452f89c607cff8f5))
+
+# [2.1.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.2...v2.1.0-beta.3) (2026-06-30)
+
+
+### Bug Fixes
+
+* update pre-commit script to use default Node version and set default port in main.ts ([94f8d4a](https://github.com/LuisFernando12/Authenticator/commit/94f8d4a420ece47231d1fbc2823b029b39a21cfb))
+
+# [2.1.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0-beta.1...v2.1.0-beta.2) (2026-06-30)
+
+
+### Bug Fixes
+
+* correct typos and naming inconsistencies across codebase ([c72ff87](https://github.com/LuisFernando12/Authenticator/commit/c72ff878c69e661d4f7b07be660b136ccfa2034a))
+
+# [2.1.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0...v2.1.0-beta.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* **config:** update docker-compose service dependencies and template path ([078f9ce](https://github.com/LuisFernando12/Authenticator/commit/078f9ce3e96c14e97f752bc97bf556c5869e1ab9))
+* **email:** add error logging in sendActivationEmail method ([0677dfd](https://github.com/LuisFernando12/Authenticator/commit/0677dfd86f154ea6805301ae996f754a0329e44c))
+
+
+### Features
+
+* **consent:** add scopes property to OauthConsent and related services ([bd93c53](https://github.com/LuisFernando12/Authenticator/commit/bd93c53a2315410ba9831ce113ed93140ff63260))
+* **env:** add PORT variable and update database host configuration ([6ed1ce8](https://github.com/LuisFernando12/Authenticator/commit/6ed1ce80be2eeba63037d6b67ce76d9cf5bbc456))
+* **token and session:** enhance token entity and repository for token family management ([9de698b](https://github.com/LuisFernando12/Authenticator/commit/9de698b88e87f73e453b8f80f7e23b6a369a46a4))
+
+# [2.0.0-beta.6](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.5...v2.0.0-beta.6) (2026-06-14)
+
+### Features
+
+- **consent:** add scopes property to OauthConsent and related services ([bd93c53](https://github.com/LuisFernando12/Authenticator/commit/bd93c53a2315410ba9831ce113ed93140ff63260))
+
+# [2.0.0-beta.5](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.4...v2.0.0-beta.5) (2026-06-14)
+
+### Bug Fixes
+
+- **email:** add error logging in sendActivationEmail method ([0677dfd](https://github.com/LuisFernando12/Authenticator/commit/0677dfd86f154ea6805301ae996f754a0329e44c))
+
+# [2.0.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.3...v2.0.0-beta.4) (2026-06-13)
+
+### Bug Fixes
+
+- **config:** update docker-compose service dependencies and template path ([078f9ce](https://github.com/LuisFernando12/Authenticator/commit/078f9ce3e96c14e97f752bc97bf556c5869e1ab9))
 
 # [2.0.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-06-10)
 
-
 ### Bug Fixes
 
-* **tests:** correct typos in variable names and improve response handling in Oauth E2E tests ([ca4de04](https://github.com/LuisFernando12/Authenticator/commit/ca4de04c33e782f649b18412a13551938003841d))
+- **tests:** correct typos in variable names and improve response handling in Oauth E2E tests ([ca4de04](https://github.com/LuisFernando12/Authenticator/commit/ca4de04c33e782f649b18412a13551938003841d))
 
 # [2.0.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-06-09)
 
-
 ### Bug Fixes
 
-* **docs:** correct spelling of 'refresh-token' in API documentation ([4e4bcc8](https://github.com/LuisFernando12/Authenticator/commit/4e4bcc8bcc1621fa67ae6709834882e5e28cd915))
+- **docs:** correct spelling of 'refresh-token' in API documentation ([4e4bcc8](https://github.com/LuisFernando12/Authenticator/commit/4e4bcc8bcc1621fa67ae6709834882e5e28cd915))
 
 # [2.0.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.5.0...v2.0.0-beta.1) (2026-06-06)
 
-
 ### Bug Fixes
 
-* add escape to status in OauthDomainError ([42fb754](https://github.com/LuisFernando12/Authenticator/commit/42fb754ea0c67b14abec5e57dfd0ad5c7143a8f2))
-* **controller:** fix import UserDTO to true path ([8223aeb](https://github.com/LuisFernando12/Authenticator/commit/8223aeb5ac3d0c770ba645bc420ce664fefe947a))
-* some adjuts ([77460f5](https://github.com/LuisFernando12/Authenticator/commit/77460f5074fec17be159f9e81feb5b954d4798a8))
-* **user:** fixed throw erro on entity ([f3f7d41](https://github.com/LuisFernando12/Authenticator/commit/f3f7d41e382f7019de4e8bbea293cc40122c6ff8))
-
+- add escape to status in OauthDomainError ([42fb754](https://github.com/LuisFernando12/Authenticator/commit/42fb754ea0c67b14abec5e57dfd0ad5c7143a8f2))
+- **controller:** fix import UserDTO to true path ([8223aeb](https://github.com/LuisFernando12/Authenticator/commit/8223aeb5ac3d0c770ba645bc420ce664fefe947a))
+- some adjuts ([77460f5](https://github.com/LuisFernando12/Authenticator/commit/77460f5074fec17be159f9e81feb5b954d4798a8))
+- **user:** fixed throw erro on entity ([f3f7d41](https://github.com/LuisFernando12/Authenticator/commit/f3f7d41e382f7019de4e8bbea293cc40122c6ff8))
 
 ### Code Refactoring
 
-* **oauth:** adopt domain-driven design architecture ([206884b](https://github.com/LuisFernando12/Authenticator/commit/206884bf9363fafbed6318d33a63a68d08a54f41))
-
+- **oauth:** adopt domain-driven design architecture ([206884b](https://github.com/LuisFernando12/Authenticator/commit/206884bf9363fafbed6318d33a63a68d08a54f41))
 
 ### Features
 
-* **token:** implement token management features ([4cdffb8](https://github.com/LuisFernando12/Authenticator/commit/4cdffb8b1abcd228e86ae4cf648fe0dd2144cc54))
-
+- **token:** implement token management features ([4cdffb8](https://github.com/LuisFernando12/Authenticator/commit/4cdffb8b1abcd228e86ae4cf648fe0dd2144cc54))
 
 ### BREAKING CHANGES
 
-* **oauth:** OauthService is deprecated; migrate to use cases.
+- **oauth:** OauthService is deprecated; migrate to use cases.
 
 # [1.5.0](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0...v1.5.0) (2026-05-08)
 
-
 ### Bug Fixes
 
-* **config:** add updated pnpm-lock file ([e1aabd6](https://github.com/LuisFernando12/Authenticator/commit/e1aabd675449bef37519837fd552f8474eaba05f))
-* **config:** move mailer to dependencies ([64acedb](https://github.com/LuisFernando12/Authenticator/commit/64acedb3f4938285966320a080491fcab7a7866c))
-* hash client secret using bcrypt on database.setup to fix e2e test ([2ee988d](https://github.com/LuisFernando12/Authenticator/commit/2ee988d311eb32e8dfce6482ec4cfb3e6b4e06b4))
-* remove required validation for access token expiration and refresh token days ([578c0d1](https://github.com/LuisFernando12/Authenticator/commit/578c0d1699274426e15f317e710c08bcb4e1bbef))
-* update database field names and types for consistency ([6840177](https://github.com/LuisFernando12/Authenticator/commit/6840177ce1aebd5904427767c309ad21e1d244e3))
-
+- **config:** add updated pnpm-lock file ([e1aabd6](https://github.com/LuisFernando12/Authenticator/commit/e1aabd675449bef37519837fd552f8474eaba05f))
+- **config:** move mailer to dependencies ([64acedb](https://github.com/LuisFernando12/Authenticator/commit/64acedb3f4938285966320a080491fcab7a7866c))
+- hash client secret using bcrypt on database.setup to fix e2e test ([2ee988d](https://github.com/LuisFernando12/Authenticator/commit/2ee988d311eb32e8dfce6482ec4cfb3e6b4e06b4))
+- remove required validation for access token expiration and refresh token days ([578c0d1](https://github.com/LuisFernando12/Authenticator/commit/578c0d1699274426e15f317e710c08bcb4e1bbef))
+- update database field names and types for consistency ([6840177](https://github.com/LuisFernando12/Authenticator/commit/6840177ce1aebd5904427767c309ad21e1d244e3))
 
 ### Features
 
-* add token expiration configuration ([7396152](https://github.com/LuisFernando12/Authenticator/commit/7396152fc090f657d51c4e73e0aa183746c3c13d))
+- add token expiration configuration ([7396152](https://github.com/LuisFernando12/Authenticator/commit/7396152fc090f657d51c4e73e0aa183746c3c13d))
 
 # [1.5.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.4.1-beta.2...v1.5.0-beta.1) (2026-05-06)
 
-
 ### Bug Fixes
 
-* remove required validation for access token expiration and refresh token days ([578c0d1](https://github.com/LuisFernando12/Authenticator/commit/578c0d1699274426e15f317e710c08bcb4e1bbef))
-
+- remove required validation for access token expiration and refresh token days ([578c0d1](https://github.com/LuisFernando12/Authenticator/commit/578c0d1699274426e15f317e710c08bcb4e1bbef))
 
 ### Features
 
-* add token expiration configuration ([7396152](https://github.com/LuisFernando12/Authenticator/commit/7396152fc090f657d51c4e73e0aa183746c3c13d))
+- add token expiration configuration ([7396152](https://github.com/LuisFernando12/Authenticator/commit/7396152fc090f657d51c4e73e0aa183746c3c13d))
 
 ## [1.4.1-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v1.4.1-beta.1...v1.4.1-beta.2) (2026-05-06)
 
-
 ### Bug Fixes
 
-* hash client secret using bcrypt on database.setup to fix e2e test ([2ee988d](https://github.com/LuisFernando12/Authenticator/commit/2ee988d311eb32e8dfce6482ec4cfb3e6b4e06b4))
+- hash client secret using bcrypt on database.setup to fix e2e test ([2ee988d](https://github.com/LuisFernando12/Authenticator/commit/2ee988d311eb32e8dfce6482ec4cfb3e6b4e06b4))
 
 ## [1.4.1-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v1.4.0...v1.4.1-beta.1) (2026-05-02)
 
-
 ### Bug Fixes
 
-* **config:** add updated pnpm-lock file ([e1aabd6](https://github.com/LuisFernando12/Authenticator/commit/e1aabd675449bef37519837fd552f8474eaba05f))
-* **config:** move mailer to dependencies ([64acedb](https://github.com/LuisFernando12/Authenticator/commit/64acedb3f4938285966320a080491fcab7a7866c))
-* update database field names and types for consistency ([6840177](https://github.com/LuisFernando12/Authenticator/commit/6840177ce1aebd5904427767c309ad21e1d244e3))
+- **config:** add updated pnpm-lock file ([e1aabd6](https://github.com/LuisFernando12/Authenticator/commit/e1aabd675449bef37519837fd552f8474eaba05f))
+- **config:** move mailer to dependencies ([64acedb](https://github.com/LuisFernando12/Authenticator/commit/64acedb3f4938285966320a080491fcab7a7866c))
+- update database field names and types for consistency ([6840177](https://github.com/LuisFernando12/Authenticator/commit/6840177ce1aebd5904427767c309ad21e1d244e3))
 
 # [1.4.0](https://github.com/LuisFernando12/Authenticator/compare/v1.3.0...v1.4.0) (2026-04-30)
 

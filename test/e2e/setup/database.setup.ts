@@ -14,7 +14,6 @@ export class DatabaseSetup {
   private _postgresService: StartedPostgreSqlContainer;
   private _redisContainer: StartedRedisContainer;
   private _redisService: Redis;
-  constructor() {}
   async setup() {
     this._postgresService = await new PostgreSqlContainer(
       'bitnami/postgresql:latest',
@@ -27,9 +26,11 @@ export class DatabaseSetup {
     this._redisContainer = await new RedisContainer('redis:latest')
       .withExposedPorts(6379)
       .start();
+
     this._redisService = new Redis(
       `redis://${this._redisContainer.getHost()}:${this._redisContainer.getMappedPort(6379)}`,
     );
+    process.env.REDIS_URI = `redis://${this._redisContainer.getHost()}:${this._redisContainer.getMappedPort(6379)}`;
     process.env.DB_HOST = this._postgresService.getHost();
     process.env.DB_PORT = this._postgresService.getPort().toString();
     process.env.DB_USER = this._postgresService.getUsername();
@@ -78,9 +79,15 @@ export class DatabaseSetup {
   }
 
   async teardown(): Promise<void> {
-    await this._redisService.quit();
-    await this._redisContainer.stop();
-    await this._postgresService.stop();
+    if (this._redisService) {
+      await this._redisService.quit();
+    }
+    if (this._redisContainer) {
+      await this._redisContainer.stop();
+    }
+    if (this._postgresService) {
+      await this._postgresService.stop();
+    }
   }
   async seed(dataSource: DataSource) {
     const clientRepository = dataSource.getRepository(ClientEntity);
@@ -88,7 +95,7 @@ export class DatabaseSetup {
     const user = await userRepository.save({
       name: 'John Doe',
       email: 'john.doe@gmail.com',
-      password: '$2b$10$tMCrkaXc/YfzVeamnTq/w.XHRoh7MNf.yHRj2XxrfX20Zdl7C5V4S',
+      password: hashSync('test1234', 10),
       isVerified: true,
     });
     const client = await clientRepository.save({

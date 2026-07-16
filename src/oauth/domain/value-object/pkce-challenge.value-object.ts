@@ -21,11 +21,11 @@ export class PkceChallengeValueObject {
     return new PkceChallengeValueObject(codeChallenge, codeChallengeMethod);
   }
   verify(codeVerifier: string) {
-    const codeChallegeVerify = crypto
+    const codeChallengeVerify = crypto
       .createHash('sha256')
       .update(codeVerifier)
       .digest('base64url');
-    if (this.challenge !== codeChallegeVerify) {
+    if (this.challenge !== codeChallengeVerify) {
       throw OauthDomainError.invalidGrant('Invalid code verifier');
     }
   }

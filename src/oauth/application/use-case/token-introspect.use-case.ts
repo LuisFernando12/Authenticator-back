@@ -6,7 +6,10 @@ import {
   TokenServicePort,
 } from '../port/token-service.port';
 
-export class TokenIntrospectUseCase implements BaseUseCase<string> {
+export class TokenIntrospectUseCase implements BaseUseCase<
+  string,
+  ITokenIntrospectResponse | { active: boolean }
+> {
   constructor(
     private readonly tokenServicePort: TokenServicePort,
     private readonly redisServicePort: RedisServicePort,

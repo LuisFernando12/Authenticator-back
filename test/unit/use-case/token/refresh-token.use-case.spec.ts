@@ -14,6 +14,7 @@ describe('RefreshTokenUseCase', () => {
       tokenMock.jwtServiceFake,
       tokenMock.refreshTokenServiceFake,
       tokenMock.generateJtiFake,
+      tokenMock.transactionFake,
     );
   });
 
@@ -50,16 +51,26 @@ describe('RefreshTokenUseCase', () => {
   });
 
   it('should throw an error if refresh token is expired', async () => {
-    jest.spyOn(tokenMock.tokenRepositoryFake, 'findByUserId').mockResolvedValueOnce([
-      tokenMock.mockToken({
-        id: 'test-token-id',
-        user: { id: 'test-user-id' },
-        jti: 'test-jti',
-        consentId: 'test-consent-id',
-        refreshToken: 'hashed-old-refresh-token',
-        expiresAt: new Date(Date.now() - 3600 * 1000),
-      }),
-    ]);
+    jest
+      .spyOn(tokenMock.tokenRepositoryFake, 'findByUserId')
+      .mockResolvedValueOnce([
+        tokenMock.mockToken({
+          id: 'test-token-id',
+          user: {
+            id: 'test-user-id',
+            email: 'john.doe@example.com',
+            password: 'hashed-test-password',
+            name: 'test-user-name',
+            isVerified: true,
+            createdAt: new Date(),
+          },
+          jti: 'test-jti',
+          tokenFamilyId: 'test-token-id',
+          consentId: 'test-consent-id',
+          refreshToken: 'hashed-old-refresh-token',
+          expiresAt: new Date(Date.now() - 3600 * 1000),
+        }),
+      ]);
 
     const promise = refreshTokenUseCase.execute(payload);
 

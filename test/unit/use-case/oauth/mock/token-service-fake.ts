@@ -33,6 +33,7 @@ export class TokenServiceFake implements TokenServicePort {
     userId: 'test-user-id',
     clientId: 'test-client-id',
     user: this._user,
+    scopes: ['read', 'write'],
     client: this._client,
     grantedAt: new Date(),
     revokeAt: null,
@@ -82,6 +83,7 @@ export class TokenServiceFake implements TokenServicePort {
         id: 'test-token-id',
         user: this.user,
         consent: this.consent,
+        tokenFamilyId: 'test-token-family-id',
         refreshToken: 'test-refresh-token',
         jti: 'test-jti',
         expiresAt: new Date(Date.now() + 3600 * 1000),
@@ -107,5 +109,10 @@ export class TokenServiceFake implements TokenServicePort {
       });
     }
     return Promise.resolve({ active: false });
+  }
+  async deleteByTokenFamilyId(tokenFamilyId: string): Promise<void> {
+    if (tokenFamilyId === 'test-token-family-id') {
+      return Promise.resolve();
+    }
   }
 }

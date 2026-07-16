@@ -3,12 +3,12 @@ import { ClientModule } from '@/client/infrastructure/module/client.module';
 import { TokenModule } from '@/token/infrastructure/module/token.module';
 import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppConfigEnvService } from '../core/domain/service/app-config-env.service';
 import { AppConfigModule } from '../core/infrastructure/module/app-config.module';
-import { EmailModule } from '../core/infrastructure/module/email.module';
+import { AuthenticatorLoggerModule } from '../core/infrastructure/module/auth-logger.module';
 import { HealthModule } from '../core/infrastructure/module/health.module';
 import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
 
@@ -16,15 +16,15 @@ import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
   imports: [
     AppConfigModule,
     TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
+      inject: [AppConfigEnvService],
+      useFactory: (config: AppConfigEnvService) => {
         return {
           type: 'postgres',
-          host: config.get('DB_HOST'),
-          port: config.get('DB_PORT'),
-          username: config.get('DB_USER'),
-          password: config.get('DB_PASSWORD'),
-          database: config.get('DB_NAME'),
+          host: config.hostDB,
+          port: config.portDB,
+          username: config.userDB,
+          password: config.passwordDB,
+          database: config.nameDB,
           synchronize: false,
           autoLoadEntities: true,
           migrationsRun: true,
@@ -49,10 +49,10 @@ import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
     AuthModule,
     UserModule,
     TokenModule,
-    EmailModule,
     ClientModule,
     OauthModule,
     HealthModule,
+    AuthenticatorLoggerModule,
   ],
   providers: [
     {

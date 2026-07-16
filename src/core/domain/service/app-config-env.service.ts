@@ -5,6 +5,9 @@ import { ConfigService } from '@nestjs/config';
 export class AppConfigEnvService {
   constructor(private readonly config: ConfigService) {}
 
+  get hostDB(): string {
+    return this.config.get<string>('DB_HOST');
+  }
   get userDB(): string {
     return this.config.get<string>('DB_USER');
   }
@@ -32,17 +35,20 @@ export class AppConfigEnvService {
   get secret(): string {
     return this.config.get<string>('SECRET');
   }
-  get serverSMTP(): string {
-    return this.config.get<string>('SERVER_SMTP');
+  get gmailClientId(): string {
+    return this.config.getOrThrow<string>('GMAIL_CLIENT_ID');
   }
-  get smtpPORT(): number {
-    return this.config.get<number>('SMTP_PORT');
+  get gmailClientSecret(): string {
+    return this.config.getOrThrow<string>('GMAIL_CLIENT_SECRET');
   }
-  get serverSMTPUserName(): string {
-    return this.config.get<string>('SERVER_SMTP_USER_NAME');
+  get gmailRedirectURI(): string {
+    return this.config.getOrThrow<string>('GMAIL_REDIRECT_URI');
   }
-  get serverSMTPPassword(): string {
-    return this.config.get<string>('SERVER_SMTP_PASSWORD');
+  get gmailRefreshToken(): string {
+    return this.config.getOrThrow<string>('GMAIL_REFRESH_TOKEN');
+  }
+  get gmailSenderEmail(): string {
+    return this.config.getOrThrow<string>('GMAIL_SENDER_EMAIL');
   }
   get oauthLoginURL(): string {
     return this.config.getOrThrow<string>('OAUTH_LOGIN_URL');
@@ -62,7 +68,7 @@ export class AppConfigEnvService {
   get emailVerificationTokenExpires(): string {
     return this.config.getOrThrow<string>('EMAIL_VERIFICATION_TOKEN_EXPIRES');
   }
-  get passwordResetTokenExpires(): string {
-    return this.config.getOrThrow<string>('PASSWORD_RESET_TOKEN_EXPIRES');
+  get nodeEnv(): string {
+    return this.config.getOrThrow<string>('NODE_ENV');
   }
 }

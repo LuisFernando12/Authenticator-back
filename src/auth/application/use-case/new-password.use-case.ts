@@ -3,20 +3,25 @@ import { AuthFlow } from '../../domain/enum/auth-flow.enum';
 import { RedisServicePort } from '../port/redis-service.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
 import { UserValidateCredentialsServicePort } from '../port/user-validate-credentials-service.port';
-
-export class NewPasswordUseCase implements BaseUseCase<{
+export interface INewPasswordUseCasePayload {
   password: string;
   code: number;
-}> {
+}
+export interface INewPasswordUseCaseResponse {
+  message: string;
+}
+export class NewPasswordUseCase implements BaseUseCase<
+  INewPasswordUseCasePayload,
+  INewPasswordUseCaseResponse
+> {
   constructor(
     private readonly redisServicePort: RedisServicePort,
     private readonly userRepositoryPort: UserRepositoryPort,
     private readonly userValidateCredentialsServicePort: UserValidateCredentialsServicePort,
   ) {}
-  async execute(payload: {
-    password: string;
-    code: number;
-  }): Promise<{ message: string }> {
+  async execute(
+    payload: INewPasswordUseCasePayload,
+  ): Promise<INewPasswordUseCaseResponse> {
     const { password, code } = payload;
     const codeRedis =
       await this.redisServicePort.consumeResetPasswordCodeOTP(code);

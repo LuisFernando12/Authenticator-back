@@ -1,9 +1,10 @@
 import type { Config } from 'jest';
 
 const config: Config = {
+  maxWorkers: '50%',
   moduleFileExtensions: ['ts', 'js'],
   roots: ['.', 'test', '<rootDir>/src'],
-  testRegex: '.*\\.spec\\.ts$',
+  testRegex: String.raw`.*\.spec\.ts$`,
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },

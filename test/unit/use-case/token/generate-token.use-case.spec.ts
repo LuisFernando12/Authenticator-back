@@ -14,6 +14,7 @@ describe('GenerateTokenUseCase', () => {
       tokenMock.jwtServiceFake,
       tokenMock.refreshTokenServiceFake,
       tokenMock.generateJtiFake,
+      tokenMock.transactionFake,
     );
   });
 
@@ -39,6 +40,45 @@ describe('GenerateTokenUseCase', () => {
     expect(result.refresh_token).toBe('test-refresh-token');
     expect(result.expiresAt).toBeDefined();
   });
+  it('should generate a token without consent', async () => {
+    const result = await generateTokenUseCase.execute({
+      ...payload,
+      consentId: null,
+    });
+
+    expect(result.access_token).toBe('test-access-token');
+    expect(result.refresh_token).toBe('test-refresh-token');
+    expect(result.expiresAt).toBeDefined();
+  });
+
+  it('should reuse token family when consent already has a token', async () => {
+    const signAsyncSpy = jest.spyOn(tokenMock.jwtServiceFake, 'signAsync');
+
+    await generateTokenUseCase.execute(payload);
+
+    expect(signAsyncSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tokenFamilyId: 'test-token-family-id',
+      }),
+      expect.any(String),
+    );
+  });
+
+  it('should generate a new token family when consent has no token yet', async () => {
+    const signAsyncSpy = jest.spyOn(tokenMock.jwtServiceFake, 'signAsync');
+
+    await generateTokenUseCase.execute({
+      ...payload,
+      consentId: 'new-consent-id',
+    });
+
+    expect(signAsyncSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tokenFamilyId: 'test-jti',
+      }),
+      expect.any(String),
+    );
+  });
 
   it('should throw an error if access token generation fails', async () => {
     jest
@@ -54,7 +94,7 @@ describe('GenerateTokenUseCase', () => {
 
   it('should throw an error if token persistence fails', async () => {
     jest
-      .spyOn(tokenMock.tokenRepositoryFake, 'create')
+      .spyOn(tokenMock.transactionFake, 'executeTransaction')
       .mockRejectedValueOnce(
         TokenDomainError.internalServerError('Failure to save token'),
       );

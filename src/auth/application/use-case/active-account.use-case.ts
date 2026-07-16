@@ -3,7 +3,10 @@ import { AuthFlow } from '../../domain/enum/auth-flow.enum';
 import { TokenServicePort } from '../port/token-service.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
 
-export class ActiveAccountUseCase implements BaseUseCase<string> {
+export class ActiveAccountUseCase implements BaseUseCase<
+  string,
+  { message: string }
+> {
   constructor(
     private readonly tokenServicePort: TokenServicePort,
     private readonly userRepositoryPort: UserRepositoryPort,

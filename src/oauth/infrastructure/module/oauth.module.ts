@@ -53,7 +53,7 @@ import {
 } from '../../../client/infrastructure/repository/client.repository';
 import { ConsentService } from '../../../consent/application/service/consent.service';
 import { ConsentModule } from '../../../consent/infrastructure/module/consent.module';
-import { ITokenService } from '../../../token/application/service/token.service';
+import { TokenService } from '../../../token/application/service/token.service';
 import {
   GENERATE_ID_SERVICE_PORT,
   GenerateIdServicePort,
@@ -103,9 +103,9 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
     },
     {
       provide: TOKEN_SERVICE_PORT,
-      useFactory: (tokenService: ITokenService): TokenServicePort =>
+      useFactory: (tokenService: TokenService): TokenServicePort =>
         new TokenServiceAdapter(tokenService),
-      inject: [ITokenService],
+      inject: [TokenService],
     },
     {
       provide: REDIS_SERVICE_PORT,
@@ -216,18 +216,21 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         userServicePort: UserServicePort,
         userClientConsentServicePort: ConsentServicePort,
         configServicePort: ConfigServicePort,
+        redisServicePort: RedisServicePort,
       ) =>
         new RefreshTokenUseCase(
           tokenServicePort,
           userServicePort,
           userClientConsentServicePort,
           configServicePort,
+          redisServicePort,
         ),
       inject: [
         TOKEN_SERVICE_PORT,
         USER_SERVICE_PORT,
         USER_CLIENT_CONSENT_SERVICE_PORT,
         CONFIG_SERVICE_PORT,
+        REDIS_SERVICE_PORT,
       ],
     },
     {

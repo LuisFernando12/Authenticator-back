@@ -1,35 +1,36 @@
-import { IEmailService } from '../../../core/application/service/email.service';
+import { EmailQueue } from '../../../email/infrastructure/queue/email.queue';
 import {
   EmailServicePort,
   IResetPasswordPayload,
   ISendActivationEmailPayload,
 } from '../../application/port/email-service.port';
-import { AuthDomainError } from '../../domain/error/auth-domain.error';
 
 export class EmailServiceAdapter implements EmailServicePort {
-  constructor(private readonly emailService: IEmailService) {}
+  constructor(private readonly emailQueue: EmailQueue) {}
   async sendActivationEmail(
     payload: ISendActivationEmailPayload,
   ): Promise<void> {
     const { email, name, token } = payload;
 
-    const sendNewEmail = await this.emailService.sendActivationEmail(
-      email,
-      name,
-      token,
+    await this.emailQueue.add(
+      {
+        email,
+        username: name,
+        token,
+      },
+      'activation',
     );
-    if (sendNewEmail !== 'OK') {
-      throw AuthDomainError.internalServerError('Failure to send email');
-    }
   }
   async resetPassword(payload: IResetPasswordPayload): Promise<void> {
     const { email, name, code } = payload;
-    const emailSend = await this.emailService.resetPassword(email, name, code);
 
-    if (emailSend !== 'OK') {
-      throw AuthDomainError.internalServerError(
-        'Failure to reset password, try again',
-      );
-    }
+    await this.emailQueue.add(
+      {
+        email,
+        username: name,
+        code,
+      },
+      'reset-password',
+    );
   }
 }

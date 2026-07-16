@@ -19,7 +19,7 @@ export interface IExchangeOauthCodeUseCaseResponse {
   scope: string;
   expiresAt: string;
 }
-export interface IEXchangeOauthCodeToToken {
+export interface IExchangeOauthCodeToToken {
   grantType: string;
   clientId: string;
   clientSecret?: string;
@@ -27,7 +27,10 @@ export interface IEXchangeOauthCodeToToken {
   code: string;
   codeVerifier?: string;
 }
-export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
+export class ExchangeOauthCodeUseCase implements BaseUseCase<
+  OauthTokenDTO,
+  OauthAccessToken
+> {
   constructor(
     private readonly clientServicePort: ClientServicePort,
     private readonly tokenServicePort: TokenServicePort,
@@ -37,7 +40,7 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
     private readonly consentServicePort: ConsentServicePort,
     private readonly configService: ConfigServicePort,
   ) {}
-  async execute(payload: IEXchangeOauthCodeToToken): Promise<OauthAccessToken> {
+  async execute(payload: IExchangeOauthCodeToToken): Promise<OauthAccessToken> {
     const {
       clientId,
       code,
@@ -51,7 +54,6 @@ export class ExchangeOauthCodeUseCase implements BaseUseCase<OauthTokenDTO> {
         `Unsupported grant type ${grantType}`,
       );
     }
-
     const isPKCE = !!codeVerifier;
 
     const clientDB = await this.clientServicePort.findByClientId(clientId);

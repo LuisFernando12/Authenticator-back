@@ -8,7 +8,7 @@ describe('RevokeTokenUseCase', () => {
 
   beforeEach(() => {
     tokenMock = tokenMocked();
-    revokeTokenUseCase = new RevokeTokenUseCase(tokenMock.tokenRepositoryFake);
+    revokeTokenUseCase = new RevokeTokenUseCase(tokenMock.transactionFake);
   });
 
   it('should be defined', () => {

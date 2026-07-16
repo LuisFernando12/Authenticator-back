@@ -13,14 +13,17 @@ import {
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { ActiveAccountUseCase } from '../../application/use-case/active-account.use-case';
-import { LoginUseCase } from '../../application/use-case/login.user-case';
+import {
+  ILoginUseCaseResponse,
+  LoginUseCase,
+} from '../../application/use-case/login.user-case';
 import { NewPasswordUseCase } from '../../application/use-case/new-password.use-case';
 import { ResetPasswordUseCase } from '../../application/use-case/reset-password.use-case';
 import { LoginDTO } from '../dto/login.dto';
 import { SendNewTokenToEmailActiveUseCase } from './../../application/use-case/send-new-token-to-email-active.use-case';
 
 export interface IAuthController {
-  login(data: LoginDTO): Promise<any>;
+  login(data: LoginDTO): Promise<ILoginUseCaseResponse>;
   verifyEmail(token: string): void;
   resetPassword(data: { email: string }): Promise<{ message: string }>;
   newPassword(data: NewPasswordDTO): void;

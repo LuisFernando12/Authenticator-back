@@ -11,7 +11,7 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 import { Test, TestingModule } from '@nestjs/testing';
-import { mockAppconfigEnvService } from '../mock/appConfigEnv.mock';
+import { mockAppconfigEnvService } from './mock/appConfigEnv.mock';
 
 describe('HealthController', () => {
   let healthController: IHealthController;

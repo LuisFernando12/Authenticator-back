@@ -1,18 +1,20 @@
 import { AppConfigEnvService } from '@/core/domain/service/app-config-env.service';
 import { TokenEntity } from '@/token/infrastructure/persistence/entity/token.entity';
-import { TokenRepository } from '@/token/infrastructure/repository/token.repository';
+import { TokenRepository } from '@/token/infrastructure/persistence/repository/token.repository';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { AppConfigModule } from '../../../core/infrastructure/module/app-config.module';
+import { SessionModule } from '../../../session/infrastructure/module/session.module';
 import {
   CONFIG_SERVICE_PORT,
   ConfigServicePort,
 } from '../../application/port/config-service.port';
 import {
   GENERATE_JTI_PORT,
-  GenerateJtiPort,
-} from '../../application/port/generate-jti.port';
+  GenerateUUIDPort,
+} from '../../application/port/generate-uuid.port';
 import {
   JWT_SERVICE_PORT,
   JwtServicePort,
@@ -26,20 +28,27 @@ import {
   TokenRepositoryPort,
 } from '../../application/port/token-repository.port';
 import {
-  ITokenService,
+  TRANSACTION_PORT,
+  TransactionPort,
+} from '../../application/port/transaction.port';
+import {
   TokenService,
+  TokenServiceImpls,
 } from '../../application/service/token.service';
+import { DeleteByTokenFamilyIdUseCase } from '../../application/use-case/delete-by-token-family-id.use-case';
 import { FindByRefreshTokenUseCase } from '../../application/use-case/find-by-refresh-token.use-case';
+import { FindByTokenFamilyIdUseCase } from '../../application/use-case/find-by-token-family-id.use-case';
 import { GenerateEmailVerificationTokenUseCase } from '../../application/use-case/generate-email-verification-token.use-case';
 import { GenerateTokenUseCase } from '../../application/use-case/generate-token.use-case';
 import { RefreshTokenUseCase } from '../../application/use-case/refresh-token.use-case';
 import { RevokeTokenUseCase } from '../../application/use-case/revoke-token.use-case';
 import { TokenIntrospectUseCase } from '../../application/use-case/token-introspect.use-case';
 import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
-import { GenerateJtiAdapter } from '../adapter/generate-jti.adapter';
+import { GenerateUUIDAdapter } from '../adapter/generate-uuid.adapter';
 import { JwtServiceAdapter } from '../adapter/jwt-service.adapter';
 import { RefreshTokenServiceAdapter } from '../adapter/refresh-token-service.adapter';
 import { TokenRepositoryAdapter } from '../adapter/token-repository.adapter';
+import { TransactionAdapter } from '../adapter/transaction.adapter';
 import { VerifyTokenUseCase } from './../../application/use-case/verify-token.use-case';
 
 @Module({
@@ -56,6 +65,7 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
       }),
     }),
     TypeOrmModule.forFeature([TokenEntity]),
+    SessionModule,
   ],
   providers: [
     TokenRepository,
@@ -66,8 +76,14 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
       inject: [AppConfigEnvService],
     },
     {
+      provide: TRANSACTION_PORT,
+      useFactory: (dataSource: DataSource): TransactionPort =>
+        new TransactionAdapter(dataSource),
+      inject: [DataSource],
+    },
+    {
       provide: GENERATE_JTI_PORT,
-      useFactory: (): GenerateJtiPort => new GenerateJtiAdapter(),
+      useFactory: (): GenerateUUIDPort => new GenerateUUIDAdapter(),
     },
     {
       provide: REFRESH_TOKEN_SERVICE_PORT,
@@ -109,9 +125,9 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
     },
     {
       provide: RevokeTokenUseCase,
-      useFactory: (tokenRepositoryPort: TokenRepositoryPort) =>
-        new RevokeTokenUseCase(tokenRepositoryPort),
-      inject: [TOKEN_REPOSITORY_PORT],
+      useFactory: (transactionPort: TransactionPort) =>
+        new RevokeTokenUseCase(transactionPort),
+      inject: [TRANSACTION_PORT],
     },
     {
       provide: TokenIntrospectUseCase,
@@ -132,7 +148,8 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
         configServicePort: ConfigServicePort,
         jwtServicePort: JwtServicePort,
         generateTokensServicePort: RefreshTokenServicePort,
-        generateJtiPort: GenerateJtiPort,
+        generateJtiPort: GenerateUUIDPort,
+        transactionPort: TransactionPort,
       ) =>
         new GenerateTokenUseCase(
           tokenRepositoryPort,
@@ -140,6 +157,7 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
           jwtServicePort,
           generateTokensServicePort,
           generateJtiPort,
+          transactionPort,
         ),
       inject: [
         TOKEN_REPOSITORY_PORT,
@@ -147,6 +165,7 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
         JWT_SERVICE_PORT,
         REFRESH_TOKEN_SERVICE_PORT,
         GENERATE_JTI_PORT,
+        TRANSACTION_PORT,
       ],
     },
     {
@@ -156,7 +175,8 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
         configServicePort: ConfigServicePort,
         jwtServicePort: JwtServicePort,
         refreshTokenServicePort: RefreshTokenServicePort,
-        generateJtiPort: GenerateJtiPort,
+        generateJtiPort: GenerateUUIDPort,
+        transactionPort: TransactionPort,
       ) =>
         new RefreshTokenUseCase(
           tokenRepositoryPort,
@@ -164,6 +184,7 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
           jwtServicePort,
           refreshTokenServicePort,
           generateJtiPort,
+          transactionPort,
         ),
       inject: [
         TOKEN_REPOSITORY_PORT,
@@ -171,10 +192,23 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
         JWT_SERVICE_PORT,
         REFRESH_TOKEN_SERVICE_PORT,
         GENERATE_JTI_PORT,
+        TRANSACTION_PORT,
       ],
     },
     {
-      provide: ITokenService,
+      provide: FindByTokenFamilyIdUseCase,
+      useFactory: (tokenRepositoryPort: TokenRepositoryPort) =>
+        new FindByTokenFamilyIdUseCase(tokenRepositoryPort),
+      inject: [TOKEN_REPOSITORY_PORT],
+    },
+    {
+      provide: DeleteByTokenFamilyIdUseCase,
+      useFactory: (transactionPort: TransactionPort) =>
+        new DeleteByTokenFamilyIdUseCase(transactionPort),
+      inject: [TRANSACTION_PORT],
+    },
+    {
+      provide: TokenService,
       useFactory: (
         generateTokenUseCase: GenerateTokenUseCase,
         refreshTokenUseCase: RefreshTokenUseCase,
@@ -183,8 +217,10 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
         verifyTokenUseCase: VerifyTokenUseCase,
         findByRefreshTokenUseCase: FindByRefreshTokenUseCase,
         generateEmailVerificationTokenUseCase: GenerateEmailVerificationTokenUseCase,
-      ): ITokenService =>
-        new TokenService(
+        findByTokenFamilyIdUseCase: FindByTokenFamilyIdUseCase,
+        deleteByTokenFamilyIdUseCase: DeleteByTokenFamilyIdUseCase,
+      ): TokenService =>
+        new TokenServiceImpls(
           generateTokenUseCase,
           refreshTokenUseCase,
           revokeTokenUseCase,
@@ -192,6 +228,8 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
           verifyTokenUseCase,
           findByRefreshTokenUseCase,
           generateEmailVerificationTokenUseCase,
+          findByTokenFamilyIdUseCase,
+          deleteByTokenFamilyIdUseCase,
         ),
       inject: [
         GenerateTokenUseCase,
@@ -201,9 +239,11 @@ import { VerifyTokenUseCase } from './../../application/use-case/verify-token.us
         VerifyTokenUseCase,
         FindByRefreshTokenUseCase,
         GenerateEmailVerificationTokenUseCase,
+        FindByTokenFamilyIdUseCase,
+        DeleteByTokenFamilyIdUseCase,
       ],
     },
   ],
-  exports: [ITokenService, TokenRepository],
+  exports: [TokenService, TokenRepository],
 })
 export class TokenModule {}

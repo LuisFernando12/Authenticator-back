@@ -1,24 +1,30 @@
-FROM node:lts-alpine AS builder
-
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-COPY package*.json ./
+RUN npm install -g pnpm@10
 
 ENV HUSKY=0
 
-RUN npm install --quiet --no-fund --loglevel=error
+COPY package*.json pnpm-lock.yaml  ./
+RUN pnpm install  --frozen-lockfile --quiet --loglevel=error
 
 COPY . .
 
-RUN npm run build
+RUN pnpm build
 
-FROM node:lts-alpine AS runner
-
+FROM node:22-alpine AS runner
 WORKDIR /app
 
+RUN npm install -g pnpm@10
+
+ENV NODE_ENV=production
+ENV HUSKY=0
+
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+
+RUN pnpm install --prod  --frozen-lockfile --quiet --loglevel=error
 
 
 EXPOSE 3000

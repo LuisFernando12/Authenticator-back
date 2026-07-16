@@ -47,7 +47,7 @@ export class OauthClient {
       throw OauthDomainError.invalidGrant('Redirect URI not allowed');
     }
   }
-  grantTypeIsSuspported(grantType: string): void {
+  grantTypeIsSupported(grantType: string): void {
     if (grantType !== 'authorization_code') {
       throw OauthDomainError.unsupportedGrantType(
         `Unsupported grant type ${grantType || ''}`,
@@ -77,13 +77,12 @@ export class OauthClient {
     }
   }
   validPkceChallenge(
-    pckeChallenge: PkceChallengeValueObject,
-    codeVerfier: string,
+    pkceChallenge: PkceChallengeValueObject,
+    codeVerifier: string,
   ): void {
-    if (codeVerfier) {
-      pckeChallenge.verify(codeVerfier);
+    if (codeVerifier) {
+      pkceChallenge.verify(codeVerifier);
     }
-    return;
   }
   exchangeCodeToTokenWithoutPKCE(): void {
     if (!this.isConfidential) {

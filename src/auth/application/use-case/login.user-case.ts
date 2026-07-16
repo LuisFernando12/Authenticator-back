@@ -4,11 +4,20 @@ import { ConfigServicePort } from '../port/config-service.port';
 import { TokenServicePort } from '../port/token-service.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
 import { UserValidateCredentialsServicePort } from '../port/user-validate-credentials-service.port';
-export interface IPayloadLoginUseCase {
+export interface ILoginUseCasePayload {
   email: string;
   password: string;
 }
-export class LoginUseCase implements BaseUseCase<IPayloadLoginUseCase> {
+export interface ILoginUseCaseResponse {
+  access_token: string;
+  refresh_token: string;
+  expiresAt: string;
+  redirect_uri: string;
+}
+export class LoginUseCase implements BaseUseCase<
+  ILoginUseCasePayload,
+  ILoginUseCaseResponse
+> {
   constructor(
     private readonly userRepositoryPort: UserRepositoryPort,
     private readonly userValidateCredentialsServicePort: UserValidateCredentialsServicePort,
@@ -16,7 +25,7 @@ export class LoginUseCase implements BaseUseCase<IPayloadLoginUseCase> {
     private readonly configServicePort: ConfigServicePort,
   ) {}
 
-  async execute(payload: IPayloadLoginUseCase): Promise<any> {
+  async execute(payload: ILoginUseCasePayload): Promise<ILoginUseCaseResponse> {
     const { email, password } = payload;
     const userDB = await this.userRepositoryPort.findByEmail(email);
 

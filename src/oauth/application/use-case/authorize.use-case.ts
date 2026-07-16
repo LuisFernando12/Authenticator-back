@@ -54,7 +54,7 @@ export class AuthorizeUseCase {
 
     const oauthRequestId = this.generateIdServicePort.generateOauthRequestId();
 
-    const payloadOauthResquest = OauthRequest.create({
+    const payloadOauthRequest = OauthRequest.create({
       oauthRequestId,
       clientId,
       redirectUri,
@@ -63,7 +63,7 @@ export class AuthorizeUseCase {
       state,
       scope,
     });
-    await this.redisServicePort.saveAuthRequest(payloadOauthResquest);
+    await this.redisServicePort.saveAuthRequest(payloadOauthRequest);
 
     return MountUrlValueObject.mount<MountUrlParamType>(
       this.configServicePort.oauthLoginURL,

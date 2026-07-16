@@ -1,7 +1,7 @@
 import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
 import * as bcrypt from 'bcrypt';
 import {
-  IValidanteCredentialsPayload,
+  IValidateCredentialsPayload,
   UserServicePort,
 } from '../../application/port/user-service.port';
 import { OauthUser } from '../../domain/entity/user.entity';
@@ -17,7 +17,7 @@ export class UserServiceAdapter implements UserServicePort {
     return new OauthUser(userDB);
   }
   async validateUserCredentials(
-    payload: IValidanteCredentialsPayload,
+    payload: IValidateCredentialsPayload,
   ): Promise<OauthUser> {
     const { password, email } = payload;
     const userDB = await this.findByEmail(email);

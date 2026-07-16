@@ -1,11 +1,11 @@
 import {
-  IValidanteCredentialsPayload,
+  IValidateCredentialsPayload,
   UserServicePort,
 } from '@/oauth/application/port/user-service.port';
 import { OauthUser } from '../../../../../src/oauth/domain/entity/user.entity';
 
 export class UserServiceFake implements UserServicePort {
-  private user: OauthUser = new OauthUser({
+  private readonly user: OauthUser = new OauthUser({
     id: 'test-user-id',
     email: 'john.doe@example.com',
     password: 'test-user-password',
@@ -20,7 +20,7 @@ export class UserServiceFake implements UserServicePort {
     return this.user;
   }
   async validateUserCredentials(
-    _payload: IValidanteCredentialsPayload,
+    _payload: IValidateCredentialsPayload,
   ): Promise<OauthUser> {
     return this.user;
   }

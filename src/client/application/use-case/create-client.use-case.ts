@@ -11,11 +11,15 @@ export interface IPayloadCreateClient {
   scopes: Array<string>;
   isConfidential: boolean;
 }
-export class CreateClientUseCase implements BaseUseCase<IPayloadCreateClient> {
+
+export class CreateClientUseCase implements BaseUseCase<
+  IPayloadCreateClient,
+  IClientProps
+> {
   constructor(
     private readonly clientRepositoryPort: ClientRepositoryPort,
     private readonly generateClientsServicePort: GenerateClientsServicePort,
-    private configService: ConfigServicePort,
+    private readonly configService: ConfigServicePort,
   ) {}
   async execute(clientPayload: IPayloadCreateClient): Promise<IClientProps> {
     const clientId = this.generateClientsServicePort.generateClientId(

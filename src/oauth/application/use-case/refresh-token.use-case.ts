@@ -1,6 +1,8 @@
 import { BaseUseCase } from '@/core/application/use-case/base.use-case';
+import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 import { ConfigServicePort } from '../port/config-service.port';
+import { RedisServicePort } from '../port/redis-service-port';
 import { IPayloadToken, TokenServicePort } from '../port/token-service.port';
 import { ConsentServicePort } from '../port/user-client-consent-service.port';
 import { UserServicePort } from '../port/user-service.port';
@@ -8,14 +10,20 @@ interface IRefreshTokenUseCasePayload {
   grantType: string;
   refreshToken: string;
 }
-export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenUseCasePayload> {
+export class RefreshTokenUseCase implements BaseUseCase<
+  IRefreshTokenUseCasePayload,
+  OauthAccessToken
+> {
   constructor(
     private readonly tokenServicePort: TokenServicePort,
     private readonly userServicePort: UserServicePort,
     private readonly consentServicePort: ConsentServicePort,
     private readonly configServicePort: ConfigServicePort,
+    private readonly redisServicePort: RedisServicePort,
   ) {}
-  async execute(payload: IRefreshTokenUseCasePayload): Promise<any> {
+  async execute(
+    payload: IRefreshTokenUseCasePayload,
+  ): Promise<OauthAccessToken> {
     const { refreshToken, grantType } = payload;
     if (grantType !== 'refresh_token') {
       throw OauthDomainError.invalidGrant(
@@ -24,6 +32,17 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenUseCasePayl
     }
     const refreshTokenHashed =
       this.tokenServicePort.hashRefreshToken(refreshToken);
+    const refreshTokenIsReused =
+      await this.redisServicePort.consultHasTokenFamilyOnReuseDetection(
+        refreshTokenHashed,
+      );
+    if (refreshTokenIsReused?.tokenFamilyId) {
+      await this.tokenServicePort.deleteByTokenFamilyId(
+        refreshTokenIsReused.tokenFamilyId,
+      );
+
+      throw OauthDomainError.tokenFamilyReused();
+    }
     const refreshTokenDB =
       await this.tokenServicePort.findByRefreshToken(refreshTokenHashed);
     refreshTokenDB.validateRefreshTokenIsValid();
@@ -41,6 +60,12 @@ export class RefreshTokenUseCase implements BaseUseCase<IRefreshTokenUseCasePayl
       aud: clientId,
       iss: this.configServicePort.serviceURL,
     };
+    await this.redisServicePort.addTokenFamilyToReuseDetection({
+      tokenFamilyId: refreshTokenDB.tokenFamilyId,
+      jti: refreshTokenDB.jti,
+      expiresAt: refreshTokenDB.expiresAt,
+      refreshToken: refreshTokenDB.refreshToken,
+    });
     return await this.tokenServicePort.refreshToken(
       payloadToken,
       refreshTokenHashed,

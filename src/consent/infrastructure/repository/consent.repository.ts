@@ -109,7 +109,7 @@ export class ConsentRepository implements IConsentRepository {
         expiresAt: consent.expiresAt,
         revokeAt: consent.revokeAt,
       });
-    } catch (_error) {
+    } catch {
       throw new InternalServerErrorException('Failure to find consent');
     }
   }

@@ -20,7 +20,7 @@ export class JwtServiceAdapter implements JwtServicePort {
         expiresIn: expiresIn,
         secret: this.appConfigEnvService.secret,
       });
-    } catch (_error) {
+    } catch {
       throw TokenDomainError.internalServerError('Failure to generate token');
     }
   }
@@ -29,7 +29,7 @@ export class JwtServiceAdapter implements JwtServicePort {
       return await this.jwtService.verifyAsync(token, {
         secret: this.appConfigEnvService.secret,
       });
-    } catch (_error) {
+    } catch {
       throw TokenDomainError.unauthorized('Invalid token');
     }
   }

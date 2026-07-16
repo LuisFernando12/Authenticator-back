@@ -9,7 +9,13 @@ export interface IRegisterUserPayload {
   email: string;
   password: string;
 }
-export class RegisterUserUseCase implements BaseUseCase<IRegisterUserPayload> {
+export interface IRegisterUserResponse {
+  message: string;
+}
+export class RegisterUserUseCase implements BaseUseCase<
+  IRegisterUserPayload,
+  IRegisterUserResponse
+> {
   constructor(
     private readonly userRepositoryPort: UserRepositoryPort,
     private readonly encryptServicePort: EncryptServicePort,

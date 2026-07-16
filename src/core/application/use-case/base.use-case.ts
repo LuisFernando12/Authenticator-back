@@ -1,3 +1,3 @@
-export abstract class BaseUseCase<T> {
-  abstract execute(payload: T): Promise<any>;
+export abstract class BaseUseCase<T, R> {
+  abstract execute(payload: T): Promise<R>;
 }

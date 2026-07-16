@@ -7,7 +7,8 @@ interface IOauthTokenProps {
   user: OauthUser;
   consent: OauthConsent;
   jti: string;
-  consentId?: string;
+  tokenFamilyId: string;
+  consentId: string;
   refreshToken: string;
   expiresAt: Date;
 }
@@ -21,6 +22,9 @@ export class OauthToken {
   }
   get consent(): OauthConsent {
     return this.tokenProps.consent;
+  }
+  get tokenFamilyId(): string {
+    return this.tokenProps.tokenFamilyId;
   }
   get jti(): string {
     return this.tokenProps.jti;

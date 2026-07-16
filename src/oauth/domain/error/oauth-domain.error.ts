@@ -85,4 +85,14 @@ export class OauthDomainError extends Error {
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }
+  static tokenFamilyReused(description?: string) {
+    return new OauthDomainError(
+      {
+        error: 'token_family_reused',
+        message:
+          description || 'Token family reused, token has already been used!',
+      },
+      HttpStatus.UNAUTHORIZED,
+    );
+  }
 }

@@ -38,9 +38,10 @@ export abstract class TokenServicePort {
     refreshTokenHashed: string,
     consentId?: string,
   ): Promise<OauthAccessToken>;
-  abstract findByRefreshToken(refreshToken: string): Promise<OauthToken>;
+  abstract findByRefreshToken(refreshTokenHash: string): Promise<OauthToken>;
   abstract revokeToken(refreshToken: string): Promise<void>;
   abstract tokenIntrospect(
     token: string,
   ): Promise<ITokenIntrospectResponse | { active: boolean }>;
+  abstract deleteByTokenFamilyId(tokenFamilyId: string): Promise<void>;
 }

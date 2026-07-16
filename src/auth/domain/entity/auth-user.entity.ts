@@ -37,7 +37,6 @@ export class AuthUser {
         'Email or Password incorrect, please verify and try again',
       );
     }
-    return;
   }
   isVerifiedAccount(flow: AuthFlow): void {
     if (
@@ -47,10 +46,8 @@ export class AuthUser {
       if (this.userProps.isVerified) {
         throw AuthDomainError.badRequest('Account already active');
       }
-    } else {
-      if (!this.userProps.isVerified) {
-        throw AuthDomainError.badRequest('Account not verified');
-      }
+    } else if (!this.userProps.isVerified) {
+      throw AuthDomainError.badRequest('Account not verified');
     }
   }
   isSamePassword(value: boolean) {
@@ -58,7 +55,7 @@ export class AuthUser {
       throw AuthDomainError.conflict(
         'Password already used, please try again with another password!',
         {
-          description: 'PASSWORD_ALREADY_USED',
+          cause: 'PASSWORD_ALREADY_USED',
         },
       );
     }

@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ClientEntity } from '../../../../client/infrastructure/persistence/entity/client.entity';
+import { SessionEntity } from '../../../../session/infrastructure/persistence/entity/session.entity';
 import { TokenEntity } from '../../../../token/infrastructure/persistence/entity/token.entity';
 import { UserEntity } from '../../../../user/infrastructure/persistence/entity/user.entity';
 
@@ -44,7 +45,7 @@ export class ConsentEntity {
   })
   client: ClientEntity;
 
-  @OneToMany(() => TokenEntity, (token) => token.userClientConsent)
+  @OneToMany(() => TokenEntity, (token) => token.consent)
   tokens: TokenEntity[];
 
   @Column('timestamp with time zone', {
@@ -57,4 +58,6 @@ export class ConsentEntity {
 
   @Column({ name: 'revoke_at', nullable: true, default: null })
   revokeAt: Date | null;
+  @OneToMany(() => SessionEntity, (session) => session.consent)
+  sessions: SessionEntity[];
 }
