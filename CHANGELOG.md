@@ -1,3 +1,11 @@
+# [2.2.0](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0...v2.2.0) (2026-07-27)
+
+
+### Features
+
+* **session:** add deleteOldestSessionByUserId method and update session creation logic ([1e02e82](https://github.com/LuisFernando12/Authenticator/commit/1e02e82cf55aaa3a77f4667a9ab23b7922d8ec4e))
+* **session:** update deleteOldestSessionByUserId to filter and sort sessions ([718d513](https://github.com/LuisFernando12/Authenticator/commit/718d513ab23006057d1c0681ed2ce6a2b858df8f))
+
 # [2.1.0](https://github.com/LuisFernando12/Authenticator/compare/v2.0.0...v2.1.0) (2026-07-16)
 
 
