@@ -110,9 +110,12 @@ export class SessionRepositoryFake implements SessionRepositoryPort {
     userId: string,
     consentId: string | null,
   ): Promise<void> {
-    this.sessions = this.sessions.filter(
-      (item) => item.userId !== userId || item.consentId !== consentId,
-    );
+    this.sessions = this.sessions
+      .filter((item) => item.userId === userId || item.consentId === consentId)
+      .sort(
+        (itemA, itemB) => itemA.createdAt.getTime() - itemB.createdAt.getTime(),
+      )
+      .slice(1);
   }
   async deleteByJTI(jti: string): Promise<void> {
     const sessionExists = this.sessions.some((item) => item.jti === jti);
