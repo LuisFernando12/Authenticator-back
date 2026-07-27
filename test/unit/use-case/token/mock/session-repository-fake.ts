@@ -1,6 +1,7 @@
 import { Session } from '../../../../../src/session/domain/entity/session.entity';
 import {
   ICreateSessionPayload,
+  ISession,
   SessionRepositoryPort,
 } from '../../../../../src/token/application/port/session-repository.port';
 
@@ -20,21 +21,49 @@ export class SessionRepositoryFake implements SessionRepositoryPort {
 
   async create(sessionPayload: ICreateSessionPayload): Promise<any> {
     const session = Session.create({
-      id: sessionPayload.id ?? 'test-created-session-id',
+      id: 'test-created-session-id',
       jti: sessionPayload.jti,
       userId: sessionPayload.userId,
       consentId: sessionPayload.consentId ?? null,
       tokenFamilyId: sessionPayload.tokenFamilyId,
       expiresAt: sessionPayload.expiresAt,
-      createdAt: sessionPayload.createdAt ?? new Date(),
-      updatedAt: sessionPayload.updatedAt ?? new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
-
     this.sessions.push(session);
-
     return session;
   }
-
+  async findByUserId(userId: string): Promise<ISession[]> {
+    return this.sessions
+      .filter((item) => item.userId === userId)
+      .map((item) => ({
+        id: item.id,
+        jti: item.jti,
+        userId: item.userId,
+        consentId: item.consentId || null,
+        tokenFamilyId: item.tokenFamilyId,
+        expiresAt: item.expiresAt,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      }));
+  }
+  async findByUserIdAndConsentId(
+    userId: string,
+    consentId: string,
+  ): Promise<ISession[]> {
+    return this.sessions
+      .filter((item) => item.userId === userId && item.consentId === consentId)
+      .map((item) => ({
+        id: item.id,
+        jti: item.jti,
+        userId: item.userId,
+        consentId: item.consentId || null,
+        tokenFamilyId: item.tokenFamilyId,
+        expiresAt: item.expiresAt,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      }));
+  }
   async update(
     payload: { newJTI: string; expiresAt: Date },
     oldJTI: string,
@@ -77,7 +106,14 @@ export class SessionRepositoryFake implements SessionRepositoryPort {
 
     this.sessions = this.sessions.filter((item) => item.id !== id);
   }
-
+  async deleteOldestSessionByUserId(
+    userId: string,
+    consentId: string | null,
+  ): Promise<void> {
+    this.sessions = this.sessions.filter(
+      (item) => item.userId !== userId || item.consentId !== consentId,
+    );
+  }
   async deleteByJTI(jti: string): Promise<void> {
     const sessionExists = this.sessions.some((item) => item.jti === jti);
 

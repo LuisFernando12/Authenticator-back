@@ -4,18 +4,7 @@ export interface ICreateSessionPayload {
   tokenFamilyId: string;
   expiresAt: Date;
   userId: string;
-  deletedAt?: Date;
 }
-/**
- * type SessionEntityType = {
- consentId: string;
- jti: string;
- tokenFamilyId: string;
- expiresAt: Date;
- userId: string;
- deletedAt?: Date;
-}
- */
 export interface ISession {
   id: string;
   jti: string;
