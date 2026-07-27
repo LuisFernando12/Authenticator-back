@@ -67,16 +67,27 @@ export class GenerateTokenUseCase implements BaseUseCase<
       tokenFamilyId,
       jti,
     });
-    await this.transactionPort.executeTransaction(async (manager) => ({
-      token: await manager.token.create(tokenEntity),
-      session: await manager.session.create({
-        consentId: consentId || null,
-        userId: payload.sub,
-        expiresAt: expiresAt,
-        tokenFamilyId: tokenFamilyId,
-        jti: jti,
-      }),
-    }));
+    await this.transactionPort.executeTransaction(async (manager) => {
+      const sessionDB = consentId
+        ? await manager.session.findByUserIdAndConsentId(payload.sub, consentId)
+        : await manager.session.findByUserId(payload.sub);
+      if (sessionDB.length >= 5) {
+        await manager.session.deleteOldestSessionByUserId(
+          payload.sub,
+          consentId || null,
+        );
+      }
+      return {
+        token: await manager.token.create(tokenEntity),
+        session: await manager.session.create({
+          consentId: consentId || null,
+          userId: payload.sub,
+          expiresAt: expiresAt,
+          tokenFamilyId: tokenFamilyId,
+          jti: jti,
+        }),
+      };
+    });
     return {
       access_token: token,
       refresh_token: refreshToken,

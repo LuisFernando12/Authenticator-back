@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { Session } from '../../../domain/entity/session.entity';
 import { SessionDomainError } from '../../../domain/error/session-domain.error';
 import { SessionEntity, SessionEntityType } from '../entity/session.entity';
@@ -19,6 +19,10 @@ export abstract class SessionRepository {
     consentId: string,
   ): Promise<void>;
   abstract delete(id: string): Promise<void>;
+  abstract deleteOldestSessionByUserId(
+    userId: string,
+    consentId: string | null,
+  ): Promise<void>;
   abstract deleteByJTI(jti: string): Promise<void>;
   abstract deleteByTokenFamilyId(tokenFamilyId: string): Promise<void>;
 }
@@ -113,6 +117,30 @@ export class SessionRepositoryImpl implements SessionRepository {
       throw SessionDomainError.internalServerError('Error to delete session');
     }
   }
+  async deleteOldestSessionByUserId(
+    userId: string,
+    consentId: string | null,
+  ): Promise<void> {
+    try {
+      const oldestSession = await this.sessionRepository.findOne({
+        order: { createdAt: 'ASC' },
+        where: { userId, consentId: consentId || IsNull() },
+      });
+      const sessionDelete = await this.sessionRepository.delete({
+        id: oldestSession.id,
+      });
+      if (sessionDelete.affected === 0) {
+        throw SessionDomainError.internalServerError(
+          'Failure to delete oldest session',
+        );
+      }
+      return;
+    } catch {
+      throw SessionDomainError.internalServerError(
+        'Error to delete oldest session',
+      );
+    }
+  }
   async deleteByJTI(jti: string): Promise<void> {
     try {
       const sessionDelete = await this.sessionRepository.delete({ jti: jti });
@@ -123,10 +151,11 @@ export class SessionRepositoryImpl implements SessionRepository {
       }
       return;
     } catch {
-      throw SessionDomainError.internalServerError('Error to delete session');
+      throw SessionDomainError.internalServerError(
+        'Error to delete session by jti',
+      );
     }
   }
-
   async deleteByTokenFamilyId(tokenFamilyId: string): Promise<void> {
     try {
       const sessionDelete = await this.sessionRepository.softDelete({
@@ -139,7 +168,9 @@ export class SessionRepositoryImpl implements SessionRepository {
       }
       return;
     } catch {
-      throw SessionDomainError.internalServerError('Error to delete session');
+      throw SessionDomainError.internalServerError(
+        'Error to delete session by token family id',
+      );
     }
   }
 }
