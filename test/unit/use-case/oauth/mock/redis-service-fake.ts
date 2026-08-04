@@ -11,14 +11,14 @@ export class RedisServiceFake implements RedisServicePort {
   }
   async consumeOauthRequest(oauthRequestId: string): Promise<OauthRequest> {
     return OauthRequest.create({
-        oauthRequestId,
-        clientId: 'test-client-id',
-        redirectUri: 'https://example.com/callback',
-        codeChallenge: 'test-code-challenge',
-        codeChallengeMethod: 'sha256',
-        state: 'test-state',
-        scope: 'read write',
-      });
+      oauthRequestId,
+      clientId: 'test-client-id',
+      redirectUri: 'https://example.com/callback',
+      codeChallenge: 'test-code-challenge',
+      codeChallengeMethod: 'sha256',
+      state: 'test-state',
+      scope: 'read write',
+    });
   }
   async consumeOauthCode(_key: string): Promise<any> {
     return {
@@ -61,6 +61,17 @@ export class RedisServiceFake implements RedisServicePort {
       refreshToken: refreshToken,
       tokenFamilyId: 'test-token-family-id',
       expiresAt: new Date(Date.now() + 3600 * 1000),
+      email: 'john.doe@example.com',
     };
+  }
+  setFailedLoginAttempt(email: string): Promise<void> {
+    if (email === 'john.doe@example.com') {
+      return;
+    }
+  }
+  getFailedLoginAttempt(email: string): Promise<number> {
+    if (email === 'john.doe@example.com') {
+      return;
+    }
   }
 }

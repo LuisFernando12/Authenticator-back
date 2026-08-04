@@ -24,4 +24,10 @@ export class UserServiceFake implements UserServicePort {
   ): Promise<OauthUser> {
     return this.user;
   }
+  isValidEmail(email: string): Promise<boolean> {
+    if (email !== this.user.email) {
+      return Promise.resolve(false);
+    }
+    return Promise.resolve(true);
+  }
 }

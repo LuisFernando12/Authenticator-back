@@ -15,11 +15,14 @@ describe('LoginUseCase', () => {
       oauthMock.userServiceFake,
       oauthMock.consentServiceFake,
       oauthMock.generateIdServiceFake,
+      oauthMock.securityEventFake,
     );
   });
   const payload = {
     email: 'john.doe@example.com',
     password: 'test-user-password',
+    ip: '127.0.0.1',
+    userAgent: 'test-user-agent',
   };
   const queryOauthLogin: IQueryOauthLogin = {
     oauthRequestId: 'test-oauth-request-id',

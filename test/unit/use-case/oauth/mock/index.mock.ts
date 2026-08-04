@@ -6,6 +6,7 @@ import { ConsentServiceFake } from './consent-service-fake';
 import { GenerateIdServiceFake } from './generate-id-service-fake';
 import { HashedClientSecretFake } from './hashed-client-secret-fake';
 import { RedisServiceFake } from './redis-service-fake';
+import { SecurityEventFake } from './security-event.fake';
 import { TokenServiceFake } from './token-service-fake';
 import { UserServiceFake } from './user-service-fake';
 
@@ -18,6 +19,7 @@ export const oauthMocked = () => ({
   userServiceFake: new UserServiceFake(),
   tokenServiceFake: new TokenServiceFake(),
   hashedClientSecretServiceFake: new HashedClientSecretFake(),
+  securityEventFake: new SecurityEventFake(),
   mockOauthClient: (oauthClient: OauthClient) => new OauthClient(oauthClient),
   mockOauthToken: (oauthToken: OauthToken) => new OauthToken(oauthToken),
 });

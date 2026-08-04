@@ -13,12 +13,16 @@ describe('LoginUseCase', () => {
       authMock.userValidateCredentialsServiceFake,
       authMock.tokenServiceFake,
       authMock.configServiceFake,
+      authMock.securityEventFake,
+      authMock.redisServiceFake,
     );
   });
 
   const payload = {
     email: 'john.doe@example.com',
     password: 'test-password',
+    ip: '127.0.0.1',
+    userAgent: 'test-user-agent',
   };
 
   it('should be defined', () => {

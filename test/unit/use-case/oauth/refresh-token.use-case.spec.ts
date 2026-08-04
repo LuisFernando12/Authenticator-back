@@ -15,8 +15,15 @@ describe('RefreshTokenUseCase', () => {
       oauthMock.consentServiceFake,
       oauthMock.configServiceFake,
       oauthMock.redisServiceFake,
+      oauthMock.securityEventFake,
     );
   });
+  const payload = {
+    grantType: 'refresh_token',
+    refreshToken: 'test-refresh-token',
+    ip: '127.0.0.1',
+    userAgent: 'test-user-agent',
+  };
   it('should be defined', () => {
     expect(refreshTokenUseCase).toBeDefined();
   });
@@ -27,16 +34,15 @@ describe('RefreshTokenUseCase', () => {
         'consultHasTokenFamilyOnReuseDetection',
       )
       .mockResolvedValue(null);
-    const result = await refreshTokenUseCase.execute({
-      grantType: 'refresh_token',
-      refreshToken: 'test-refresh-token',
-    });
+    const result = await refreshTokenUseCase.execute(payload);
     expect(result.accessToken).toBe('test-access-token');
   });
   it('should throw an error if grant type is invalid', async () => {
     const promise = refreshTokenUseCase.execute({
       grantType: 'invalid_grant',
       refreshToken: 'test-refresh-token',
+      ip: '127.0.0.1',
+      userAgent: 'test-user-agent',
     });
     await expect(promise).rejects.toThrow('Invalid grant type: invalid_grant');
   });
@@ -55,6 +61,8 @@ describe('RefreshTokenUseCase', () => {
     const promise = refreshTokenUseCase.execute({
       grantType: 'refresh_token',
       refreshToken: 'invalid-refresh-token',
+      ip: '127.0.0.1',
+      userAgent: 'test-user-agent',
     });
     await expect(promise).rejects.toThrow('Invalid refresh token');
   });
@@ -82,6 +90,8 @@ describe('RefreshTokenUseCase', () => {
     const promise = refreshTokenUseCase.execute({
       grantType: 'refresh_token',
       refreshToken: 'expired-refresh-token',
+      ip: '127.0.0.1',
+      userAgent: 'test-user-agent',
     });
     await expect(promise).rejects.toThrow('Refresh token expired');
   });
@@ -96,10 +106,13 @@ describe('RefreshTokenUseCase', () => {
         jti: 'test-jti',
         refreshToken: 'hashed-old-refresh-token',
         expiresAt: new Date(Date.now() + 3600 * 1000),
+        email: 'john.doe@example.com',
       });
     const promise = refreshTokenUseCase.execute({
       grantType: 'refresh_token',
       refreshToken: 'expired-refresh-token',
+      ip: '127.0.0.1',
+      userAgent: 'test-user-agent',
     });
     await expect(promise).rejects.toThrow(
       'Token family reused, token has already been used!',
