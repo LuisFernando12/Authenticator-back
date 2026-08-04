@@ -27,4 +27,23 @@ export class RedisServiceAdapter implements RedisServicePort {
   async clearResetPasswordCodeOTP(code: number): Promise<void> {
     return await this.redisService.deleteFromRedis(`reset-password-${code}`);
   }
+  async setFailedLoginAttempt(email: string): Promise<void> {
+    const failedLoginAttempt = await this.getFailedLoginAttempt(email);
+    const setFailedLoginAttempt = await this.redisService.setOnRedis(
+      `failed-login-attempt-${email}`,
+      (failedLoginAttempt + 1).toString(),
+      900,
+    );
+    if (!setFailedLoginAttempt) {
+      throw AuthDomainError.internalServerError(
+        'Failure to save failed login attempt',
+      );
+    }
+  }
+  async getFailedLoginAttempt(email: string): Promise<number> {
+    const failedLoginAttempt = await this.redisService.getOnRedis(
+      `failed-login-attempt-${email}`,
+    );
+    return Number(failedLoginAttempt || 0);
+  }
 }

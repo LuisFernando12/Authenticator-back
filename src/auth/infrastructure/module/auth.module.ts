@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
 import { RedisService } from '../../../core/domain/service/redis.service';
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RedisServiceImplement } from '../../../core/infrastructure/service/redis.service';
 import { EmailModule } from '../../../email/infrastructure/module/email.module';
 import { EmailQueue } from '../../../email/infrastructure/queue/email.queue';
@@ -31,6 +32,10 @@ import {
   RedisServicePort,
 } from '../../application/port/redis-service.port';
 import {
+  SECURITY_EVENT_PORT,
+  SecurityEventPort,
+} from '../../application/port/security-event.port';
+import {
   TOKEN_SERVICE_PORT,
   TokenServicePort,
 } from '../../application/port/token-service.port';
@@ -43,7 +48,7 @@ import {
   UserValidateCredentialsServicePort,
 } from '../../application/port/user-validate-credentials-service.port';
 import { ActiveAccountUseCase } from '../../application/use-case/active-account.use-case';
-import { LoginUseCase } from '../../application/use-case/login.user-case';
+import { LoginUseCase } from '../../application/use-case/login.use-case';
 import { NewPasswordUseCase } from '../../application/use-case/new-password.use-case';
 import { ResetPasswordUseCase } from '../../application/use-case/reset-password.use-case';
 import { SendNewTokenToEmailActiveUseCase } from '../../application/use-case/send-new-token-to-email-active.use-case';
@@ -51,6 +56,7 @@ import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
 import { EmailServiceAdapter } from '../adapter/email-service.adapter';
 import { GenerateOtpServiceAdapter } from '../adapter/generate-otp-service.adapter';
 import { RedisServiceAdapter } from '../adapter/redis-service.adapter';
+import { SecurityEventAdapter } from '../adapter/security-event.adapter';
 import { TokenServiceAdapter } from '../adapter/token-service.adapter';
 import { UserValidateCredentialsServiceAdapter } from '../adapter/user-validate-credential-service.adapter';
 import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
@@ -112,24 +118,36 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
       useFactory: (): GenerateOtpServicePort => new GenerateOtpServiceAdapter(),
     },
     {
+      provide: SECURITY_EVENT_PORT,
+      useFactory: (eventEmitter: EventEmitter2): SecurityEventPort =>
+        new SecurityEventAdapter(eventEmitter),
+      inject: [EventEmitter2],
+    },
+    {
       provide: LoginUseCase,
       useFactory: (
         userRepositoryPort: UserRepositoryPort,
         userValidateCredentialsServicePort: UserValidateCredentialsServicePort,
         tokenServicePort: TokenServicePort,
         configServicePort: ConfigServicePort,
+        securityEventPort: SecurityEventPort,
+        redisServicePort: RedisServicePort,
       ) =>
         new LoginUseCase(
           userRepositoryPort,
           userValidateCredentialsServicePort,
           tokenServicePort,
           configServicePort,
+          securityEventPort,
+          redisServicePort,
         ),
       inject: [
         USER_REPOSITORY_PORT,
         USER_VALIDATE_CREDENTIALS_SERVICE_PORT,
         TOKEN_SERVICE_PORT,
         CONFIG_SERVICE_PORT,
+        SECURITY_EVENT_PORT,
+        REDIS_SERVICE_PORT,
       ],
     },
     {

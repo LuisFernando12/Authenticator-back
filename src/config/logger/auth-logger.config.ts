@@ -13,7 +13,6 @@ export class AuthenticatorLogger implements IAuthenticatorLogger {
   constructor(@Inject(BaseLogger) private readonly baseLogger: BaseLogger) {
     this.baseLogger.setContext('Authenticator');
   }
-
   log(message: string, options: IBaseLoggerOptions) {
     options.logLevel = 'log';
     this.baseLogger.logAsJson(message, options as IBaseLoggerOptions);

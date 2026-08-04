@@ -1,16 +1,19 @@
 import { HttpExceptionFilter } from '@/config/filters/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './module/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       origin: process.env.CORS_ORIGIN,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     },
   });
+  const trustProxy = Number(process.env.TRUST_PROXY ?? '0');
+  if (trustProxy) app.set('trust proxy', trustProxy);
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

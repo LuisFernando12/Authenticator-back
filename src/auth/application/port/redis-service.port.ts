@@ -6,4 +6,6 @@ export abstract class RedisServicePort {
     code: number,
   ): Promise<{ email: string }>;
   abstract clearResetPasswordCodeOTP(code: number): Promise<void>;
+  abstract setFailedLoginAttempt(email: string): Promise<void>;
+  abstract getFailedLoginAttempt(email: string): Promise<number>;
 }

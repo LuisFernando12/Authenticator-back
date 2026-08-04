@@ -12,21 +12,25 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { IContextClient } from '../../../config/decorator/context-client.decorator';
 import { ActiveAccountUseCase } from '../../application/use-case/active-account.use-case';
 import {
   ILoginUseCaseResponse,
   LoginUseCase,
-} from '../../application/use-case/login.user-case';
+} from '../../application/use-case/login.use-case';
 import { NewPasswordUseCase } from '../../application/use-case/new-password.use-case';
 import { ResetPasswordUseCase } from '../../application/use-case/reset-password.use-case';
 import { LoginDTO } from '../dto/login.dto';
 import { SendNewTokenToEmailActiveUseCase } from './../../application/use-case/send-new-token-to-email-active.use-case';
 
 export interface IAuthController {
-  login(data: LoginDTO): Promise<ILoginUseCaseResponse>;
-  verifyEmail(token: string): void;
+  login(
+    data: LoginDTO,
+    contextClient: IContextClient,
+  ): Promise<ILoginUseCaseResponse>;
+  verifyEmail(token: string): Promise<void>;
   resetPassword(data: { email: string }): Promise<{ message: string }>;
-  newPassword(data: NewPasswordDTO): void;
+  newPassword(data: NewPasswordDTO): Promise<void>;
   sendNewTokenToEmailActive({
     email,
   }: NewTokenToActiveEmailDTO): Promise<{ message: string }>;
@@ -49,10 +53,15 @@ export class AuthController implements IAuthController {
   @ApiResponse({ status: 200, description: 'User logged in successfully.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async login(@Body() data: LoginDTO) {
+  async login(
+    @Body() data: LoginDTO,
+    @IContextClient() contextClient: IContextClient,
+  ) {
     return await this.loginUseCase.execute({
       email: data.email,
       password: data.password,
+      ip: contextClient.ip,
+      userAgent: contextClient.useAgent,
     });
   }
   @Get('/verify-email')
@@ -61,7 +70,7 @@ export class AuthController implements IAuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async verifyEmail(@Query('token') token: string) {
-    return await this.activeAccountUseCase.execute(token);
+    await this.activeAccountUseCase.execute(token);
   }
 
   @Post('/reset-password')
@@ -82,7 +91,7 @@ export class AuthController implements IAuthController {
   @ApiResponse({ status: 400, description: 'Invalid code or email' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async newPassword(@Body() data: NewPasswordDTO) {
-    return await this.newPasswordUseCase.execute(data);
+    await this.newPasswordUseCase.execute(data);
   }
   @Post('/new-token/email-active')
   @HttpCode(HttpStatus.OK)

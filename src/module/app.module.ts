@@ -4,6 +4,7 @@ import { TokenModule } from '@/token/infrastructure/module/token.module';
 import { UserModule } from '@/user/infrastructure/module/user.module';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigEnvService } from '../core/domain/service/app-config-env.service';
@@ -11,9 +12,11 @@ import { AppConfigModule } from '../core/infrastructure/module/app-config.module
 import { AuthenticatorLoggerModule } from '../core/infrastructure/module/auth-logger.module';
 import { HealthModule } from '../core/infrastructure/module/health.module';
 import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
+import { SecurityEventModule } from '../security-event/infrastructure/module/security-event.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     AppConfigModule,
     TypeOrmModule.forRootAsync({
       inject: [AppConfigEnvService],
@@ -53,6 +56,7 @@ import { OauthModule } from '../oauth/infrastructure/module/oauth.module';
     OauthModule,
     HealthModule,
     AuthenticatorLoggerModule,
+    SecurityEventModule,
   ],
   providers: [
     {
