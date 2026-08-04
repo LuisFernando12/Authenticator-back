@@ -21,14 +21,16 @@ export class SecurityEventEntity {
   ip: string;
   @Column()
   userAgent: string;
-  @Column()
-  email: string;
+  @Column({ nullable: true })
+  email?: string;
   @Column({
     type: 'enum',
     enum: SeverityType,
     default: SeverityType.INFORMATIONAL,
   })
   severity: SeverityType;
+  @Column({ nullable: true })
+  reason?: string;
   @CreateDateColumn({
     name: 'occurred_at',
     type: 'timestamp with time zone',

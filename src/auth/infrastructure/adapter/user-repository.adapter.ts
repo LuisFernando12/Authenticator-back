@@ -8,7 +8,9 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
   async findByEmail(email: string): Promise<AuthUser> {
     const userDB = await this.userRepository.findByEmail(email);
     if (!userDB) {
-      throw AuthDomainError.notFound('User not found');
+      throw AuthDomainError.unauthorized(
+        'Email or Password incorrect, please verify and try again',
+      );
     }
     return new AuthUser(userDB);
   }
@@ -27,6 +29,9 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
     if (!passwordUpdate) {
       throw AuthDomainError.internalServerError('Failure to update password');
     }
-    return;
+  }
+  async emailExists(email: string): Promise<boolean> {
+    const emailExists = await this.userRepository.existsUser(email);
+    return emailExists;
   }
 }

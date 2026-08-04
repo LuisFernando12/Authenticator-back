@@ -47,6 +47,7 @@ import {
   IUserRepository,
   UserRepository,
 } from '@/user/infrastructure/repository/user.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ClientRepository,
   IClientRepository,
@@ -58,12 +59,17 @@ import {
   GENERATE_ID_SERVICE_PORT,
   GenerateIdServicePort,
 } from '../../application/port/generate-id-service.port';
+import {
+  SECURITY_EVENT_PORT,
+  SecurityEventPort,
+} from '../../application/port/security-event.port';
 import { ClientServiceAdapter } from '../adapter/client-service.adapter';
 import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
 import { ConsentServiceAdapter } from '../adapter/consent-service.adapter';
 import { GenerateIdServiceAdapter } from '../adapter/generate-id-service.adapter';
 import { HashedClientSecretServiceAdapter } from '../adapter/hashed-client-secret-service.adapter';
 import { RedisServiceAdapter } from '../adapter/redis-service.adapter';
+import { SecurityEventAdapter } from '../adapter/security-event.adapter';
 import { TokenServiceAdapter } from '../adapter/token-service.adapter';
 import { UserServiceAdapter } from '../adapter/user-service.adapter';
 
@@ -135,6 +141,12 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
       useFactory: (): GenerateIdServicePort => new GenerateIdServiceAdapter(),
     },
     {
+      provide: SECURITY_EVENT_PORT,
+      useFactory: (eventEmitter: EventEmitter2): SecurityEventPort =>
+        new SecurityEventAdapter(eventEmitter),
+      inject: [EventEmitter2],
+    },
+    {
       provide: AuthorizeUseCase,
       useFactory: (
         clientServicePort: ClientServicePort,
@@ -194,12 +206,14 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         userServicePort: UserServicePort,
         userClientConsentServicePort: ConsentServicePort,
         generateIdServicePort: GenerateIdServicePort,
+        securityEventPort: SecurityEventPort,
       ) => {
         return new LoginUseCase(
           redisServicePort,
           userServicePort,
           userClientConsentServicePort,
           generateIdServicePort,
+          securityEventPort,
         );
       },
       inject: [
@@ -207,6 +221,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         USER_SERVICE_PORT,
         USER_CLIENT_CONSENT_SERVICE_PORT,
         GENERATE_ID_SERVICE_PORT,
+        SECURITY_EVENT_PORT,
       ],
     },
     {
@@ -217,6 +232,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         userClientConsentServicePort: ConsentServicePort,
         configServicePort: ConfigServicePort,
         redisServicePort: RedisServicePort,
+        securityEventPort: SecurityEventPort,
       ) =>
         new RefreshTokenUseCase(
           tokenServicePort,
@@ -224,6 +240,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
           userClientConsentServicePort,
           configServicePort,
           redisServicePort,
+          securityEventPort,
         ),
       inject: [
         TOKEN_SERVICE_PORT,
@@ -231,6 +248,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         USER_CLIENT_CONSENT_SERVICE_PORT,
         CONFIG_SERVICE_PORT,
         REDIS_SERVICE_PORT,
+        SECURITY_EVENT_PORT,
       ],
     },
     {

@@ -1,3 +1,4 @@
+import { HttpStatus } from '@nestjs/common';
 import { BaseUseCase } from '../../../core/application/use-case/base.use-case';
 import { SecurityEventType } from '../../../security-event/domain/enum/security-event-type.enum';
 import { SeverityType } from '../../../security-event/domain/enum/severity-type.enum';
@@ -60,16 +61,20 @@ export class LoginUseCase implements BaseUseCase<
       };
     } catch (error) {
       if (error instanceof AuthDomainError) {
-        if (error.status === 401) {
+        if (error.status === HttpStatus.UNAUTHORIZED) {
           const failedLoginAttempt =
             await this.redisServicePort.getFailedLoginAttempt(payload.email);
           if (failedLoginAttempt >= this.MAX_ATTEMPTS_FAILED) {
+            const isValidEmail = await this.userRepositoryPort.emailExists(
+              payload.email,
+            );
             this.securityEventPort.emit({
               type: SecurityEventType.INVALID_LOGIN_ATTEMPT,
               email: payload.email,
               severity: SeverityType.HIGH,
               ip: payload.ip,
               userAgent: payload.userAgent,
+              reason: !isValidEmail ? 'USER_NOT_FOUND' : 'INVALID_PASSWORD',
             });
             throw error;
           }

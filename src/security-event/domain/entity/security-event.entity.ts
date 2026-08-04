@@ -5,6 +5,7 @@ export interface SecurityEventProps {
   type: SecurityEventType;
   ip: string;
   email?: string;
+  reason?: string;
   userAgent: string;
   occurredAt: Date;
   severity: SeverityType;
@@ -22,6 +23,9 @@ export class SecurityEvent {
   }
   get email(): string {
     return this.securityEventProps.email;
+  }
+  get reason(): string {
+    return this.securityEventProps.reason;
   }
   get userAgent(): string {
     return this.securityEventProps.userAgent;

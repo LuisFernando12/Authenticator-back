@@ -12,7 +12,10 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { IContextClient } from '../../../config/decorator/context-client.decorator';
+import {
+  ContextClient,
+  IContextClient,
+} from '../../../config/decorator/context-client.decorator';
 import { ActiveAccountUseCase } from '../../application/use-case/active-account.use-case';
 import {
   ILoginUseCaseResponse,
@@ -55,13 +58,13 @@ export class AuthController implements IAuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async login(
     @Body() data: LoginDTO,
-    @IContextClient() contextClient: IContextClient,
+    @ContextClient() contextClient: IContextClient,
   ) {
     return await this.loginUseCase.execute({
       email: data.email,
       password: data.password,
       ip: contextClient.ip,
-      userAgent: contextClient.useAgent,
+      userAgent: contextClient.userAgent,
     });
   }
   @Get('/verify-email')

@@ -34,4 +34,8 @@ export class UserServiceAdapter implements UserServicePort {
     }
     return userDB;
   }
+  async isValidEmail(email: string): Promise<boolean> {
+    const userDB = await this.userRepository.existsUser(email);
+    return userDB;
+  }
 }

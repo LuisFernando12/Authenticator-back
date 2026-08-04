@@ -98,4 +98,23 @@ export class RedisServiceAdapter implements RedisServicePort {
     );
     return JSON.parse(tokenIsBlocked) || false;
   }
+  async setFailedLoginAttempt(email: string): Promise<void> {
+    const failedLoginAttempt = await this.getFailedLoginAttempt(email);
+    const setFailedLoginAttempt = await this.redisService.setOnRedis(
+      `failed-oauth-login-attempt-${email}`,
+      (failedLoginAttempt + 1).toString(),
+      900,
+    );
+    if (!setFailedLoginAttempt) {
+      throw OauthDomainError.internalServerError(
+        'Failure to save failed login attempt',
+      );
+    }
+  }
+  async getFailedLoginAttempt(email: string): Promise<number> {
+    const failedLoginAttempt = await this.redisService.getOnRedis(
+      `failed-oauth-login-attempt-${email}`,
+    );
+    return Number(failedLoginAttempt || 0);
+  }
 }
