@@ -1,3 +1,12 @@
+# [2.3.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v2.2.0...v2.3.0-beta.1) (2026-08-04)
+
+
+### Features
+
+* **auth:** add failed login attempt tracking and security event logging ([31fd351](https://github.com/LuisFernando12/Authenticator/commit/31fd351081352e109c9547ea4cb2466f3a52d5f0))
+* **security:** implement security event logging and add reason for logins ([5d7a055](https://github.com/LuisFernando12/Authenticator/commit/5d7a0551df5b56269b7f8f7e90e645fe00742d15))
+* **test:** resolved tests errors and add new use-case suite security-event ([9ed5532](https://github.com/LuisFernando12/Authenticator/commit/9ed5532a11c56a589499b6f0ad15b1cc130fbfde))
+
 # [2.2.0](https://github.com/LuisFernando12/Authenticator/compare/v2.1.0...v2.2.0) (2026-07-27)
 
 
