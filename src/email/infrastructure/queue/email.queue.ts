@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { EmailProps } from '../../domain/entity/email.entity';
 
-export type EmailQueueName = 'activation' | 'reset-password';
+export type EmailQueueName = 'activation' | 'reset-password' | 'block-account';
 export type EmailQueuePayload = EmailProps;
 
 export class EmailQueue {

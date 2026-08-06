@@ -26,6 +26,9 @@ export class AppConfigEnvService {
   get serviceVerifyEmailURL(): string {
     return this.config.get<string>('SERVICE_VERIFY_EMAIL_URL');
   }
+  get serviceUnblockAccountUrl(): string {
+    return this.config.getOrThrow<string>('SERVICE_UNBLOCK_ACCOUNT_URL');
+  }
   get serviceResetPasswordUrl(): string {
     return this.config.get<string>('SERVICE_RESET_PASSWORD_URL');
   }

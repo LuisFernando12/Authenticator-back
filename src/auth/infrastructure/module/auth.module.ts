@@ -4,7 +4,7 @@ import { UserModule } from '@/user/infrastructure/module/user.module';
 import {
   IUserRepository,
   UserRepository,
-} from '@/user/infrastructure/repository/user.repository';
+} from '@/user/infrastructure/persistence/repository/user.repository';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigEnvService } from '../../../core/domain/service/app-config-env.service';
@@ -132,6 +132,8 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
         configServicePort: ConfigServicePort,
         securityEventPort: SecurityEventPort,
         redisServicePort: RedisServicePort,
+        emailServicePort: EmailServicePort,
+        generateOtpServicePort: GenerateOtpServicePort,
       ) =>
         new LoginUseCase(
           userRepositoryPort,
@@ -140,6 +142,8 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
           configServicePort,
           securityEventPort,
           redisServicePort,
+          emailServicePort,
+          generateOtpServicePort,
         ),
       inject: [
         USER_REPOSITORY_PORT,
@@ -148,6 +152,8 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
         CONFIG_SERVICE_PORT,
         SECURITY_EVENT_PORT,
         REDIS_SERVICE_PORT,
+        EMAIL_SERVICE_PORT,
+        GENERATE_OTP_SERVICE_PORT,
       ],
     },
     {

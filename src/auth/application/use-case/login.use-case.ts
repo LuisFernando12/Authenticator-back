@@ -5,8 +5,13 @@ import { SeverityType } from '../../../security-event/domain/enum/severity-type.
 import { AuthFlow } from '../../domain/enum/auth-flow.enum';
 import { AuthDomainError } from '../../domain/error/auth-domain.error';
 import { ConfigServicePort } from '../port/config-service.port';
+import { EmailServicePort } from '../port/email-service.port';
+import { GenerateOtpServicePort } from '../port/generate-otp-service.port';
 import { RedisServicePort } from '../port/redis-service.port';
-import { SecurityEventPort } from '../port/security-event.port';
+import {
+  InvalidLoginAttemptReasonType,
+  SecurityEventPort,
+} from '../port/security-event.port';
 import { TokenServicePort } from '../port/token-service.port';
 import { UserRepositoryPort } from '../port/user-repository.port';
 import { UserValidateCredentialsServicePort } from '../port/user-validate-credentials-service.port';
@@ -33,6 +38,8 @@ export class LoginUseCase implements BaseUseCase<
     private readonly configServicePort: ConfigServicePort,
     private readonly securityEventPort: SecurityEventPort,
     private readonly redisServicePort: RedisServicePort,
+    private readonly emailServicePort: EmailServicePort,
+    private readonly generateOtpServicePort: GenerateOtpServicePort,
   ) {}
   private readonly MAX_ATTEMPTS_FAILED = 5;
   async execute(payload: ILoginUseCasePayload): Promise<ILoginUseCaseResponse> {
@@ -65,16 +72,27 @@ export class LoginUseCase implements BaseUseCase<
           const failedLoginAttempt =
             await this.redisServicePort.getFailedLoginAttempt(payload.email);
           if (failedLoginAttempt >= this.MAX_ATTEMPTS_FAILED) {
-            const isValidEmail = await this.userRepositoryPort.emailExists(
+            const userDB = await this.userRepositoryPort.findByEmail(
               payload.email,
             );
+            let reason: InvalidLoginAttemptReasonType = 'USER_NOT_FOUND';
+            if (userDB) {
+              reason = 'INVALID_PASSWORD';
+              const code = this.generateOtpServicePort.generateOTP();
+              await this.emailServicePort.blockAccount({
+                email: payload.email,
+                username: userDB.name,
+                code: code,
+              });
+              await this.userRepositoryPort.blockAccount(payload.email);
+            }
             this.securityEventPort.emit({
               type: SecurityEventType.INVALID_LOGIN_ATTEMPT,
               email: payload.email,
               severity: SeverityType.HIGH,
               ip: payload.ip,
               userAgent: payload.userAgent,
-              reason: !isValidEmail ? 'USER_NOT_FOUND' : 'INVALID_PASSWORD',
+              reason,
             });
             throw error;
           }

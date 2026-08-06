@@ -46,7 +46,7 @@ import { TokenIntrospectUseCase } from '../../application/use-case/token-introsp
 import {
   IUserRepository,
   UserRepository,
-} from '@/user/infrastructure/repository/user.repository';
+} from '@/user/infrastructure/persistence/repository/user.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ClientRepository,

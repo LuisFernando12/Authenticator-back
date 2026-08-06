@@ -1,4 +1,4 @@
-import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
+import { IUserRepository } from '@/user/infrastructure/persistence/repository/user.repository';
 import * as bcrypt from 'bcrypt';
 import {
   IValidateCredentialsPayload,

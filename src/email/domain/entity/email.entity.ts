@@ -8,7 +8,7 @@ export class Email {
   constructor(private readonly emailProps: EmailProps) {
     if (!emailProps.email) throw new Error('Email is required');
     if (!emailProps.username) throw new Error('Username is required');
-    if (emailProps.token && emailProps.code)
+    if (!emailProps.token && !emailProps.code)
       throw new Error('Code or token is required');
   }
 

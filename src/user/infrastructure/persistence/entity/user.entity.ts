@@ -1,5 +1,6 @@
 import {
   Column,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
@@ -33,6 +34,12 @@ export class UserEntity {
   createdAt: Date;
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions: SessionEntity[];
+  @DeleteDateColumn({
+    name: 'deleted_at',
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
+  deletedAt?: Date;
 }
 
 export interface UserEntityType {

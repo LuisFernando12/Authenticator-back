@@ -7,4 +7,6 @@ export abstract class UserRepositoryPort {
   abstract activeAccount(email: string): Promise<boolean>;
   abstract updatePassword(email: string, password: string): Promise<void>;
   abstract emailExists(email: string): Promise<boolean>;
+  abstract blockAccount(email: string): Promise<void>;
+  abstract reactiveAccount(email: string): Promise<void>;
 }

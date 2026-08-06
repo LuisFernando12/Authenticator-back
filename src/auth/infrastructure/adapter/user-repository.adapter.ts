@@ -1,4 +1,4 @@
-import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
+import { IUserRepository } from '@/user/infrastructure/persistence/repository/user.repository';
 import { UserRepositoryPort } from '../../application/port/user-repository.port';
 import { AuthUser } from '../../domain/entity/auth-user.entity';
 import { AuthDomainError } from '../../domain/error/auth-domain.error';
@@ -33,5 +33,19 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
   async emailExists(email: string): Promise<boolean> {
     const emailExists = await this.userRepository.existsUser(email);
     return emailExists;
+  }
+  async blockAccount(email: string): Promise<void> {
+    try {
+      await this.userRepository.blockAccount(email);
+    } catch {
+      throw AuthDomainError.internalServerError('Failure to block account');
+    }
+  }
+  async reactiveAccount(email: string): Promise<void> {
+    try {
+      await this.userRepository.reactiveAccount(email);
+    } catch {
+      throw AuthDomainError.internalServerError('Failure to reactive account');
+    }
   }
 }

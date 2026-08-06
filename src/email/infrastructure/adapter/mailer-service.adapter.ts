@@ -24,10 +24,8 @@ export class MailerServiceAdapter implements MailerServicePort {
         subject: subject,
         htmlTemplate: htmlTemplate,
       });
-    } catch (error) {
-      throw new InternalServerErrorException('Failure to send email', {
-        cause: error,
-      });
+    } catch {
+      throw new InternalServerErrorException('Failure to send email');
     }
   }
 }

@@ -21,6 +21,7 @@ import {
   EmailServiceImpls,
 } from '../../application/service/email.service';
 import { SendActivationAccountEmailUseCase } from '../../application/use-cases/send-activation-account-email.use-case';
+import { SendBlockAccountEmailUseCase } from '../../application/use-cases/send-block-account-email.use-case';
 import { SendResetPasswordEmailUseCase } from '../../application/use-cases/send-reset-password-email';
 import { EmailLoggerAdapter } from '../adapter/email-logger.adapter';
 import { MailerServiceAdapter } from '../adapter/mailer-service.adapter';
@@ -87,17 +88,14 @@ import { EmailWorker } from '../worker/email.worker';
     },
     {
       provide: CONFIG_SERVICE_PORT,
-      useFactory: (config: ConfigService): ConfigServicePort => {
+      useFactory: (config: AppConfigEnvService): ConfigServicePort => {
         return {
-          serviceVerifyEmailURL: config.getOrThrow<string>(
-            'SERVICE_VERIFY_EMAIL_URL',
-          ),
-          serviceResetPasswordUrl: config.getOrThrow<string>(
-            'SERVICE_RESET_PASSWORD_URL',
-          ),
+          serviceVerifyEmailURL: config.serviceVerifyEmailURL,
+          serviceResetPasswordUrl: config.serviceResetPasswordUrl,
+          serviceUnblockAccountUrl: config.serviceUnblockAccountUrl,
         };
       },
-      inject: [ConfigService],
+      inject: [AppConfigEnvService],
     },
     {
       provide: EMAIL_LOGGER_PORT,
@@ -134,18 +132,35 @@ import { EmailWorker } from '../worker/email.worker';
       inject: [MAILER_SERVICE_PORT, CONFIG_SERVICE_PORT, EMAIL_LOGGER_PORT],
     },
     {
+      provide: SendBlockAccountEmailUseCase,
+      useFactory: (
+        mailerServicePort: MailerServicePort,
+        configEnv: ConfigServicePort,
+        emailLoggerPort: EmailLoggerPort,
+      ) =>
+        new SendBlockAccountEmailUseCase(
+          mailerServicePort,
+          configEnv,
+          emailLoggerPort,
+        ),
+      inject: [MAILER_SERVICE_PORT, CONFIG_SERVICE_PORT, EMAIL_LOGGER_PORT],
+    },
+    {
       provide: EmailService,
       useFactory: (
         sendActivationAccountEmailUseCase: SendActivationAccountEmailUseCase,
         sendResetPasswordEmailUseCase: SendResetPasswordEmailUseCase,
+        sendBlockAccountEmailUseCase: SendBlockAccountEmailUseCase,
       ): EmailService =>
         new EmailServiceImpls(
           sendActivationAccountEmailUseCase,
           sendResetPasswordEmailUseCase,
+          sendBlockAccountEmailUseCase,
         ),
       inject: [
         SendActivationAccountEmailUseCase,
         SendResetPasswordEmailUseCase,
+        SendBlockAccountEmailUseCase,
       ],
     },
     EmailWorker,
