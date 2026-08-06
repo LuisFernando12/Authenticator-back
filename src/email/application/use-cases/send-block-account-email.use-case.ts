@@ -12,7 +12,7 @@ export class SendBlockAccountEmailUseCase implements BaseUseCase<Email, void> {
     private readonly emailLoggerPort: EmailLoggerPort,
   ) {}
   async execute(payload: Email): Promise<void> {
-    this.emailLoggerPort.log('Start SendResetPasswordEmailUseCase', {});
+    this.emailLoggerPort.log('Start SendBlockAccountEmailUseCase', {});
     try {
       await this.mailerServicePort.sendMail({
         to: payload.email,
