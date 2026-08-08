@@ -1,3 +1,17 @@
+# [2.3.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0-beta.1...v2.3.0-beta.2) (2026-08-08)
+
+
+### Bug Fixes
+
+* **email:** fixed start  log on sendBlockAccountEmailUseCase ([dfb2f0a](https://github.com/LuisFernando12/Authenticator/commit/dfb2f0a593e45fa999a7d1fe904cf370633628ed))
+* **email:** update subject line for unblock account email notification ([b2a98b7](https://github.com/LuisFernando12/Authenticator/commit/b2a98b7a9772f79088313ea7971353c660a0c72f))
+
+
+### Features
+
+* **account:** implement account blocking and reactivation features with email notifications ([6bdb273](https://github.com/LuisFernando12/Authenticator/commit/6bdb273b2f41de007fb3be0f454ba1916a6e116c))
+* add account unblock functionality ([e5c7f2b](https://github.com/LuisFernando12/Authenticator/commit/e5c7f2b3c61bda4ecb66d1de8adee9fd9d8760d6))
+
 # [2.3.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v2.2.0...v2.3.0-beta.1) (2026-08-04)
 
 
