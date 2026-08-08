@@ -79,6 +79,10 @@ export class LoginUseCase implements BaseUseCase<
             if (userDB) {
               reason = 'INVALID_PASSWORD';
               const code = this.generateOtpServicePort.generateOTP();
+              await this.redisServicePort.saveUnblockAccountCodeOTP(
+                code,
+                payload.email,
+              );
               await this.emailServicePort.blockAccount({
                 email: payload.email,
                 username: userDB.name,

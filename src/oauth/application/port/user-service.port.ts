@@ -12,4 +12,5 @@ export abstract class UserServicePort {
     payload: IValidateCredentialsPayload,
   ): Promise<OauthUser>;
   abstract isValidEmail(email: string): Promise<boolean>;
+  abstract blockAccount(email: string): Promise<void>;
 }

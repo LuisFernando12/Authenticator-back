@@ -15,7 +15,7 @@ export interface IUserRepository {
   activeAccount(email: string): Promise<boolean>;
   updatePassword(email: string, password: string): Promise<boolean>;
   blockAccount(email: string): Promise<void>;
-  reactiveAccount(email: string): Promise<void>;
+  unblockAccount(email: string): Promise<void>;
 }
 
 @Injectable()
@@ -65,7 +65,7 @@ export class UserRepository implements IUserRepository {
     await this.userRepository.update({ email: email }, { isVerified: false });
     await this.userRepository.softDelete({ email: email });
   }
-  async reactiveAccount(email: string): Promise<void> {
+  async unblockAccount(email: string): Promise<void> {
     await this.userRepository.update(
       { email: email },
       { isVerified: true, deletedAt: null },

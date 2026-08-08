@@ -1,0 +1,52 @@
+<html lang='pt-BR'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Conta desbloqueada!</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+      }
+      .password {
+        font-family: 'Times New Roman', Times, serif;
+        font-style: italic;
+        text-shadow: 0 0 10px #666;
+        font-size: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h2>Conta Desbloqueada</h2>
+      <p>Olá, <strong>{{username}}</strong>,</p>
+      <p>
+        Sua conta foi desbloqueada com successo!
+      </p>
+      <p>
+        Abaixo está a sua senha temporária para entrar na plataforma:
+      </p>
+      <strong class='password'>{{tempPassword}}</strong>
+      <p>
+        Sugerimos que altere sua senha assim que possivel, para mater a
+        segurança da sua conta!
+      </p>
+      <p class='footer'>Este é um e-mail automático, por favor, não responda.</p>
+    </div>
+  </body>
+</html>

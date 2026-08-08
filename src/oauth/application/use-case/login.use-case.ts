@@ -1,11 +1,18 @@
-import { HttpStatus } from '@nestjs/common';
 import { SecurityEventType } from '../../../security-event/domain/enum/security-event-type.enum';
 import { SeverityType } from '../../../security-event/domain/enum/severity-type.enum';
-import { OauthDomainError } from '../../domain/error/oauth-domain.error';
+import {
+  HttpStatus,
+  OauthDomainError,
+} from '../../domain/error/oauth-domain.error';
 import { MountUrlValueObject } from '../../domain/value-object/mount-url.value-object';
+import { EmailServicePort } from '../port/email-service.port';
 import { GenerateIdServicePort } from '../port/generate-id-service.port';
+import { GenerateOtpServicePort } from '../port/generate-otp-service.port';
 import { RedisServicePort } from '../port/redis-service-port';
-import { SecurityEventPort } from '../port/security-event.port';
+import {
+  InvalidLoginAttemptReasonType,
+  SecurityEventPort,
+} from '../port/security-event.port';
 import { ConsentServicePort } from '../port/user-client-consent-service.port';
 import { UserServicePort } from '../port/user-service.port';
 
@@ -33,7 +40,10 @@ export class LoginUseCase {
     private readonly consentServicePort: ConsentServicePort,
     private readonly generateIdServicePort: GenerateIdServicePort,
     private readonly securityEventPort: SecurityEventPort,
+    private readonly generateOtpServicePort: GenerateOtpServicePort,
+    private readonly emailServicePort: EmailServicePort,
   ) {}
+  private readonly MAX_ATTEMPTS_FAILED = 5;
   async execute(
     payload: ILoginUseCasePayload,
     queryOauthLogin: IQueryOauthLogin,
@@ -74,19 +84,35 @@ export class LoginUseCase {
     } catch (error: any) {
       if (error instanceof OauthDomainError) {
         if (error.status === HttpStatus.FORBIDDEN) {
-          const isValidEmail = await this.userServicePort.isValidEmail(
-            payload.email,
-          );
           const failedLoginAttempt =
             await this.redisServicePort.getFailedLoginAttempt(payload.email);
-          if (failedLoginAttempt >= 5) {
+          if (failedLoginAttempt >= this.MAX_ATTEMPTS_FAILED) {
+            const userDB = await this.userServicePort.findByEmail(
+              payload.email,
+            );
+            let reason: InvalidLoginAttemptReasonType = 'USER_NOT_FOUND';
+            if (userDB) {
+              console.log(userDB);
+              reason = 'INVALID_PASSWORD';
+              const code = this.generateOtpServicePort.generateOTP();
+              await this.redisServicePort.saveUnblockAccountCodeOTP(
+                code,
+                payload.email,
+              );
+              await this.emailServicePort.blockAccount({
+                email: payload.email,
+                username: userDB.name,
+                code: code,
+              });
+              await this.userServicePort.blockAccount(payload.email);
+            }
             this.securityEventPort.emit({
               ip: payload.ip,
               userAgent: payload.userAgent,
               severity: SeverityType.HIGH,
               type: SecurityEventType.INVALID_OAUTH_LOGIN_ATTEMPT,
               email: payload.email,
-              reason: !isValidEmail ? 'USER_NOT_FOUND' : 'INVALID_PASSWORD',
+              reason,
             });
             throw error;
           }

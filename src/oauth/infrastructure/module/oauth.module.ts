@@ -54,11 +54,21 @@ import {
 } from '../../../client/infrastructure/repository/client.repository';
 import { ConsentService } from '../../../consent/application/service/consent.service';
 import { ConsentModule } from '../../../consent/infrastructure/module/consent.module';
+import { EmailModule } from '../../../email/infrastructure/module/email.module';
+import { EmailQueue } from '../../../email/infrastructure/queue/email.queue';
 import { TokenService } from '../../../token/application/service/token.service';
+import {
+  EMAIL_SERVICE_PORT,
+  EmailServicePort,
+} from '../../application/port/email-service.port';
 import {
   GENERATE_ID_SERVICE_PORT,
   GenerateIdServicePort,
 } from '../../application/port/generate-id-service.port';
+import {
+  GENERATE_OTP_SERVICE_PORT,
+  GenerateOtpServicePort,
+} from '../../application/port/generate-otp-service.port';
 import {
   SECURITY_EVENT_PORT,
   SecurityEventPort,
@@ -66,7 +76,9 @@ import {
 import { ClientServiceAdapter } from '../adapter/client-service.adapter';
 import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
 import { ConsentServiceAdapter } from '../adapter/consent-service.adapter';
+import { EmailServiceAdapter } from '../adapter/email-service.port';
 import { GenerateIdServiceAdapter } from '../adapter/generate-id-service.adapter';
+import { GenerateOtpServiceAdapter } from '../adapter/generate-otp-service.adapter';
 import { HashedClientSecretServiceAdapter } from '../adapter/hashed-client-secret-service.adapter';
 import { RedisServiceAdapter } from '../adapter/redis-service.adapter';
 import { SecurityEventAdapter } from '../adapter/security-event.adapter';
@@ -80,6 +92,7 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
     TokenModule,
     ConsentModule,
     AppConfigModule,
+    EmailModule,
   ],
   controllers: [OauthController],
   providers: [
@@ -147,6 +160,16 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
       inject: [EventEmitter2],
     },
     {
+      provide: EMAIL_SERVICE_PORT,
+      useFactory: (emailQueue: EmailQueue): EmailServicePort =>
+        new EmailServiceAdapter(emailQueue),
+      inject: [EmailQueue],
+    },
+    {
+      provide: GENERATE_OTP_SERVICE_PORT,
+      useFactory: (): GenerateOtpServicePort => new GenerateOtpServiceAdapter(),
+    },
+    {
       provide: AuthorizeUseCase,
       useFactory: (
         clientServicePort: ClientServicePort,
@@ -207,6 +230,8 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         userClientConsentServicePort: ConsentServicePort,
         generateIdServicePort: GenerateIdServicePort,
         securityEventPort: SecurityEventPort,
+        generateOtpServicePort: GenerateOtpServicePort,
+        emailServicePort: EmailServicePort,
       ) => {
         return new LoginUseCase(
           redisServicePort,
@@ -214,6 +239,8 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
           userClientConsentServicePort,
           generateIdServicePort,
           securityEventPort,
+          generateOtpServicePort,
+          emailServicePort,
         );
       },
       inject: [
@@ -222,6 +249,8 @@ import { UserServiceAdapter } from '../adapter/user-service.adapter';
         USER_CLIENT_CONSENT_SERVICE_PORT,
         GENERATE_ID_SERVICE_PORT,
         SECURITY_EVENT_PORT,
+        GENERATE_OTP_SERVICE_PORT,
+        EMAIL_SERVICE_PORT,
       ],
     },
     {

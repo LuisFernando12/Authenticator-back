@@ -14,6 +14,16 @@ export class RedisServiceAdapter implements RedisServicePort {
       throw AuthDomainError.internalServerError('Failure to save code OTP');
     }
   }
+  async saveUnblockAccountCodeOTP(code: number, email: string): Promise<void> {
+    const saveCodeOTP = await this.redisService.setOnRedis(
+      `unblock-account-${code}`,
+      JSON.stringify({ email: email }),
+      300,
+    );
+    if (!saveCodeOTP) {
+      throw AuthDomainError.internalServerError('Failure to save code OTP');
+    }
+  }
   async consumeResetPasswordCodeOTP(code: number): Promise<{ email: string }> {
     const objectCodeRedis = await this.redisService.getOnRedis(
       `reset-password-${code}`,
@@ -24,8 +34,22 @@ export class RedisServiceAdapter implements RedisServicePort {
     const codeRedis = JSON.parse(objectCodeRedis);
     return codeRedis;
   }
+
+  async consumeUnblockAccountCodeOTP(code: number): Promise<{ email: string }> {
+    const objectCodeRedis = await this.redisService.getOnRedis(
+      `unblock-account-${code}`,
+    );
+    if (!objectCodeRedis) {
+      throw AuthDomainError.badRequest('Invalid code !');
+    }
+    const codeRedis = JSON.parse(objectCodeRedis);
+    return codeRedis;
+  }
   async clearResetPasswordCodeOTP(code: number): Promise<void> {
     return await this.redisService.deleteFromRedis(`reset-password-${code}`);
+  }
+  async clearUnblockAccountCodeOTP(code: number): Promise<void> {
+    return await this.redisService.deleteFromRedis(`unblock-account-${code}`);
   }
   async setFailedLoginAttempt(email: string): Promise<void> {
     const failedLoginAttempt = await this.getFailedLoginAttempt(email);
@@ -45,5 +69,10 @@ export class RedisServiceAdapter implements RedisServicePort {
       `failed-login-attempt-${email}`,
     );
     return Number(failedLoginAttempt || 0);
+  }
+  async clearFailedLoginAttempt(email: string): Promise<void> {
+    return await this.redisService.deleteFromRedis(
+      `failed-login-attempt-${email}`,
+    );
   }
 }

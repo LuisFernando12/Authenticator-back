@@ -36,6 +36,10 @@ import {
   SecurityEventPort,
 } from '../../application/port/security-event.port';
 import {
+  TEMP_PASSWORD_SERVICE_PORT,
+  TempPasswordServicePort,
+} from '../../application/port/temp-password.port';
+import {
   TOKEN_SERVICE_PORT,
   TokenServicePort,
 } from '../../application/port/token-service.port';
@@ -52,11 +56,13 @@ import { LoginUseCase } from '../../application/use-case/login.use-case';
 import { NewPasswordUseCase } from '../../application/use-case/new-password.use-case';
 import { ResetPasswordUseCase } from '../../application/use-case/reset-password.use-case';
 import { SendNewTokenToEmailActiveUseCase } from '../../application/use-case/send-new-token-to-email-active.use-case';
+import { UnblockAccountUseCase } from '../../application/use-case/unblock-account.use-case';
 import { ConfigServiceAdapter } from '../adapter/config-service.adapter';
 import { EmailServiceAdapter } from '../adapter/email-service.adapter';
 import { GenerateOtpServiceAdapter } from '../adapter/generate-otp-service.adapter';
 import { RedisServiceAdapter } from '../adapter/redis-service.adapter';
 import { SecurityEventAdapter } from '../adapter/security-event.adapter';
+import { TempPasswordServiceAdapter } from '../adapter/temp-password-service.adapter';
 import { TokenServiceAdapter } from '../adapter/token-service.adapter';
 import { UserValidateCredentialsServiceAdapter } from '../adapter/user-validate-credential-service.adapter';
 import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
@@ -122,6 +128,10 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
       useFactory: (eventEmitter: EventEmitter2): SecurityEventPort =>
         new SecurityEventAdapter(eventEmitter),
       inject: [EventEmitter2],
+    },
+    {
+      provide: TEMP_PASSWORD_SERVICE_PORT,
+      useClass: TempPasswordServiceAdapter,
     },
     {
       provide: LoginUseCase,
@@ -216,6 +226,27 @@ import { UserRepositoryAdapter } from './../adapter/user-repository.adapter';
           emailServicePort,
         ),
       inject: [TOKEN_SERVICE_PORT, USER_REPOSITORY_PORT, EMAIL_SERVICE_PORT],
+    },
+    {
+      provide: UnblockAccountUseCase,
+      useFactory: (
+        redisServicePort: RedisServicePort,
+        userRepositoryPort: UserRepositoryPort,
+        emailServicePort: EmailServicePort,
+        tempPasswordServicePort: TempPasswordServicePort,
+      ) =>
+        new UnblockAccountUseCase(
+          redisServicePort,
+          userRepositoryPort,
+          emailServicePort,
+          tempPasswordServicePort,
+        ),
+      inject: [
+        REDIS_SERVICE_PORT,
+        USER_REPOSITORY_PORT,
+        EMAIL_SERVICE_PORT,
+        TEMP_PASSWORD_SERVICE_PORT,
+      ],
     },
   ],
 })

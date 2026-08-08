@@ -13,6 +13,7 @@ export interface ISendEmailPayload {
     resetPasswordURL?: string;
     activeUrl?: string;
     unblockAccountURL?: string;
+    tempPassword?: string;
     code?: string;
   };
 }

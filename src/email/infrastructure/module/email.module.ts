@@ -23,6 +23,7 @@ import {
 import { SendActivationAccountEmailUseCase } from '../../application/use-cases/send-activation-account-email.use-case';
 import { SendBlockAccountEmailUseCase } from '../../application/use-cases/send-block-account-email.use-case';
 import { SendResetPasswordEmailUseCase } from '../../application/use-cases/send-reset-password-email';
+import { SendUnblockAccountEmailUseCase } from '../../application/use-cases/send-unblock-account-email.use-case';
 import { EmailLoggerAdapter } from '../adapter/email-logger.adapter';
 import { MailerServiceAdapter } from '../adapter/mailer-service.adapter';
 import { EMAIL_PROVIDE, EmailProvide } from '../email-provide/email.provide';
@@ -146,21 +147,33 @@ import { EmailWorker } from '../worker/email.worker';
       inject: [MAILER_SERVICE_PORT, CONFIG_SERVICE_PORT, EMAIL_LOGGER_PORT],
     },
     {
+      provide: SendUnblockAccountEmailUseCase,
+      useFactory: (
+        mailerServicePort: MailerServicePort,
+        emailLoggerPort: EmailLoggerPort,
+      ) =>
+        new SendUnblockAccountEmailUseCase(mailerServicePort, emailLoggerPort),
+      inject: [MAILER_SERVICE_PORT, EMAIL_LOGGER_PORT],
+    },
+    {
       provide: EmailService,
       useFactory: (
         sendActivationAccountEmailUseCase: SendActivationAccountEmailUseCase,
         sendResetPasswordEmailUseCase: SendResetPasswordEmailUseCase,
         sendBlockAccountEmailUseCase: SendBlockAccountEmailUseCase,
+        sendUnblockAccountEmailUseCase: SendUnblockAccountEmailUseCase,
       ): EmailService =>
         new EmailServiceImpls(
           sendActivationAccountEmailUseCase,
           sendResetPasswordEmailUseCase,
           sendBlockAccountEmailUseCase,
+          sendUnblockAccountEmailUseCase,
         ),
       inject: [
         SendActivationAccountEmailUseCase,
         SendResetPasswordEmailUseCase,
         SendBlockAccountEmailUseCase,
+        SendUnblockAccountEmailUseCase,
       ],
     },
     EmailWorker,

@@ -41,11 +41,11 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
       throw AuthDomainError.internalServerError('Failure to block account');
     }
   }
-  async reactiveAccount(email: string): Promise<void> {
+  async unblockAccount(email: string): Promise<void> {
     try {
-      await this.userRepository.reactiveAccount(email);
+      await this.userRepository.unblockAccount(email);
     } catch {
-      throw AuthDomainError.internalServerError('Failure to reactive account');
+      throw AuthDomainError.internalServerError('Failure to unblock account');
     }
   }
 }

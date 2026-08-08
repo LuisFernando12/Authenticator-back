@@ -3,12 +3,13 @@ export interface EmailProps {
   username: string;
   token?: string;
   code?: number;
+  tempPassword?: string;
 }
 export class Email {
   constructor(private readonly emailProps: EmailProps) {
     if (!emailProps.email) throw new Error('Email is required');
     if (!emailProps.username) throw new Error('Username is required');
-    if (!emailProps.token && !emailProps.code)
+    if (!emailProps.token && !emailProps.code && !emailProps.tempPassword)
       throw new Error('Code or token is required');
   }
 
@@ -26,5 +27,9 @@ export class Email {
 
   get code(): number | undefined {
     return this.emailProps.code;
+  }
+
+  get tempPassword(): string | undefined {
+    return this.emailProps.tempPassword;
   }
 }

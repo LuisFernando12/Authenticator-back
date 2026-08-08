@@ -21,6 +21,10 @@ export abstract class RedisServicePort {
     key: string,
     payloadOauthCodeRedis: IOauthRequestCodePayload,
   ): Promise<string>;
+  abstract saveUnblockAccountCodeOTP(
+    code: number,
+    email: string,
+  ): Promise<void>;
   abstract addJtiTokenOnBlockList(jti: string): Promise<string>;
   abstract addTokenFamilyToReuseDetection(
     payloadTokenFamily: ITokenFamilyRevoked,

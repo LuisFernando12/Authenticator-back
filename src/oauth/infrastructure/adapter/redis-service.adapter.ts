@@ -101,7 +101,7 @@ export class RedisServiceAdapter implements RedisServicePort {
   async setFailedLoginAttempt(email: string): Promise<void> {
     const failedLoginAttempt = await this.getFailedLoginAttempt(email);
     const setFailedLoginAttempt = await this.redisService.setOnRedis(
-      `failed-oauth-login-attempt-${email}`,
+      `failed-login-attempt-${email}`,
       (failedLoginAttempt + 1).toString(),
       900,
     );
@@ -113,8 +113,18 @@ export class RedisServiceAdapter implements RedisServicePort {
   }
   async getFailedLoginAttempt(email: string): Promise<number> {
     const failedLoginAttempt = await this.redisService.getOnRedis(
-      `failed-oauth-login-attempt-${email}`,
+      `failed-login-attempt-${email}`,
     );
     return Number(failedLoginAttempt || 0);
+  }
+  async saveUnblockAccountCodeOTP(code: number, email: string): Promise<void> {
+    const saveCodeOTP = await this.redisService.setOnRedis(
+      `unblock-account-${code}`,
+      JSON.stringify({ email: email }),
+      300,
+    );
+    if (!saveCodeOTP) {
+      throw OauthDomainError.internalServerError('Failure to save code OTP');
+    }
   }
 }
