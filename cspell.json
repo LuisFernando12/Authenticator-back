@@ -16,6 +16,7 @@
     "senha",
     "typeorm",
     "Bloqueio",
-    "conta"
+    "conta",
+    "Desbloqueada"
   ]
 }

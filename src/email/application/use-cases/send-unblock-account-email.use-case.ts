@@ -17,7 +17,7 @@ export class SendUnblockAccountEmailUseCase implements BaseUseCase<
     try {
       await this.mailerServicePort.sendMail({
         to: payload.email,
-        subject: 'Desbloqueio de conta',
+        subject: 'Conta Desbloqueada',
         template: './unblockAccount',
         context: {
           username: payload.username,
