@@ -1,3 +1,10 @@
+# [2.3.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0-beta.2...v2.3.0-beta.3) (2026-08-10)
+
+
+### Features
+
+* **env:** update service URLs in .env.template for account management ([d2f3356](https://github.com/LuisFernando12/Authenticator/commit/d2f3356ce8d7eb3b03866c1208bb4ed3ed7ce4f6))
+
 # [2.3.0-beta.2](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0-beta.1...v2.3.0-beta.2) (2026-08-08)
 
 
