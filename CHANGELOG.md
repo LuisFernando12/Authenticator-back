@@ -1,3 +1,22 @@
+# [2.3.0](https://github.com/LuisFernando12/Authenticator/compare/v2.2.0...v2.3.0) (2026-08-21)
+
+
+### Bug Fixes
+
+* **email:** fixed start  log on sendBlockAccountEmailUseCase ([dfb2f0a](https://github.com/LuisFernando12/Authenticator/commit/dfb2f0a593e45fa999a7d1fe904cf370633628ed))
+* **email:** update subject line for unblock account email notification ([b2a98b7](https://github.com/LuisFernando12/Authenticator/commit/b2a98b7a9772f79088313ea7971353c660a0c72f))
+
+
+### Features
+
+* **account:** implement account blocking and reactivation features with email notifications ([6bdb273](https://github.com/LuisFernando12/Authenticator/commit/6bdb273b2f41de007fb3be0f454ba1916a6e116c))
+* add account unblock functionality ([e5c7f2b](https://github.com/LuisFernando12/Authenticator/commit/e5c7f2b3c61bda4ecb66d1de8adee9fd9d8760d6))
+* **auth:** add failed login attempt tracking and security event logging ([31fd351](https://github.com/LuisFernando12/Authenticator/commit/31fd351081352e109c9547ea4cb2466f3a52d5f0))
+* **docs:** update email notification section and add account unblock endpoint in README ([2079c50](https://github.com/LuisFernando12/Authenticator/commit/2079c5075c968579f100be36a8260c9e1d31160c))
+* **env:** update service URLs in .env.template for account management ([d2f3356](https://github.com/LuisFernando12/Authenticator/commit/d2f3356ce8d7eb3b03866c1208bb4ed3ed7ce4f6))
+* **security:** implement security event logging and add reason for logins ([5d7a055](https://github.com/LuisFernando12/Authenticator/commit/5d7a0551df5b56269b7f8f7e90e645fe00742d15))
+* **test:** resolved tests errors and add new use-case suite security-event ([9ed5532](https://github.com/LuisFernando12/Authenticator/commit/9ed5532a11c56a589499b6f0ad15b1cc130fbfde))
+
 # [2.3.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0-beta.3...v2.3.0-beta.4) (2026-08-21)
 
 
