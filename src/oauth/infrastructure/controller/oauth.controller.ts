@@ -10,12 +10,17 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, OmitType } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import {
+  ContextClient,
+  IContextClient,
+} from '../../../config/decorator/context-client.decorator';
 import { AuthorizeUseCase } from '../../application/use-case/authorize.use-case';
 import { ExchangeOauthCodeUseCase } from '../../application/use-case/exchange-auth-code.use-case';
 import { LoginUseCase } from '../../application/use-case/login.use-case';
 import { RefreshTokenUseCase } from '../../application/use-case/refresh-token.use-case';
 import { RevokeTokenUseCase } from '../../application/use-case/revoke-token.use-case';
 import { TokenIntrospectUseCase } from '../../application/use-case/token-introspect.use-case';
+import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
 import { LoginDTO } from '../dto/login.dto';
 import {
   OauthAuthorizeDTO,
@@ -31,15 +36,19 @@ export interface IOauthController {
     url: string;
     statusCode: number;
   }>;
-  token(payloadOauthToken: OauthTokenDTO): Promise<any>;
+  token(payloadOauthToken: OauthTokenDTO): Promise<OauthAccessToken>;
   login(
     payloadOauthLogin: LoginDTO,
     QueryOauthLogin: OauthAuthorizeDTO,
+    contextClient: IContextClient,
   ): Promise<{
     url: string;
     statusCode: number;
   }>;
-  refreshToken({ refreshToken, grantType }: OauthRefreshTokenDTO): Promise<any>;
+  refreshToken(
+    { refreshToken, grantType }: OauthRefreshTokenDTO,
+    contextClient: IContextClient,
+  ): Promise<any>;
   revokeToken({ token }: RevokeTokenDTO): Promise<any>;
   tokenIntrospect({ token }: TokenIntrospectDTO): Promise<any>;
 }
@@ -94,9 +103,14 @@ export class OauthController implements IOauthController {
   async login(
     @Body() payloadOauthLogin: LoginDTO,
     @Query() QueryOauthLogin: OauthAuthorizeDTO,
+    @ContextClient() contextClient: IContextClient,
   ): Promise<any> {
     const urlRedirect = await this.loginUseCase.execute(
-      payloadOauthLogin,
+      {
+        ...payloadOauthLogin,
+        ip: contextClient.ip,
+        userAgent: contextClient.userAgent,
+      },
       QueryOauthLogin,
     );
     return { url: urlRedirect.toString(), statusCode: 302 };
@@ -118,8 +132,14 @@ export class OauthController implements IOauthController {
   })
   async refreshToken(
     @Body() { refreshToken, grantType }: OauthRefreshTokenDTO,
-  ): Promise<any> {
-    return await this.refreshTokenUseCase.execute({ refreshToken, grantType });
+    @ContextClient() contextClient: IContextClient,
+  ): Promise<OauthAccessToken> {
+    return await this.refreshTokenUseCase.execute({
+      refreshToken,
+      grantType,
+      ip: contextClient.ip,
+      userAgent: contextClient.userAgent,
+    });
   }
   @Post('/revoke-token')
   @HttpCode(HttpStatus.OK)

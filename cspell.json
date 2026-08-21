@@ -14,6 +14,9 @@
     "Recuperação",
     "redis",
     "senha",
-    "typeorm"
+    "typeorm",
+    "Bloqueio",
+    "conta",
+    "Desbloqueada"
   ]
 }

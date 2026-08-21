@@ -5,7 +5,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
-import { UserDTO, UserResponseDTO } from '../dto/user.dto';
+import { UserDTO, UserResponseDTO } from '../../dto/user.dto';
 export interface IUserRepository {
   create(
     data: UserEntityType,
@@ -14,13 +14,15 @@ export interface IUserRepository {
   existsUser(email: string): Promise<boolean>;
   activeAccount(email: string): Promise<boolean>;
   updatePassword(email: string, password: string): Promise<boolean>;
+  blockAccount(email: string): Promise<void>;
+  unblockAccount(email: string): Promise<void>;
 }
 
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
   async activeAccount(email: string): Promise<boolean> {
     const userDB = await this.userRepository.update(
@@ -58,5 +60,15 @@ export class UserRepository implements IUserRepository {
       return false;
     }
     return true;
+  }
+  async blockAccount(email: string): Promise<void> {
+    await this.userRepository.update({ email: email }, { isVerified: false });
+    await this.userRepository.softDelete({ email: email });
+  }
+  async unblockAccount(email: string): Promise<void> {
+    await this.userRepository.update(
+      { email: email },
+      { isVerified: true, deletedAt: null },
+    );
   }
 }

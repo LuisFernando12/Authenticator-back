@@ -1,4 +1,4 @@
-import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
+import { IUserRepository } from '@/user/infrastructure/persistence/repository/user.repository';
 import * as bcrypt from 'bcrypt';
 import {
   IValidateCredentialsPayload,
@@ -9,6 +9,7 @@ import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 
 export class UserServiceAdapter implements UserServicePort {
   constructor(private readonly userRepository: IUserRepository) {}
+
   async findByEmail(email: string): Promise<OauthUser> {
     const userDB = await this.userRepository.findByEmail(email);
     if (!userDB) {
@@ -33,5 +34,16 @@ export class UserServiceAdapter implements UserServicePort {
       );
     }
     return userDB;
+  }
+  async isValidEmail(email: string): Promise<boolean> {
+    const userDB = await this.userRepository.existsUser(email);
+    return userDB;
+  }
+  async blockAccount(email: string): Promise<void> {
+    try {
+      await this.userRepository.blockAccount(email);
+    } catch {
+      throw OauthDomainError.internalServerError('Failure to block account');
+    }
   }
 }

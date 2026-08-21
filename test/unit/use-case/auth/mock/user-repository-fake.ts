@@ -2,7 +2,7 @@ import { UserRepositoryPort } from '@/auth/application/port/user-repository.port
 import { AuthUser } from '@/auth/domain/entity/auth-user.entity';
 
 export class UserRepositoryFake implements UserRepositoryPort {
-  private user = new AuthUser({
+  private readonly user = new AuthUser({
     id: 'test-user-id',
     name: 'John Doe',
     email: 'john.doe@example.com',
@@ -25,5 +25,11 @@ export class UserRepositoryFake implements UserRepositoryPort {
 
   async updatePassword(_email: string, _password: string): Promise<void> {
     return;
+  }
+  emailExists(email: string): Promise<boolean> {
+    if (email === this.user.email) {
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
   }
 }

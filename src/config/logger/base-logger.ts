@@ -17,7 +17,6 @@ export class BaseLogger extends ConsoleLogger implements IBaseLogger {
       logLevels: ['log', 'error', 'warn', 'debug'],
     });
   }
-
   logAsJson(message: string, payload: IBaseLoggerOptions) {
     if (!payload.writeStreamType) {
       payload['writeStreamType'] = 'stdout';

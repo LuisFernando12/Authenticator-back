@@ -29,6 +29,14 @@ export class EmailWorker extends WorkerHost {
           this.logger.log('Email to reset password', {});
           await this.emailService.sendResetPasswordEmail(job.data);
           break;
+        case 'block-account':
+          this.logger.log('Email to block account', {});
+          await this.emailService.sendBlockAccountEmail(job.data);
+          break;
+        case 'unblock-account':
+          this.logger.log('Email to unblock account', {});
+          await this.emailService.sendUnblockAccountEmail(job.data);
+          break;
         default:
           this.logger.error('Email type not found', {});
           throw new Error('Email type not found');

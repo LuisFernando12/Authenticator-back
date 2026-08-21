@@ -1,14 +1,19 @@
 import { BaseUseCase } from '@/core/application/use-case/base.use-case';
+import { SecurityEventType } from '../../../security-event/domain/enum/security-event-type.enum';
+import { SeverityType } from '../../../security-event/domain/enum/severity-type.enum';
 import { OauthAccessToken } from '../../domain/entity/oauth-access-token.entity';
 import { OauthDomainError } from '../../domain/error/oauth-domain.error';
 import { ConfigServicePort } from '../port/config-service.port';
 import { RedisServicePort } from '../port/redis-service-port';
+import { SecurityEventPort } from '../port/security-event.port';
 import { IPayloadToken, TokenServicePort } from '../port/token-service.port';
 import { ConsentServicePort } from '../port/user-client-consent-service.port';
 import { UserServicePort } from '../port/user-service.port';
 interface IRefreshTokenUseCasePayload {
   grantType: string;
   refreshToken: string;
+  ip: string;
+  userAgent: string;
 }
 export class RefreshTokenUseCase implements BaseUseCase<
   IRefreshTokenUseCasePayload,
@@ -20,6 +25,7 @@ export class RefreshTokenUseCase implements BaseUseCase<
     private readonly consentServicePort: ConsentServicePort,
     private readonly configServicePort: ConfigServicePort,
     private readonly redisServicePort: RedisServicePort,
+    private readonly securityEventPort: SecurityEventPort,
   ) {}
   async execute(
     payload: IRefreshTokenUseCasePayload,
@@ -40,7 +46,13 @@ export class RefreshTokenUseCase implements BaseUseCase<
       await this.tokenServicePort.deleteByTokenFamilyId(
         refreshTokenIsReused.tokenFamilyId,
       );
-
+      this.securityEventPort.emit({
+        ip: payload.ip,
+        userAgent: payload.userAgent,
+        severity: SeverityType.HIGH,
+        type: SecurityEventType.REFRESH_TOKEN_REUSED,
+        email: refreshTokenIsReused.email,
+      });
       throw OauthDomainError.tokenFamilyReused();
     }
     const refreshTokenDB =
@@ -65,6 +77,7 @@ export class RefreshTokenUseCase implements BaseUseCase<
       jti: refreshTokenDB.jti,
       expiresAt: refreshTokenDB.expiresAt,
       refreshToken: refreshTokenDB.refreshToken,
+      email,
     });
     return await this.tokenServicePort.refreshToken(
       payloadToken,

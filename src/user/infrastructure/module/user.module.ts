@@ -29,7 +29,7 @@ import { RegisterUserUseCase } from '../../application/use-case/register-user.us
 import { EmailServiceAdapter } from '../adapter/email-service.adapter';
 import { TokenServiceAdapter } from '../adapter/token-service.adapter';
 import { UserRepositoryAdapter } from '../adapter/user-repository.adapter';
-import { UserRepository } from '../repository/user.repository';
+import { UserRepository } from '../persistence/repository/user.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]), TokenModule, EmailModule],

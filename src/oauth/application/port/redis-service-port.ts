@@ -10,6 +10,7 @@ export interface ITokenFamilyRevoked {
   tokenFamilyId: string;
   refreshToken: string;
   expiresAt: Date;
+  email: string;
 }
 export const REDIS_SERVICE_PORT = Symbol('REDIS_SERVICE_PORT');
 export abstract class RedisServicePort {
@@ -20,6 +21,10 @@ export abstract class RedisServicePort {
     key: string,
     payloadOauthCodeRedis: IOauthRequestCodePayload,
   ): Promise<string>;
+  abstract saveUnblockAccountCodeOTP(
+    code: number,
+    email: string,
+  ): Promise<void>;
   abstract addJtiTokenOnBlockList(jti: string): Promise<string>;
   abstract addTokenFamilyToReuseDetection(
     payloadTokenFamily: ITokenFamilyRevoked,
@@ -28,4 +33,6 @@ export abstract class RedisServicePort {
   abstract consultHasTokenFamilyOnReuseDetection(
     refreshToken: string,
   ): Promise<ITokenFamilyRevoked>;
+  abstract setFailedLoginAttempt(email: string): Promise<void>;
+  abstract getFailedLoginAttempt(email: string): Promise<number>;
 }

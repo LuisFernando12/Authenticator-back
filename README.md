@@ -36,7 +36,7 @@ A NestJS-based authentication and authorization service implementing secure logi
 - **Password Management** — Reset and update via email code generated with `crypto.randomInt`
 - **OAuth2** — Full Authorization Code flow with PKCE (`S256`) support for public clients
 - **Client Management** — Register and manage OAuth2 applications (confidential and public clients)
-- **Email Notifications** — Dynamic templates with Nodemailer + Handlebars for account activation and password reset
+- **Email Notifications** — Dynamic templates with Gmail API, Nodemailer and Handlebars for account activation, account blocking/unblocking and password reset
 - **Rate Limiting** — Brute-force protection on sensitive endpoints via `@nestjs/throttler`
 - **Health Check** — PostgreSQL and Redis connectivity check via `@nestjs/terminus`
 - **Structured Logging** — Custom logger with per-method context, built on top of NestJS `ConsoleLogger`
@@ -77,12 +77,12 @@ sequenceDiagram
 
     User->>Auth: POST /api/auth/oauth/login<br/>(email, password + query params)
     Auth->>Auth: Validates authRequest from Redis<br/>Verifies user credentials
-    Auth->>Auth: Generates authorization code (SHA-256)<br/>Saves code + codeChallenge in Redis (5 min TTL)
+    Auth->>Auth: Generates authorization code<br/>Saves code + codeChallenge in Redis
     Auth-->>App: 302 redirect → redirectUri<br/>(?code=xxx&state=yyy)
 
     App->>Auth: POST /api/auth/oauth/token<br/>(code, clientId, codeVerifier, redirectUri)
     Auth->>Auth: Validates code from Redis<br/>Verifies PKCE (SHA-256 of codeVerifier)
-    Auth-->>App: { access_token, token_type, scope, expiresAt }
+    Auth-->>App: { access_token, refresh_token, expiresAt }
 ```
 
 ### Authorization Code (confidential clients)
@@ -102,7 +102,7 @@ sequenceDiagram
 
     App->>Auth: POST /api/auth/oauth/token<br/>(code, clientId, clientSecret, redirectUri)
     Auth->>Auth: Validates clientSecret<br/>Exchanges code for access_token
-    Auth-->>App: { access_token, token_type, scope, expiresAt }
+    Auth-->>App: { access_token, refresh_token, expiresAt }
 ```
 
 ---
@@ -115,7 +115,7 @@ sequenceDiagram
     participant Auth as Authenticator Service
     participant DB as PostgreSQL
     participant Redis
-    participant Email as SMTP
+    participant Email as Email Service
 
     Note over Client,Email: Registration
     Client->>Auth: POST /api/auth/user (name, email, password)
@@ -133,12 +133,12 @@ sequenceDiagram
     Client->>Auth: POST /api/auth/login (email, password)
     Auth->>DB: Finds user by email
     Auth->>Auth: bcrypt.compare(password, hash)
-    Auth->>DB: Saves / updates JWT token
-    Auth-->>Client: 200 { token, redirect_uri }
+    Auth->>DB: Stores refresh-token metadata and session
+    Auth-->>Client: 200 { access_token, refresh_token, expiresAt, redirect_uri }
 
     Note over Client,Email: Password Reset
     Client->>Auth: POST /api/auth/reset-password (email)
-    Auth->>Redis: Saves code (crypto.randomInt, TTL 10 min)
+    Auth->>Redis: Saves recovery code
     Auth->>Email: Sends recovery code
     Auth-->>Client: 200 { message }
 
@@ -163,6 +163,7 @@ All endpoints are prefixed with `/api/auth`.
 | `POST` | `/reset-password`         | Requests password reset by email  | 5 req/min  |
 | `POST` | `/new-password`           | Sets new password with Redis code | 5 req/min  |
 | `POST` | `/new-token/email-active` | Resends activation email          | 5 req/min  |
+| `POST` | `/unblock-account`        | Unblocks an account using a code  | 5 req/min  |
 
 ### User — `/api/auth/user`
 
@@ -177,15 +178,16 @@ All endpoints are prefixed with `/api/auth`.
 | `GET`  | `/authorize`        | Starts OAuth2 flow, returns redirect with `oauthRequestId`                                                  | —          |
 | `POST` | `/login`            | OAuth2 login — validates authRequest and generates `code`                                                   | 5 req/min  |
 | `POST` | `/token`            | Exchanges `code` for `access_token` (PKCE and clientSecret supported)                                       | 5 req/min  |
-| `POST` | `/refresh-token`    | Refreshes `access_token` and `refresh_token` passing a valid `refreshToken` on payload                      | 5 req/min  |
-| `POST` | `/revoke-token`     | Revokes `access_token` and `refresh_token` passing `refreshToken` or `accessToken` like token on payload    | 5 req/min  |
-| `POST` | `/token-introspect` | Introspects `access_token` or `refresh_token` passing `refreshToken` or `accessToken` like token on payload | 5 req/min  |
+| `POST` | `/refresh-token`    | Refreshes `access_token` and `refresh_token` using `grantType` and `refreshToken` in the payload            | 5 req/min  |
+| `POST` | `/revoke-token`     | Revokes an access or refresh token passed as the `token` payload field                                      | 5 req/min  |
+| `POST` | `/token-introspect` | Introspects an access or refresh token passed as the `token` payload field                                  | 5 req/min  |
 
 ### Client — `/api/auth/client`
 
-| Method | Route | Description                        |
-| ------ | ----- | ---------------------------------- |
-| `POST` | `/`   | Registers a new OAuth2 application |
+| Method | Route            | Description                        |
+| ------ | ---------------- | ---------------------------------- |
+| `POST` | `/`              | Registers a new OAuth2 application |
+| `GET`  | `/client-id/:id` | Finds an OAuth2 client by clientId |
 
 ### Health — `/api/auth/health`
 
@@ -256,6 +258,7 @@ Copy `.env.template` to `.env` and fill in your values:
 
 ```env
 # PostgreSQL
+DB_HOST=
 DB_USER=
 DB_PASSWORD=
 DB_NAME=
@@ -265,10 +268,12 @@ DB_PORT=5432
 SERVICE_VERIFY_EMAIL_URL=   # Base URL for email verification links
 SERVICE_URL=                # Public URL of this service
 SERVICE_RESET_PASSWORD_URL= # URL of the password reset page
+SERVICE_UNBLOCK_ACCOUNT_URL= # URL of the account unblock page
 REDIRECT_URI=               # Default redirect URI after login
 
 # CORS
 CORS_ORIGIN=                # Allowed origin (e.g. http://localhost:4000)
+TRUST_PROXY=0               # Optional Express trust proxy setting
 
 # OAuth2
 OAUTH_LOGIN_URL=            # URL of the frontend OAuth2 login page
@@ -276,14 +281,23 @@ OAUTH_LOGIN_URL=            # URL of the frontend OAuth2 login page
 # Redis
 REDIS_URI=                  # Full URI (e.g. redis://:password@localhost:6379)
 
-# SMTP
-SMTP_PORT=
-SERVER_SMTP=                # SMTP server hostname (e.g. smtp.example.com)
-SERVER_SMTP_USER_NAME=
-SERVER_SMTP_PASSWORD=
+# Gmail API
+GMAIL_CLIENT_ID=
+GMAIL_CLIENT_SECRET=
+GMAIL_REDIRECT_URI=
+GMAIL_REFRESH_TOKEN=
+GMAIL_SENDER_EMAIL=
 
 # JWT
 SECRET=                     # Secret key for signing JWT tokens
+CLIENT_SECRET_PEPPER=       # Pepper used when hashing OAuth2 client secrets
+ACCESS_TOKEN_EXPIRES_IN=15min
+REFRESH_TOKEN_EXPIRES_DAYS=15
+EMAIL_VERIFICATION_TOKEN_EXPIRES=6h
+
+# Runtime
+NODE_ENV=
+PORT=3000
 ```
 
 ---
@@ -338,10 +352,9 @@ src/
 │       └── repository/
 ├── config/
 │   ├── database/                   # TypeORM data source and migrations
+│   ├── decorator/                  # Custom request decorators
 │   ├── filters/                    # Global exception filters
-│   ├── helper/
-│   ├── logger/
-│   └── templates/                  # Handlebars email templates
+│   └── logger/
 ├── consent/                        # OAuth2 consent domain
 │   ├── application/
 │   │   ├── port/
@@ -350,6 +363,10 @@ src/
 │   ├── domain/
 │   └── infrastructure/
 ├── core/                           # Shared app services and modules
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+├── email/                          # Email queue, workers, providers and templates
 │   ├── application/
 │   ├── domain/
 │   └── infrastructure/
@@ -368,6 +385,13 @@ src/
 │       ├── controller/
 │       ├── dto/
 │       └── module/
+├── security-event/                 # Security event logging pipeline
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+├── session/                        # Session persistence for token families
+│   ├── domain/
+│   └── infrastructure/
 ├── token/                          # Token generation, refresh, revoke and introspection
 │   ├── application/
 │   │   ├── interface/
@@ -395,6 +419,8 @@ src/
         └── repository/
 
 test/
+├── e2e/
+│   └── setup/
 └── unit/
     └── use-case/
         ├── auth/
@@ -408,7 +434,7 @@ test/
 
 ## CI/CD
 
-The CI pipeline runs automatically on every push and pull request to `main`:
+The CI pipeline runs automatically on every push and pull request to `main` and `develop`:
 
 1. **Checkout** the code
 2. **Setup pnpm 10** + dependency cache
@@ -417,6 +443,8 @@ The CI pipeline runs automatically on every push and pull request to `main`:
 5. **Build** — `pnpm build`
 6. **Test** — `pnpm test`
 7. **Coverage** — `pnpm test:cov`
+8. **E2E** — `pnpm test:e2e`
+9. **Release** — `npx semantic-release`
 
 ---
 

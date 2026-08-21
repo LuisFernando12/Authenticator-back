@@ -1,4 +1,4 @@
-import { IUserRepository } from '@/user/infrastructure/repository/user.repository';
+import { IUserRepository } from '@/user/infrastructure/persistence/repository/user.repository';
 import { UserRepositoryPort } from '../../application/port/user-repository.port';
 import { AuthUser } from '../../domain/entity/auth-user.entity';
 import { AuthDomainError } from '../../domain/error/auth-domain.error';
@@ -8,7 +8,9 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
   async findByEmail(email: string): Promise<AuthUser> {
     const userDB = await this.userRepository.findByEmail(email);
     if (!userDB) {
-      throw AuthDomainError.notFound('User not found');
+      throw AuthDomainError.unauthorized(
+        'Email or Password incorrect, please verify and try again',
+      );
     }
     return new AuthUser(userDB);
   }
@@ -27,6 +29,23 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
     if (!passwordUpdate) {
       throw AuthDomainError.internalServerError('Failure to update password');
     }
-    return;
+  }
+  async emailExists(email: string): Promise<boolean> {
+    const emailExists = await this.userRepository.existsUser(email);
+    return emailExists;
+  }
+  async blockAccount(email: string): Promise<void> {
+    try {
+      await this.userRepository.blockAccount(email);
+    } catch {
+      throw AuthDomainError.internalServerError('Failure to block account');
+    }
+  }
+  async unblockAccount(email: string): Promise<void> {
+    try {
+      await this.userRepository.unblockAccount(email);
+    } catch {
+      throw AuthDomainError.internalServerError('Failure to unblock account');
+    }
   }
 }

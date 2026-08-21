@@ -12,6 +12,8 @@ export interface ISendEmailPayload {
     username: string;
     resetPasswordURL?: string;
     activeUrl?: string;
+    unblockAccountURL?: string;
+    tempPassword?: string;
     code?: string;
   };
 }

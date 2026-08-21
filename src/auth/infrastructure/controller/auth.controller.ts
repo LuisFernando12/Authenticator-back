@@ -12,24 +12,34 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import {
+  ContextClient,
+  IContextClient,
+} from '../../../config/decorator/context-client.decorator';
 import { ActiveAccountUseCase } from '../../application/use-case/active-account.use-case';
 import {
   ILoginUseCaseResponse,
   LoginUseCase,
-} from '../../application/use-case/login.user-case';
+} from '../../application/use-case/login.use-case';
 import { NewPasswordUseCase } from '../../application/use-case/new-password.use-case';
 import { ResetPasswordUseCase } from '../../application/use-case/reset-password.use-case';
+import { UnblockAccountUseCase } from '../../application/use-case/unblock-account.use-case';
 import { LoginDTO } from '../dto/login.dto';
+import { UnblockAccountDTO } from '../dto/unblock-account.dto';
 import { SendNewTokenToEmailActiveUseCase } from './../../application/use-case/send-new-token-to-email-active.use-case';
 
 export interface IAuthController {
-  login(data: LoginDTO): Promise<ILoginUseCaseResponse>;
-  verifyEmail(token: string): void;
+  login(
+    data: LoginDTO,
+    contextClient: IContextClient,
+  ): Promise<ILoginUseCaseResponse>;
+  verifyEmail(token: string): Promise<void>;
   resetPassword(data: { email: string }): Promise<{ message: string }>;
-  newPassword(data: NewPasswordDTO): void;
+  newPassword(data: NewPasswordDTO): Promise<{ message: string }>;
   sendNewTokenToEmailActive({
     email,
   }: NewTokenToActiveEmailDTO): Promise<{ message: string }>;
+  unblockAccount({ code }: UnblockAccountDTO): Promise<{ message: string }>;
 }
 
 @Controller()
@@ -41,18 +51,23 @@ export class AuthController implements IAuthController {
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
     private readonly newPasswordUseCase: NewPasswordUseCase,
     private readonly sendNewTokenToEmailActiveUseCase: SendNewTokenToEmailActiveUseCase,
+    private readonly unblockAccountUseCase: UnblockAccountUseCase,
   ) {}
-
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ type: LoginDTO })
   @ApiResponse({ status: 200, description: 'User logged in successfully.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async login(@Body() data: LoginDTO) {
+  async login(
+    @Body() data: LoginDTO,
+    @ContextClient() contextClient: IContextClient,
+  ) {
     return await this.loginUseCase.execute({
       email: data.email,
       password: data.password,
+      ip: contextClient.ip,
+      userAgent: contextClient.userAgent,
     });
   }
   @Get('/verify-email')
@@ -61,7 +76,7 @@ export class AuthController implements IAuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async verifyEmail(@Query('token') token: string) {
-    return await this.activeAccountUseCase.execute(token);
+    await this.activeAccountUseCase.execute(token);
   }
 
   @Post('/reset-password')
@@ -82,7 +97,8 @@ export class AuthController implements IAuthController {
   @ApiResponse({ status: 400, description: 'Invalid code or email' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async newPassword(@Body() data: NewPasswordDTO) {
-    return await this.newPasswordUseCase.execute(data);
+    await this.newPasswordUseCase.execute(data);
+    return { message: 'Password updated successfully' };
   }
   @Post('/new-token/email-active')
   @HttpCode(HttpStatus.OK)
@@ -96,5 +112,20 @@ export class AuthController implements IAuthController {
     @Body() { email }: NewTokenToActiveEmailDTO,
   ): Promise<{ message: string }> {
     return await this.sendNewTokenToEmailActiveUseCase.execute(email);
+  }
+  @Post('/unblock-account')
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: UnblockAccountDTO })
+  @ApiResponse({ status: 200, description: 'Account unblocked successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid code' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async unblockAccount(
+    @Body() { code }: UnblockAccountDTO,
+  ): Promise<{ message: string }> {
+    await this.unblockAccountUseCase.execute({ code });
+    return {
+      message:
+        'Account unblocked successfully, please check your email to see your temporary password!',
+    };
   }
 }

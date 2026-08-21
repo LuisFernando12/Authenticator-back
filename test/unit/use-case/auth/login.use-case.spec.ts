@@ -1,4 +1,4 @@
-import { LoginUseCase } from '@/auth/application/use-case/login.user-case';
+import { LoginUseCase } from '@/auth/application/use-case/login.use-case';
 import { AuthDomainError } from '@/auth/domain/error/auth-domain.error';
 import { authMocked, AuthMockedType } from './mock/index.mock';
 
@@ -13,12 +13,16 @@ describe('LoginUseCase', () => {
       authMock.userValidateCredentialsServiceFake,
       authMock.tokenServiceFake,
       authMock.configServiceFake,
+      authMock.securityEventFake,
+      authMock.redisServiceFake,
     );
   });
 
   const payload = {
     email: 'john.doe@example.com',
     password: 'test-password',
+    ip: '127.0.0.1',
+    userAgent: 'test-user-agent',
   };
 
   it('should be defined', () => {
@@ -56,16 +60,18 @@ describe('LoginUseCase', () => {
   });
 
   it('should throw an error if the account is not verified', async () => {
-    jest.spyOn(authMock.userRepositoryFake, 'findByEmail').mockResolvedValueOnce(
-      authMock.mockAuthUser({
-        id: 'test-user-id',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        password: 'hashed-test-password',
-        isVerified: false,
-        createdAt: new Date(),
-      }),
-    );
+    jest
+      .spyOn(authMock.userRepositoryFake, 'findByEmail')
+      .mockResolvedValueOnce(
+        authMock.mockAuthUser({
+          id: 'test-user-id',
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          password: 'hashed-test-password',
+          isVerified: false,
+          createdAt: new Date(),
+        }),
+      );
 
     const promise = loginUseCase.execute(payload);
 
