@@ -36,7 +36,7 @@ Serviço de autenticação e autorização construído com **NestJS**, implement
 - **Gerenciamento de Senhas** — Reset e atualização via código enviado por email com `crypto.randomInt`
 - **OAuth2** — Fluxo Authorization Code completo com suporte a PKCE (`S256`) para clientes públicos
 - **Gerenciamento de Clientes** — Registro e gestão de aplicações OAuth2 (clientes confidenciais e públicos)
-- **Notificações por Email** — Templates dinâmicos com Nodemailer + Handlebars para ativação de conta e reset
+- **Notificações por Email** — Templates dinâmicos com Gmail API, Nodemailer e Handlebars para ativação de conta, bloqueio/desbloqueio e reset de senha
 - **Rate Limiting** — Proteção contra brute-force nos endpoints sensíveis via `@nestjs/throttler`
 - **Health Check** — Verificação de conectividade com PostgreSQL e Redis via `@nestjs/terminus`
 - **Logging Estruturado** — Logger próprio com contexto por método, baseado no `ConsoleLogger` do NestJS
@@ -77,12 +77,12 @@ sequenceDiagram
 
     User->>Auth: POST /api/auth/oauth/login<br/>(email, password + query params)
     Auth->>Auth: Valida authRequest do Redis<br/>Verifica credenciais do usuário
-    Auth->>Auth: Gera authorization code (SHA-256)<br/>Salva code + codeChallenge no Redis (TTL 5 min)
+    Auth->>Auth: Gera authorization code<br/>Salva code + codeChallenge no Redis
     Auth-->>App: 302 redirect → redirectUri<br/>(?code=xxx&state=yyy)
 
     App->>Auth: POST /api/auth/oauth/token<br/>(code, clientId, codeVerifier, redirectUri)
     Auth->>Auth: Valida code do Redis<br/>Verifica PKCE (SHA-256 do codeVerifier)
-    Auth-->>App: { access_token, token_type, scope, expiresAt }
+    Auth-->>App: { access_token, refresh_token, expiresAt }
 ```
 
 ### Authorization Code (clientes confidenciais)
@@ -102,7 +102,7 @@ sequenceDiagram
 
     App->>Auth: POST /api/auth/oauth/token<br/>(code, clientId, clientSecret, redirectUri)
     Auth->>Auth: Valida clientSecret<br/>Troca code por access_token
-    Auth-->>App: { access_token, token_type, scope, expiresAt }
+    Auth-->>App: { access_token, refresh_token, expiresAt }
 ```
 
 ---
@@ -115,7 +115,7 @@ sequenceDiagram
     participant Auth as Authenticator Service
     participant DB as PostgreSQL
     participant Redis
-    participant Email as SMTP
+    participant Email as Serviço de Email
 
     Note over Client,Email: Registro
     Client->>Auth: POST /api/auth/user (name, email, password)
@@ -133,12 +133,12 @@ sequenceDiagram
     Client->>Auth: POST /api/auth/login (email, password)
     Auth->>DB: Busca usuário por email
     Auth->>Auth: bcrypt.compare(password, hash)
-    Auth->>DB: Salva / atualiza token JWT
-    Auth-->>Client: 200 { token, redirect_uri }
+    Auth->>DB: Persiste metadados do refresh token e sessão
+    Auth-->>Client: 200 { access_token, refresh_token, expiresAt, redirect_uri }
 
     Note over Client,Email: Reset de senha
     Client->>Auth: POST /api/auth/reset-password (email)
-    Auth->>Redis: Salva código (crypto.randomInt, TTL 10 min)
+    Auth->>Redis: Salva código de recuperação
     Auth->>Email: Envia código de recuperação
     Auth-->>Client: 200 { message }
 
@@ -158,11 +158,12 @@ Todos os endpoints são prefixados com `/api/auth`.
 
 | Método | Rota                      | Descrição                          | Rate Limit |
 | ------ | ------------------------- | ---------------------------------- | ---------- |
-| `POST` | `/login`                  | Login do usuário                   | 4 req/min  |
-| `GET`  | `/verify-email?token=`    | Ativa conta via token JWT          | —          |
-| `POST` | `/reset-password`         | Solicita reset de senha por email  | 4 req/min  |
-| `POST` | `/new-password`           | Define nova senha com código Redis | 4 req/min  |
-| `POST` | `/new-token/email-active` | Reenvio do email de ativação       | 4 req/min  |
+| `POST` | `/login`                  | Login do usuário                   | 5 req/min  |
+| `GET`  | `/verify-email?token=`    | Ativa conta via token JWT          | 5 req/min  |
+| `POST` | `/reset-password`         | Solicita reset de senha por email  | 5 req/min  |
+| `POST` | `/new-password`           | Define nova senha com código Redis | 5 req/min  |
+| `POST` | `/new-token/email-active` | Reenvio do email de ativação       | 5 req/min  |
+| `POST` | `/unblock-account`        | Desbloqueia uma conta usando código | 5 req/min  |
 
 ### Usuário — `/api/auth/user`
 
@@ -177,15 +178,16 @@ Todos os endpoints são prefixados com `/api/auth`.
 | `GET`  | `/authorize`        | Inicia fluxo OAuth2, retorna redirect com `oauthRequestId`                                                   | —          |
 | `POST` | `/login`            | Login OAuth2 — valida authRequest e gera `code`                                                              | 5 req/min  |
 | `POST` | `/token`            | Troca `code` por `access_token` (suporta PKCE e clientSecret)                                                | 5 req/min  |
-| `POST` | `/refresh-token`    | Atualiza `access_token` e `refresh_token` passando um `refreshToken` válidono payload                        | 5 req/min  |
-| `POST` | `/revoke-token`     | Revoga `access_token` e `refresh_token` passando `refreshToken` ou `accessToken` como token no payload       | 5 req/min  |
-| `POST` | `/token-introspect` | Introspecta `access_token` ou `refresh_token` passando `refreshToken` ou `accessToken` como token no payload | 5 req/min  |
+| `POST` | `/refresh-token`    | Atualiza `access_token` e `refresh_token` usando `grantType` e `refreshToken` no payload                     | 5 req/min  |
+| `POST` | `/revoke-token`     | Revoga um access ou refresh token enviado no campo `token` do payload                                        | 5 req/min  |
+| `POST` | `/token-introspect` | Introspecta um access ou refresh token enviado no campo `token` do payload                                   | 5 req/min  |
 
 ### Cliente — `/api/auth/client`
 
-| Método | Rota | Descrição                      |
-| ------ | ---- | ------------------------------ |
-| `POST` | `/`  | Registra nova aplicação OAuth2 |
+| Método | Rota             | Descrição                         |
+| ------ | ---------------- | --------------------------------- |
+| `POST` | `/`              | Registra nova aplicação OAuth2    |
+| `GET`  | `/client-id/:id` | Busca um client OAuth2 por clientId |
 
 ### Health — `/api/auth/health`
 
@@ -256,6 +258,7 @@ Copie `.env.template` para `.env` e preencha os valores:
 
 ```env
 # PostgreSQL
+DB_HOST=
 DB_USER=
 DB_PASSWORD=
 DB_NAME=
@@ -265,10 +268,12 @@ DB_PORT=5432
 SERVICE_VERIFY_EMAIL_URL=   # URL base para links de verificação de email
 SERVICE_URL=                # URL pública do serviço
 SERVICE_RESET_PASSWORD_URL= # URL da página de reset de senha
+SERVICE_UNBLOCK_ACCOUNT_URL= # URL da página de desbloqueio de conta
 REDIRECT_URI=               # URI de redirecionamento padrão pós-login
 
 # CORS
 CORS_ORIGIN=                # Origem permitida (ex: http://localhost:4000)
+TRUST_PROXY=0               # Configuração opcional de trust proxy do Express
 
 # OAuth2
 OAUTH_LOGIN_URL=            # URL da página de login OAuth2 do frontend
@@ -276,14 +281,23 @@ OAUTH_LOGIN_URL=            # URL da página de login OAuth2 do frontend
 # Redis
 REDIS_URI=                  # URI completa (ex: redis://:senha@localhost:6379)
 
-# SMTP
-SMTP_PORT=
-SERVER_SMTP=                # Servidor SMTP hostname (ex: smtp.example.com)
-SERVER_SMTP_USER_NAME=
-SERVER_SMTP_PASSWORD=
+# Gmail API
+GMAIL_CLIENT_ID=
+GMAIL_CLIENT_SECRET=
+GMAIL_REDIRECT_URI=
+GMAIL_REFRESH_TOKEN=
+GMAIL_SENDER_EMAIL=
 
 # JWT
 SECRET=                     # Chave secreta para assinar tokens JWT
+CLIENT_SECRET_PEPPER=       # Pepper usado ao gerar hash de client secrets OAuth2
+ACCESS_TOKEN_EXPIRES_IN=15min
+REFRESH_TOKEN_EXPIRES_DAYS=15
+EMAIL_VERIFICATION_TOKEN_EXPIRES=6h
+
+# Runtime
+NODE_ENV=
+PORT=3000
 ```
 
 ---
@@ -338,10 +352,9 @@ src/
 │       └── repository/
 ├── config/
 │   ├── database/                   # Data source TypeORM e migrations
+│   ├── decorator/                  # Decorators customizados de request
 │   ├── filters/                    # Filtros globais de exceção
-│   ├── helper/
-│   ├── logger/
-│   └── templates/                  # Templates Handlebars para emails
+│   └── logger/
 ├── consent/                        # Domínio de consentimento OAuth2
 │   ├── application/
 │   │   ├── port/
@@ -350,6 +363,10 @@ src/
 │   ├── domain/
 │   └── infrastructure/
 ├── core/                           # Serviços e módulos compartilhados
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+├── email/                          # Fila, workers, providers e templates de email
 │   ├── application/
 │   ├── domain/
 │   └── infrastructure/
@@ -368,6 +385,13 @@ src/
 │       ├── controller/
 │       ├── dto/
 │       └── module/
+├── security-event/                 # Pipeline de logs de eventos de segurança
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+├── session/                        # Persistência de sessões por família de tokens
+│   ├── domain/
+│   └── infrastructure/
 ├── token/                          # Geração, refresh, revogação e introspecção de tokens
 │   ├── application/
 │   │   ├── interface/
@@ -395,6 +419,8 @@ src/
         └── repository/
 
 test/
+├── e2e/
+│   └── setup/
 └── unit/
     └── use-case/
         ├── auth/
@@ -408,7 +434,7 @@ test/
 
 ## CI/CD
 
-O pipeline de integração contínua roda automaticamente em cada push e pull request para `main`:
+O pipeline de integração contínua roda automaticamente em cada push e pull request para `main` e `develop`:
 
 1. **Checkout** do código
 2. **Setup pnpm 10** + cache de dependências
@@ -417,6 +443,8 @@ O pipeline de integração contínua roda automaticamente em cada push e pull re
 5. **Build** — `pnpm build`
 6. **Test** — `pnpm test`
 7. **Coverage** — `pnpm test:cov`
+8. **E2E** — `pnpm test:e2e`
+9. **Release** — `npx semantic-release`
 
 ---
 
