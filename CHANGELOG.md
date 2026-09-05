@@ -1,3 +1,10 @@
+# [2.3.0-beta.4](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0-beta.3...v2.3.0-beta.4) (2026-08-21)
+
+
+### Features
+
+* **docs:** update email notification section and add account unblock endpoint in README ([2079c50](https://github.com/LuisFernando12/Authenticator/commit/2079c5075c968579f100be36a8260c9e1d31160c))
+
 # [2.3.0-beta.3](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0-beta.2...v2.3.0-beta.3) (2026-08-10)
 
 
