@@ -1,3 +1,10 @@
+# [2.4.0-beta.1](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0...v2.4.0-beta.1) (2026-09-09)
+
+
+### Features
+
+* **auth:** implement AuthGuard and user retrieval endpoint; add request decorator ([f41ff9c](https://github.com/LuisFernando12/Authenticator/commit/f41ff9c4eecebba48e18eb1e64a45ae0e94df1e0))
+
 # [2.3.0-beta.5](https://github.com/LuisFernando12/Authenticator/compare/v2.3.0-beta.4...v2.3.0-beta.5) (2026-09-05)
 
 ### Features
